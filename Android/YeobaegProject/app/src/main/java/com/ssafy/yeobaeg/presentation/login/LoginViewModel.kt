@@ -1,9 +1,13 @@
 package com.ssafy.yeobaeg.presentation.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.User
 import com.ssafy.yeobaeg.domain.usecase.LoginUseCase
+import com.ssafy.yeobaeg.navigation.BottomNavScreen
+import com.ssafy.yeobaeg.navigation.FullScreen
+import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +26,8 @@ data class LoginUiState(
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val navigator: Navigator
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -40,7 +45,6 @@ class LoginViewModel @Inject constructor(
         val email = _uiState.value.email
         val password = _uiState.value.password
         viewModelScope.launch {
-
             _uiState.update {
                 it.copy(isLoading = true, error = null)
             }
@@ -54,6 +58,7 @@ class LoginViewModel @Inject constructor(
                             error = null
                         )
                     }
+                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -64,6 +69,10 @@ class LoginViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    fun navigateSignUp() = viewModelScope.launch {
+        navigator.navigate(FullScreen.SignUp)
     }
     
     fun clearUser() {
