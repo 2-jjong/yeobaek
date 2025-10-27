@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
 data class SignUpUiState(
@@ -32,52 +33,56 @@ class SignUpViewModel @Inject constructor() : ViewModel() {
     val uiState: StateFlow<SignUpUiState> = _uiState.asStateFlow()
     
     fun updateEmail(email: String) {
-        _uiState.value = _uiState.value.copy(email = email)
+        _uiState.update { it.copy(email = email) }
     }
     
     fun updatePassword(password: String) {
-        _uiState.value = _uiState.value.copy(password = password)
+        _uiState.update { it.copy(password = password) }
     }
     
     fun updatePasswordConfirm(passwordConfirm: String) {
-        _uiState.value = _uiState.value.copy(passwordConfirm = passwordConfirm)
+        _uiState.update { it.copy(passwordConfirm = passwordConfirm) }
     }
     
     fun selectUserRole(role: UserRole) {
         val totalSteps = if (role == UserRole.ARTIST) 5 else 4
-        _uiState.value = _uiState.value.copy(
-            userRole = role,
-            totalSteps = totalSteps
-        )
+        _uiState.update { 
+            it.copy(
+                userRole = role,
+                totalSteps = totalSteps
+            )
+        }
     }
     
     fun updateBirthDate(birthDate: String) {
-        _uiState.value = _uiState.value.copy(birthDate = birthDate)
+        _uiState.update { it.copy(birthDate = birthDate) }
     }
     
     fun selectGender(gender: Gender) {
-        _uiState.value = _uiState.value.copy(gender = gender)
+        _uiState.update { it.copy(gender = gender) }
     }
     
     fun updateNickname(nickname: String) {
-        _uiState.value = _uiState.value.copy(nickname = nickname)
+        _uiState.update { it.copy(nickname = nickname) }
     }
     
     fun selectArtType(artType: ArtType) {
-        _uiState.value = _uiState.value.copy(artType = artType)
+        _uiState.update { it.copy(artType = artType) }
     }
     
     fun nextStep() {
-        _uiState.value = _uiState.value.copy(
-            currentStep = _uiState.value.currentStep + 1
-        )
+        _uiState.update { 
+            it.copy(currentStep = it.currentStep + 1)
+        }
     }
     
     fun previousStep() {
-        if (_uiState.value.currentStep > 1) {
-            _uiState.value = _uiState.value.copy(
-                currentStep = _uiState.value.currentStep - 1
-            )
+        _uiState.update { state ->
+            if (state.currentStep > 1) {
+                state.copy(currentStep = state.currentStep - 1)
+            } else {
+                state
+            }
         }
     }
     
