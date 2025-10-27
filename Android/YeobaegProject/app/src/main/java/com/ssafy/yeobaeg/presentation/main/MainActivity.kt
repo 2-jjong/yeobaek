@@ -1,4 +1,4 @@
-package com.ssafy.yeobaeg
+package com.ssafy.yeobaeg.presentation.main
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -8,14 +8,6 @@ import androidx.activity.viewModels
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
-import com.ssafy.yeobaeg.presentation.main.MainViewModel
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import com.ssafy.yeobaeg.navigation.NavGraph
-import com.ssafy.yeobaeg.presentation.main.LaunchedNavigator
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
 
