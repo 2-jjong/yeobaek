@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
@@ -45,18 +43,8 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
-    onSignUpClick: () -> Unit = {},
-    onLoginSuccess: (UserRole) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    // 로그인 성공 감지
-    LaunchedEffect(uiState.user) {
-        uiState.user?.let { user ->
-            onLoginSuccess(user.role)
-            viewModel.clearUser() // 화면 전환 후 user 상태 초기화
-        }
-    }
 
     Column(
         modifier = Modifier
@@ -133,7 +121,7 @@ fun LoginScreen(
                         )
                     ),
                     linkInteractionListener = {
-                        onSignUpClick()
+                        viewModel.navigateSignUp()
                     }
                 )
             ) {

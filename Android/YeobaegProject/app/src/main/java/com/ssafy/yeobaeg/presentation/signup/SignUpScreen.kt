@@ -48,8 +48,6 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 @Composable
 fun SignUpScreen(
     viewModel: SignUpViewModel = hiltViewModel(),
-    onSignUpSuccess: () -> Unit = {},
-    onBackClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -77,7 +75,7 @@ fun SignUpScreen(
                 onPasswordChange = viewModel::updatePassword,
                 onPasswordConfirmChange = viewModel::updatePasswordConfirm,
                 onNextClick = viewModel::nextStep,
-                onBackClick = onBackClick,
+                onBackClick = viewModel::onBack,
                 canProceed = viewModel.canProceedFromEmailPasswordStep()
             )
             2 -> Step2RoleSelection(
@@ -100,20 +98,14 @@ fun SignUpScreen(
                 nickname = uiState.nickname,
                 userRole = uiState.userRole,
                 onNicknameChange = viewModel::updateNickname,
-                onNextClick = {
-                    if (uiState.userRole == UserRole.ARTIST) {
-                        viewModel.nextStep()
-                    } else {
-                        onSignUpSuccess()
-                    }
-                },
+                onNextClick = viewModel::nextStep,
                 onBackClick = viewModel::previousStep,
                 canProceed = viewModel.canProceedFromNicknameStep()
             )
             5 -> Step5ArtType(
                 selectedArtType = uiState.artType,
                 onArtTypeSelect = viewModel::selectArtType,
-                onNextClick = onSignUpSuccess,
+                onNextClick = viewModel::nextStep,
                 onBackClick = viewModel::previousStep,
                 canProceed = viewModel.canProceedFromArtTypeStep()
             )

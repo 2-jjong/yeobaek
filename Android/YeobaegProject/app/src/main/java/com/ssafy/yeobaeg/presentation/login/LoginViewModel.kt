@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.User
 import com.ssafy.yeobaeg.domain.usecase.LoginUseCase
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
+import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +45,6 @@ class LoginViewModel @Inject constructor(
         val email = _uiState.value.email
         val password = _uiState.value.password
         viewModelScope.launch {
-
             _uiState.update {
                 it.copy(isLoading = true, error = null)
             }
@@ -58,6 +58,7 @@ class LoginViewModel @Inject constructor(
                             error = null
                         )
                     }
+                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -68,6 +69,10 @@ class LoginViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    fun navigateSignUp() = viewModelScope.launch {
+        navigator.navigate(FullScreen.SignUp)
     }
     
     fun clearUser() {

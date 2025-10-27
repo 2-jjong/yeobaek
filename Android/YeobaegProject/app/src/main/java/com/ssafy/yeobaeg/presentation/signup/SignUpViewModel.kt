@@ -1,15 +1,18 @@
 package com.ssafy.yeobaeg.presentation.signup
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.ArtType
 import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
+import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class SignUpUiState(
@@ -72,8 +75,25 @@ class SignUpViewModel @Inject constructor(
     fun selectArtType(artType: ArtType) {
         _uiState.update { it.copy(artType = artType) }
     }
-    
+
+    fun onBack() {
+        viewModelScope.launch {
+            navigator.navigateBack()
+        }
+    }
+
     fun nextStep() {
+        viewModelScope.launch {
+            if(_uiState.value.currentStep == 4) {
+                if(_uiState.value.userRole != UserRole.ARTIST) {
+                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+                }
+            } else if(_uiState.value.currentStep == 5) {
+                navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+            }
+        }
+        // currentStep에 따라 네비게이트
+
         _uiState.update { 
             it.copy(currentStep = it.currentStep + 1)
         }
