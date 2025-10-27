@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 
@@ -116,9 +115,9 @@ fun LoginScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             singleLine = true
@@ -151,9 +150,9 @@ fun LoginScreen(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             visualTransformation = PasswordVisualTransformation(),
@@ -277,9 +276,9 @@ private fun LoginScreenContent() {
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             singleLine = true
@@ -312,9 +311,9 @@ private fun LoginScreenContent() {
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             visualTransformation = PasswordVisualTransformation(),

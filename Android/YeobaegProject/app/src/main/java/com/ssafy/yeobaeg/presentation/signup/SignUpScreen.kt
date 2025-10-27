@@ -43,7 +43,6 @@ import com.ssafy.yeobaeg.domain.model.ArtType
 import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 
@@ -67,7 +66,7 @@ fun SignUpScreen(
                 .fillMaxWidth()
                 .height(8.dp),
             color = YeobaegDarkBrown,
-            trackColor = YeobaegLightGray,
+            trackColor = Color.White,
         )
 
         when (uiState.currentStep) {
@@ -168,9 +167,9 @@ private fun Step1EmailPassword(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             singleLine = true
@@ -195,9 +194,9 @@ private fun Step1EmailPassword(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             visualTransformation = PasswordVisualTransformation(),
@@ -223,9 +222,9 @@ private fun Step1EmailPassword(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             visualTransformation = PasswordVisualTransformation(),
@@ -471,9 +470,9 @@ private fun Step3GenderAndAge(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             singleLine = true
@@ -542,7 +541,7 @@ private fun GenderButton(
         modifier = modifier
             .height(120.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else YeobaegLightGray)
+            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else Color.White)
             .border(
                 width = if (isSelected) 2.dp else 0.dp,
                 color = if (isSelected) YeobaegDarkBrown else Color.Transparent,
@@ -621,9 +620,9 @@ private fun Step4Nickname(
                 .height(56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = YeobaegLightGray,
+                unfocusedBorderColor = Color.White,
                 focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = YeobaegLightGray,
+                unfocusedContainerColor = Color.White,
                 focusedContainerColor = Color.White
             ),
             singleLine = true
@@ -758,7 +757,7 @@ private fun ArtTypeCard(
         modifier = modifier
             .height(100.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else YeobaegLightGray)
+            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else Color.White)
             .border(
                 width = if (isSelected) 2.dp else 0.dp,
                 color = if (isSelected) YeobaegDarkBrown else Color.Transparent,
