@@ -16,6 +16,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class LoginUiState(
+    val email: String = "",
+    val password: String = "",
     val isLoading: Boolean = false,
     val user: User? = null,
     val error: String? = null
@@ -30,32 +32,48 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
     
-    fun login(email: String, password: String) {
+    fun updateEmail(email: String) {
+        _uiState.update { it.copy(email = email) }
+    }
+    
+    fun updatePassword(password: String) {
+        _uiState.update { it.copy(password = password) }
+    }
+    
+    fun login() {
+        val email = _uiState.value.email
+        val password = _uiState.value.password
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
+            _uiState.update {
+                it.copy(isLoading = true, error = null)
+            }
             
             loginUseCase(email, password)
                 .onSuccess { user ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        user = user,
-                        error = null
-                    )
-                    Log.d("LoginViewModel", "Login successful: $user")
-                    navigator.navigate(BottomNavScreen.Home)
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            user = user,
+                            error = null
+                        )
+                    }
                 }
                 .onFailure { error ->
-                    _uiState.value = _uiState.value.copy(
-                        isLoading = false,
-                        error = error.message
-                    )
-                    Log.d("LoginViewModel", "Login failed: ${error.message}")
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.message
+                        )
+                    }
                 }
         }
     }
     
     fun clearUser() {
-        _uiState.value = _uiState.value.copy(user = null)
+        _uiState.update {
+            it.copy(user = null)
+        }
     }
 }
 

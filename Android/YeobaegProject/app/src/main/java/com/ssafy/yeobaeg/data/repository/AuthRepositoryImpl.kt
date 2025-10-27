@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.data.repository
 
 import com.ssafy.yeobaeg.domain.model.User
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -15,14 +16,13 @@ class AuthRepositoryImpl @Inject constructor() : AuthRepository {
     
     override suspend fun login(email: String, password: String): Result<User> {
         return try {
-            // TODO: 실제 API 호출로 변경
             delay(1000) // 네트워크 지연 시뮬레이션
             
             // 임시 응답 - 이메일에 따라 다른 역할 부여 (테스트용)
             val role = when {
-                email.contains("artist") -> com.ssafy.yeobaeg.domain.model.UserRole.ARTIST
-                email.contains("cafe") -> com.ssafy.yeobaeg.domain.model.UserRole.CAFE_OWNER
-                else -> com.ssafy.yeobaeg.domain.model.UserRole.GENERAL
+                email.contains("artist") -> UserRole.ARTIST
+                email.contains("cafe") -> UserRole.CAFE_OWNER
+                else -> UserRole.GENERAL
             }
             
             val user = User(

@@ -9,6 +9,11 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.presentation.main.MainViewModel
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.ssafy.yeobaeg.navigation.NavGraph
 import com.ssafy.yeobaeg.presentation.main.LaunchedNavigator
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
