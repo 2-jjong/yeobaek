@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.R
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
@@ -49,7 +50,7 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
     onSignUpClick: () -> Unit = {},
-    onLoginSuccess: (com.ssafy.yeobaeg.domain.model.UserRole) -> Unit = {}
+    onLoginSuccess: (UserRole) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var email by remember { mutableStateOf("") }
