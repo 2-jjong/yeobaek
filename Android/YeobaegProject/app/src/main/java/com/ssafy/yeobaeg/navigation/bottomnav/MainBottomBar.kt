@@ -1,6 +1,5 @@
 package com.ssafy.yeobaeg.navigation.bottomnav
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -33,29 +33,23 @@ fun MainBottomBar(
     val iconTint = Color(0xff754106)
 
     Box(modifier = Modifier.background(Color.White)) {
-        Column {
-            AnimatedVisibility(
-                visible = true
-            ) {
-                Row(
-                    modifier =
-                        Modifier
-                            .navigationBarsPadding()
-                            .fillMaxWidth()
-                            .height(80.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    tabs.forEach { tab ->
-                        MainBottomBarItem(
-                            tab = tab,
-                            selected = tab == currentTab,
-                            iconTint = iconTint,
-                            onClick = {
-                                onTabSelected(tab)
-                            },
-                        )
-                    }
-                }
+        Row(
+            modifier =
+                Modifier
+                    .navigationBarsPadding()
+                    .fillMaxWidth()
+                    .height(80.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            tabs.forEach { tab ->
+                MainBottomBarItem(
+                    tab = tab,
+                    selected = tab == currentTab,
+                    iconTint = iconTint,
+                    onClick = {
+                        onTabSelected(tab)
+                    },
+                )
             }
         }
     }
@@ -89,7 +83,7 @@ private fun RowScope.MainBottomBarItem(
             Icon(
                 painter = painterResource(tab.iconResId),
                 contentDescription = tab.contentDescription,
-                tint = if(selected) iconTint else Color.Gray,
+                tint = if (selected) iconTint else Color.Gray,
             )
             Text(
                 text = tab.label,
@@ -98,4 +92,14 @@ private fun RowScope.MainBottomBarItem(
             )
         }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun MainBottomBarPreview() {
+    MainBottomBar(
+        tabs = MainTab.entries,
+        currentTab = MainTab.HOME,
+        onTabSelected = {}
+    )
 }
