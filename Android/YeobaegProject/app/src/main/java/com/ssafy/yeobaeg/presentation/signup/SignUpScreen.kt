@@ -50,8 +50,8 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 @Composable
 fun SignUpScreen(
     viewModel: SignUpViewModel = hiltViewModel(),
-    onSignUpSuccess: () -> Unit,
-    onBackClick: () -> Unit
+    onSignUpSuccess: () -> Unit = {},
+    onBackClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
