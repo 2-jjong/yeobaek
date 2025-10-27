@@ -18,12 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -42,7 +38,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.domain.model.ArtType
 import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 
@@ -66,7 +65,7 @@ fun SignUpScreen(
                 .fillMaxWidth()
                 .height(8.dp),
             color = YeobaegDarkBrown,
-            trackColor = Color.White,
+            trackColor = YeobaegLightGray,
         )
 
         when (uiState.currentStep) {
@@ -150,108 +149,40 @@ private fun Step1EmailPassword(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        Text(
-            text = "이메일",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        OutlinedTextField(
+        YeobaegTextField(
             value = email,
             onValueChange = onEmailChange,
-            placeholder = { Text("coffee@gmail.com", color = YeobaegTextGray.copy(0.5f)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.White,
-                focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
-            ),
-            singleLine = true
+            label = "이메일",
+            placeholder = "coffee@gmail.com"
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "비밀번호",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        OutlinedTextField(
+        YeobaegTextField(
             value = password,
             onValueChange = onPasswordChange,
-            placeholder = { Text("coffee", color = YeobaegTextGray.copy(0.5f)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.White,
-                focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
-            ),
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            label = "비밀번호",
+            placeholder = "coffee",
+            visualTransformation = PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "비밀번호 확인",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        OutlinedTextField(
+        YeobaegTextField(
             value = passwordConfirm,
             onValueChange = onPasswordConfirmChange,
-            placeholder = { Text("비밀번호를 다시 입력하세요", color = YeobaegTextGray.copy(0.5f)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.White,
-                focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
-            ),
-            visualTransformation = PasswordVisualTransformation(),
-            singleLine = true
+            label = "비밀번호 확인",
+            placeholder = "비밀번호를 다시 입력하세요",
+            visualTransformation = PasswordVisualTransformation()
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
+        YeobaegButton(
+            text = "다음",
             onClick = onNextClick,
-            enabled = canProceed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YeobaegDarkBrown,
-                disabledContainerColor = YeobaegTextGray.copy(alpha = 0.3f)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "다음",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
+            enabled = canProceed
+        )
     }
 }
 
@@ -323,25 +254,11 @@ private fun Step2RoleSelection(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
+        YeobaegButton(
+            text = "다음",
             onClick = onNextClick,
-            enabled = canProceed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YeobaegDarkBrown,
-                disabledContainerColor = YeobaegTextGray.copy(alpha = 0.3f)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "다음",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
+            enabled = canProceed
+        )
     }
 }
 
@@ -365,12 +282,12 @@ private fun RoleSelectionItem(
         Box(
             modifier = Modifier
                 .size(56.dp)
-                .clip(androidx.compose.foundation.shape.CircleShape)
+                .clip(CircleShape)
                 .background(iconBackgroundColor),
             contentAlignment = Alignment.Center
         ) {
-            androidx.compose.material.icons.Icons.Default.Person.let { icon ->
-                androidx.compose.material3.Icon(
+            Icons.Default.Person.let { icon ->
+                Icon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = iconColor,
@@ -406,11 +323,11 @@ private fun RoleSelectionItem(
         Box(
             modifier = Modifier
                 .size(24.dp)
-                .clip(androidx.compose.foundation.shape.CircleShape)
+                .clip(CircleShape)
                 .border(
                     width = 2.dp,
                     color = if (isSelected) YeobaegDarkBrown else Color.LightGray,
-                    shape = androidx.compose.foundation.shape.CircleShape
+                    shape = CircleShape
                 )
                 .background(if (isSelected) YeobaegDarkBrown else Color.Transparent),
             contentAlignment = Alignment.Center
@@ -419,7 +336,7 @@ private fun RoleSelectionItem(
                 Box(
                     modifier = Modifier
                         .size(12.dp)
-                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .clip(CircleShape)
                         .background(Color.White)
                 )
             }
@@ -453,29 +370,11 @@ private fun Step3GenderAndAge(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        Text(
-            text = "생년월일",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        OutlinedTextField(
+        YeobaegTextField(
             value = birthDate,
             onValueChange = onBirthDateChange,
-            placeholder = { Text("2025.01.01", color = YeobaegTextGray.copy(0.5f)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.White,
-                focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
-            ),
-            singleLine = true
+            label = "생년월일",
+            placeholder = "2025.01.01"
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -508,25 +407,11 @@ private fun Step3GenderAndAge(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
+        YeobaegButton(
+            text = "다음",
             onClick = onNextClick,
-            enabled = canProceed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YeobaegDarkBrown,
-                disabledContainerColor = YeobaegTextGray.copy(alpha = 0.3f)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "다음",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
+            enabled = canProceed
+        )
     }
 }
 
@@ -541,7 +426,7 @@ private fun GenderButton(
         modifier = modifier
             .height(120.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else Color.White)
+            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else YeobaegLightGray)
             .border(
                 width = if (isSelected) 2.dp else 0.dp,
                 color = if (isSelected) YeobaegDarkBrown else Color.Transparent,
@@ -558,10 +443,10 @@ private fun GenderButton(
             Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = null,
-                modifier = androidx.compose.ui.Modifier.size(40.dp),
+                modifier = Modifier.size(40.dp),
                 tint = if (isSelected) YeobaegDarkBrown else YeobaegTextGray
             )
-            Spacer(modifier = androidx.compose.ui.Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = gender.displayName,
                 fontSize = 16.sp,
@@ -603,52 +488,20 @@ private fun Step4Nickname(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-
-        OutlinedTextField(
+        YeobaegTextField(
             value = nickname,
             onValueChange = onNicknameChange,
-            placeholder = { Text("커피왕자", color = YeobaegTextGray.copy(0.5f)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = Color.White,
-                focusedBorderColor = YeobaegDarkBrown,
-                unfocusedContainerColor = Color.White,
-                focusedContainerColor = Color.White
-            ),
-            singleLine = true
+            label = label,
+            placeholder = "커피왕자"
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
+        YeobaegButton(
+            text = "다음",
             onClick = onNextClick,
-            enabled = canProceed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YeobaegDarkBrown,
-                disabledContainerColor = YeobaegTextGray.copy(alpha = 0.3f)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "다음",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
+            enabled = canProceed
+        )
     }
 }
 
@@ -724,25 +577,11 @@ private fun Step5ArtType(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        Button(
+        YeobaegButton(
+            text = "다음",
             onClick = onNextClick,
-            enabled = canProceed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YeobaegDarkBrown,
-                disabledContainerColor = YeobaegTextGray.copy(alpha = 0.3f)
-            ),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Text(
-                text = "다음",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-        }
+            enabled = canProceed
+        )
     }
 }
 
@@ -757,7 +596,7 @@ private fun ArtTypeCard(
         modifier = modifier
             .height(100.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else Color.White)
+            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else YeobaegLightGray)
             .border(
                 width = if (isSelected) 2.dp else 0.dp,
                 color = if (isSelected) YeobaegDarkBrown else Color.Transparent,
