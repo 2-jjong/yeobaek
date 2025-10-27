@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedTextField
@@ -28,11 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -189,21 +191,26 @@ fun LoginScreen(
             withStyle(style = SpanStyle(color = YeobaegTextGray)) {
                 append("계정이 없으신가요? ")
             }
-            pushStringAnnotation(tag = "SIGNUP", annotation = "signup")
-            withStyle(style = SpanStyle(color = YeobaegDarkBrown, fontWeight = FontWeight.Bold)) {
-                append("회원가입")
-            }
-            pop()
-        }
-
-        ClickableText(
-            text = annotatedString,
-            onClick = { offset ->
-                annotatedString.getStringAnnotations(tag = "SIGNUP", start = offset, end = offset)
-                    .firstOrNull()?.let {
+            withLink(
+                LinkAnnotation.Clickable(
+                    tag = "SIGNUP",
+                    styles = TextLinkStyles(
+                        style = SpanStyle(
+                            color = YeobaegDarkBrown,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ),
+                    linkInteractionListener = {
                         onSignUpClick()
                     }
-            },
+                )
+            ) {
+                append("회원가입")
+            }
+        }
+
+        Text(
+            text = annotatedString,
             modifier = Modifier.padding(bottom = 24.dp)
         )
     }
@@ -348,16 +355,24 @@ private fun LoginScreenContent() {
             withStyle(style = SpanStyle(color = YeobaegTextGray)) {
                 append("계정이 없으신가요? ")
             }
-            pushStringAnnotation(tag = "SIGNUP", annotation = "signup")
-            withStyle(style = SpanStyle(color = YeobaegDarkBrown, fontWeight = FontWeight.Bold)) {
+            withLink(
+                LinkAnnotation.Clickable(
+                    tag = "SIGNUP",
+                    styles = TextLinkStyles(
+                        style = SpanStyle(
+                            color = YeobaegDarkBrown,
+                            fontWeight = FontWeight.Bold
+                        )
+                    ),
+                    linkInteractionListener = { }
+                )
+            ) {
                 append("회원가입")
             }
-            pop()
         }
 
-        ClickableText(
+        Text(
             text = annotatedString,
-            onClick = { },
             modifier = Modifier.padding(bottom = 24.dp)
         )
     }
