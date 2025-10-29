@@ -16,7 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -505,7 +504,7 @@ public class ArtworkController {
 
         ArtworkDetail artwork = new ArtworkDetail(
                 artworkId, "여름의 여백", "여름날 햇살이 비치는 풍경을 표현한 작품입니다.",
-                500000, "풍경화", 80, 60, new BigDecimal("2.5"), 2024,
+                500000, "풍경화", 80, 60, 2.5, 2024,
                 "EXHIBITING", 150, 42, false, images, artist, exhibition
         );
 

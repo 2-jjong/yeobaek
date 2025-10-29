@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Schema(description = "작품 수정 요청")
@@ -34,7 +33,7 @@ public class UpdateArtworkRequest {
     private Integer heightCm;
 
     @Schema(description = "작품 무게 (kg)", example = "2.5")
-    private BigDecimal weightKg;
+    private Double weightKg;
 
     @Schema(description = "제작 연도 (YYYY)", example = "2024")
     private Integer productionYear;
