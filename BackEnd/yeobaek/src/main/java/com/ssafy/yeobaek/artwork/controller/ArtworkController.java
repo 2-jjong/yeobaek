@@ -52,7 +52,7 @@ public class ArtworkController {
                                     @ExampleObject(name = "작품 설명 길이 오류", value = "{\"code\": \"AW4004\", \"data\": null, \"message\": \"작품 설명은 최대 1000자까지 입력 가능합니다\"}"),
                                     @ExampleObject(name = "유효하지 않은 카테고리", value = "{\"code\": \"AW4006\", \"data\": null, \"message\": \"유효하지 않은 카테고리입니다\"}"),
                                     @ExampleObject(name = "대표 이미지 개수 오류", value = "{\"code\": \"AW4008\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
-                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"AU4005\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}")
+                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}")
                             }
                     )
             ),
@@ -62,8 +62,8 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -129,8 +129,8 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -205,8 +205,8 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -561,8 +561,8 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -609,8 +609,8 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),

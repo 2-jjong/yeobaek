@@ -7,12 +7,14 @@ public enum ResponseCode {
     SUCCESS("S0000", "정상 처리", HttpStatus.OK),
     CREATED("S0000", "정상 처리", HttpStatus.CREATED),
 
+    // 공통 에러 (400 Bad Request
+    MISSING_REQUIRED_FIELD("S4001", "필수 입력값이 누락되었습니다", HttpStatus.BAD_REQUEST),
+
     // 회원 관련 에러 (400 Bad Request)
     EMAIL_ALREADY_EXISTS("AU4001", "이미 사용 중인 이메일입니다", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD_FORMAT("AU4002", "비밀번호는 8자 이상, 영문+숫자+특수문자 조합이어야 합니다", HttpStatus.BAD_REQUEST),
     PASSWORD_MISMATCH("AU4003", "비밀번호가 일치하지 않습니다", HttpStatus.BAD_REQUEST),
     INVALID_EMAIL_FORMAT("AU4004", "이메일 형식이 올바르지 않습니다", HttpStatus.BAD_REQUEST),
-    MISSING_REQUIRED_FIELD("AU4005", "필수 입력값이 누락되었습니다", HttpStatus.BAD_REQUEST),
     INVALID_USER_TYPE("AU4006", "유효하지 않은 회원 유형입니다", HttpStatus.BAD_REQUEST),
     INVALID_NICKNAME_LENGTH("AU4007", "닉네임은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     INVALID_BIRTH_DATE_FORMAT("AU4008", "생년월일 형식이 올바르지 않습니다", HttpStatus.BAD_REQUEST),
@@ -20,8 +22,8 @@ public enum ResponseCode {
 
     // 회원 관련 에러 (401 Unauthorized)
     INVALID_CREDENTIALS("AU4011", "이메일 또는 비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED),
-    INVALID_TOKEN("AU4013", "유효하지 않은 토큰입니다", HttpStatus.UNAUTHORIZED),
-    EXPIRED_TOKEN("AU4014", "만료된 토큰입니다", HttpStatus.UNAUTHORIZED),
+    INVALID_TOKEN("AU4012", "유효하지 않은 토큰입니다", HttpStatus.UNAUTHORIZED),
+    EXPIRED_TOKEN("AU4013", "만료된 토큰입니다", HttpStatus.UNAUTHORIZED),
 
     // 회원 관련 에러 (404 Not Found)
     USER_NOT_FOUND("AU4041", "존재하지 않는 회원입니다", HttpStatus.NOT_FOUND),
@@ -43,7 +45,6 @@ public enum ResponseCode {
     ARTWORK_MAX_IMAGES("AW4002", "이미지는 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
     ARTWORK_INVALID_TITLE_LENGTH("AW4003", "작품명은 1~100자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     ARTWORK_INVALID_DESCRIPTION_LENGTH("AW4004", "작품 설명은 최대 1000자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
-    ARTWORK_INVALID_MATERIAL_LENGTH("AW4005", "재료/기법은 최대 100자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
     ARTWORK_INVALID_CATEGORY("AW4006", "유효하지 않은 카테고리입니다", HttpStatus.BAD_REQUEST),
     ARTWORK_SIZE_FILTER_FORBIDDEN("AW4007", "작품 규격 필터는 카페 사장만 사용할 수 있습니다", HttpStatus.BAD_REQUEST),
     ARTWORK_PRIMARY_IMAGE_ONLY_ONE("AW4008", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
@@ -63,7 +64,7 @@ public enum ResponseCode {
     CAFE_MIN_IMAGES("CF4001", "이미지는 최소 3장 이상 등록해야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_MAX_IMAGES("CF4002", "이미지는 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
     CAFE_PRIMARY_IMAGE_ONLY_ONE("CF4003", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
-    CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 1~20자 이내여야 합니다", HttpStatus.BAD_REQUEST),
+    CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 1~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_DESCRIPTION_LENGTH("CF4005", "카페 소개는 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_COMMISSION_RATE("CF4006", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_HOURS_FORMAT("CF4007", "영업시간 형식이 올바르지 않습니다 (HH:mm)", HttpStatus.BAD_REQUEST),

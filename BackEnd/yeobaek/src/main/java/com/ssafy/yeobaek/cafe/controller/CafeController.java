@@ -50,10 +50,10 @@ public class CafeController {
                                     @ExampleObject(name = "최소 이미지 개수 미달", value = "{\"code\": \"CF4001\", \"data\": null, \"message\": \"이미지는 최소 3장 이상 등록해야 합니다\"}"),
                                     @ExampleObject(name = "최대 이미지 개수 초과", value = "{\"code\": \"CF4002\", \"data\": null, \"message\": \"이미지는 최대 10장까지 등록 가능합니다\"}"),
                                     @ExampleObject(name = "대표 이미지 오류", value = "{\"code\": \"CF4003\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
-                                    @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"data\": null, \"message\": \"매장명은 1~20자 이내여야 합니다\"}"),
+                                    @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"data\": null, \"message\": \"매장명은 1~15자 이내여야 합니다\"}"),
                                     @ExampleObject(name = "카페 소개 길이 오류", value = "{\"code\": \"CF4005\", \"data\": null, \"message\": \"카페 소개는 최대 500자까지 입력 가능합니다\"}"),
                                     @ExampleObject(name = "영업시간 형식 오류", value = "{\"code\": \"CF4007\", \"data\": null, \"message\": \"영업시간 형식이 올바르지 않습니다 (HH:mm)\"}"),
-                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"AU4005\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}")
+                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}")
                             }
                     )
             ),
@@ -63,8 +63,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -140,8 +140,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -203,8 +203,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -276,8 +276,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -569,8 +569,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),

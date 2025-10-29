@@ -43,11 +43,11 @@ public class UserController {
                 examples = {
                     @ExampleObject(
                         name = "유효하지 않은 토큰",
-                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
+                        value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
                     ),
                     @ExampleObject(
                         name = "만료된 토큰",
-                        value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
+                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
                     )
                 }
             )
@@ -187,11 +187,11 @@ public class UserController {
                 examples = {
                     @ExampleObject(
                         name = "닉네임 길이 오류",
-                        value = "{\"code\": \"US4001\", \"data\": null, \"message\": \"닉네임은 2자 이상 20자 이하이어야 합니다\"}"
+                        value = "{\"code\": \"US4002\", \"data\": null, \"message\": \"닉네임은 2자 이상 15자 이하이어야 합니다\"}"
                     ),
                     @ExampleObject(
                         name = "작가 소개 길이 오류",
-                        value = "{\"code\": \"US4002\", \"data\": null, \"message\": \"작가 소개는 500자 이하이어야 합니다\"}"
+                        value = "{\"code\": \"US4003\", \"data\": null, \"message\": \"작가 소개는 250자 이하이어야 합니다\"}"
                     )
                 }
             )
@@ -204,11 +204,11 @@ public class UserController {
                 examples = {
                     @ExampleObject(
                         name = "유효하지 않은 토큰",
-                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
+                        value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
                     ),
                     @ExampleObject(
                         name = "만료된 토큰",
-                        value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
+                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
                     )
                 }
             )
@@ -265,15 +265,15 @@ public class UserController {
                 examples = {
                     @ExampleObject(
                         name = "비밀번호 형식 오류",
-                        value = "{\"code\": \"AU4004\", \"data\": null, \"message\": \"비밀번호는 8자 이상 20자 이하이어야 합니다\"}"
+                        value = "{\"code\": \"AU4002\", \"data\": null, \"message\": \"비밀번호는 8자 이상 20자 이하이어야 합니다\"}"
                     ),
                     @ExampleObject(
                         name = "비밀번호 불일치",
-                        value = "{\"code\": \"AU4005\", \"data\": null, \"message\": \"비밀번호가 일치하지 않습니다\"}"
+                        value = "{\"code\": \"AU4003\", \"data\": null, \"message\": \"비밀번호가 일치하지 않습니다\"}"
                     ),
                     @ExampleObject(
                         name = "필수 입력값 누락",
-                        value = "{\"code\": \"AU4002\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}"
+                        value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}"
                     )
                 }
             )
@@ -290,11 +290,11 @@ public class UserController {
                     ),
                     @ExampleObject(
                         name = "유효하지 않은 토큰",
-                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
+                        value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
                     ),
                     @ExampleObject(
                         name = "만료된 토큰",
-                        value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
+                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
                     )
                 }
             )
@@ -350,7 +350,7 @@ public class UserController {
                 mediaType = "application/json",
                 examples = @ExampleObject(
                     name = "필수 입력값 누락",
-                    value = "{\"code\": \"AU4002\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}"
+                    value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}"
                 )
             )
         ),
@@ -366,11 +366,11 @@ public class UserController {
                     ),
                     @ExampleObject(
                         name = "유효하지 않은 토큰",
-                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
+                        value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
                     ),
                     @ExampleObject(
                         name = "만료된 토큰",
-                        value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
+                        value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
                     )
                 }
             )
