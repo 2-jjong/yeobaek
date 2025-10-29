@@ -15,7 +15,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PasswordResetRequestRequest {
     @Schema(description = "비밀번호를 재설정할 이메일 주소", example = "user@example.com", required = true)
-    @NotBlank(message = "이메일은 필수 입력값입니다")
-    @Email(message = "이메일 형식이 올바르지 않습니다")
+    @NotBlank(message = "MISSING_REQUIRED_FIELD")
+    @Email(message = "INVALID_EMAIL_FORMAT")
     private String email;
 }

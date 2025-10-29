@@ -15,11 +15,11 @@ import lombok.Setter;
 @AllArgsConstructor
 public class LoginRequest {
     @Schema(description = "로그인 이메일 주소", example = "user@example.com", required = true)
-    @NotBlank(message = "이메일은 필수 입력값입니다")
-    @Email(message = "이메일 형식이 올바르지 않습니다")
+    @NotBlank(message = "MISSING_REQUIRED_FIELD")
+    @Email(message = "INVALID_EMAIL_FORMAT")
     private String email;
 
     @Schema(description = "비밀번호", example = "Password123!", required = true)
-    @NotBlank(message = "비밀번호는 필수 입력값입니다")
+    @NotBlank(message = "MISSING_REQUIRED_FIELD")
     private String password;
 }

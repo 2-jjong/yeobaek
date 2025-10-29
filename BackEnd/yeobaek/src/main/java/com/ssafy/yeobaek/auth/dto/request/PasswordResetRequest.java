@@ -15,16 +15,16 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PasswordResetRequest {
     @Schema(description = "이메일로 받은 비밀번호 재설정 토큰", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", required = true)
-    @NotBlank(message = "토큰은 필수 입력값입니다")
+    @NotBlank(message = "MISSING_REQUIRED_FIELD")
     private String token;
 
     @Schema(description = "새 비밀번호 (8자 이상, 영문+숫자+특수문자 조합)", example = "NewPassword123!", required = true)
-    @NotBlank(message = "새 비밀번호는 필수 입력값입니다")
+    @NotBlank(message = "MISSING_REQUIRED_FIELD")
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$",
-             message = "비밀번호는 8자 이상, 영문+숫자+특수문자 조합이어야 합니다")
+             message = "INVALID_PASSWORD_FORMAT")
     private String newPassword;
 
     @Schema(description = "새 비밀번호 확인", example = "NewPassword123!", required = true)
-    @NotBlank(message = "새 비밀번호 확인은 필수 입력값입니다")
+    @NotBlank(message = "MISSING_REQUIRED_FIELD")
     private String newPasswordConfirm;
 }
