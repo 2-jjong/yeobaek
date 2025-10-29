@@ -16,9 +16,12 @@ import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
+import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
+import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
+import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
 
@@ -78,6 +81,13 @@ fun NavGraph(
                         GeneralHomeScreen()
                     }
 
+                    is BottomNavScreen.Profile-> NavEntry(key){
+                        CafeOwnerProfileScreen()
+                    }
+
+                    is FullScreen.ProfileEdit -> NavEntry(key) {
+                        ProfileEditScreen()
+                    }
                     else -> throw IllegalArgumentException("Unknown route: $key")
                 }
             }
