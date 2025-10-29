@@ -78,10 +78,7 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
     })
     @PostMapping("/logout")
-    public ResponseEntity<ResponseDto<Void>> logout(
-        @Parameter(description = "Bearer {accessToken}", required = true)
-        @RequestHeader("Authorization") String authorization
-    ) {
+    public ResponseEntity<ResponseDto<Void>> logout() {
         // Mock 데이터: 성공 응답 반환 (data는 null)
         return ResponseEntity
             .status(HttpStatus.OK)
@@ -95,10 +92,7 @@ public class AuthController {
         @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
     })
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<TokenData>> refresh(
-        @Parameter(description = "Bearer {refreshToken}", required = true)
-        @RequestHeader("Authorization") String authorization
-    ) {
+    public ResponseEntity<ResponseDto<TokenData>> refresh() {
         // Mock 데이터: 새로운 토큰 반환
         TokenData data = new TokenData(
             "new.mock.access.token.jwt.string",
