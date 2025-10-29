@@ -7,7 +7,7 @@ public enum ResponseCode {
     SUCCESS("S0000", "정상 처리", HttpStatus.OK),
     CREATED("S0000", "정상 처리", HttpStatus.CREATED),
 
-    // 인증 관련 에러 (400 Bad Request)
+    // 회원 관련 에러 (400 Bad Request)
     EMAIL_ALREADY_EXISTS("AU4001", "이미 사용 중인 이메일입니다", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD_FORMAT("AU4002", "비밀번호는 8자 이상, 영문+숫자+특수문자 조합이어야 합니다", HttpStatus.BAD_REQUEST),
     PASSWORD_MISMATCH("AU4003", "비밀번호가 일치하지 않습니다", HttpStatus.BAD_REQUEST),
@@ -18,12 +18,12 @@ public enum ResponseCode {
     INVALID_BIRTH_DATE_FORMAT("AU4008", "생년월일 형식이 올바르지 않습니다", HttpStatus.BAD_REQUEST),
     INVALID_GENDER("AU4009", "유효하지 않은 성별입니다", HttpStatus.BAD_REQUEST),
 
-    // 인증 관련 에러 (401 Unauthorized)
+    // 회원 관련 에러 (401 Unauthorized)
     INVALID_CREDENTIALS("AU4011", "이메일 또는 비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED),
     INVALID_TOKEN("AU4013", "유효하지 않은 토큰입니다", HttpStatus.UNAUTHORIZED),
     EXPIRED_TOKEN("AU4014", "만료된 토큰입니다", HttpStatus.UNAUTHORIZED),
 
-    // 인증 관련 에러 (404 Not Found)
+    // 회원 관련 에러 (404 Not Found)
     USER_NOT_FOUND("AU4041", "존재하지 않는 회원입니다", HttpStatus.NOT_FOUND),
 
     // 사용자 프로필 관련 에러 (400 Bad Request)
