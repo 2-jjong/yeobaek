@@ -15,6 +15,9 @@ public class ImageRequest {
     @Schema(description = "이미지 URL", example = "https://example.com/image1.jpg")
     private String imageUrl;
 
+    @Schema(description = "대표 이미지 여부 (1개만 true)", example = "true")
+    private Boolean isPrimary;
+
     @Schema(description = "표시 순서 (1부터 시작)", example = "1")
     private Integer displayOrder;
 }

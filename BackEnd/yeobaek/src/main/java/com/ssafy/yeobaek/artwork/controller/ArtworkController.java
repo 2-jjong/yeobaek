@@ -6,6 +6,9 @@ import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,11 +29,64 @@ public class ArtworkController {
 
     @Operation(summary = "작품 등록", description = "작가가 피드 형식으로 작품을 등록합니다. 이미지는 최소 1장, 최대 10장까지 슬라이드 형식으로 등록 가능합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "정상 처리"),
-            @ApiResponse(responseCode = "400", description = "이미지는 최소 1장 이상 등록해야 합니다 / 이미지는 최대 10장까지 등록 가능합니다 / 작품명은 1~100자 이내여야 합니다 / 작품 설명은 최대 1000자까지 입력 가능합니다 / 유효하지 않은 카테고리입니다 / 필수 입력값이 누락되었습니다"),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다 / 만료된 토큰입니다"),
-            @ApiResponse(responseCode = "403", description = "작가만 작품을 등록할 수 있습니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "최소 이미지 개수 미달", value = "{\"code\": \"AW4001\", \"data\": null, \"message\": \"이미지는 최소 1장 이상 등록해야 합니다\"}"),
+                                    @ExampleObject(name = "최대 이미지 개수 초과", value = "{\"code\": \"AW4002\", \"data\": null, \"message\": \"이미지는 최대 10장까지 등록 가능합니다\"}"),
+                                    @ExampleObject(name = "작품명 길이 오류", value = "{\"code\": \"AW4003\", \"data\": null, \"message\": \"작품명은 1~100자 이내여야 합니다\"}"),
+                                    @ExampleObject(name = "작품 설명 길이 오류", value = "{\"code\": \"AW4004\", \"data\": null, \"message\": \"작품 설명은 최대 1000자까지 입력 가능합니다\"}"),
+                                    @ExampleObject(name = "유효하지 않은 카테고리", value = "{\"code\": \"AW4006\", \"data\": null, \"message\": \"유효하지 않은 카테고리입니다\"}"),
+                                    @ExampleObject(name = "대표 이미지 개수 오류", value = "{\"code\": \"AW4008\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
+                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"AU4005\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"AW4031\", \"data\": null, \"message\": \"작가만 작품을 등록할 수 있습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
     })
     @PostMapping
     public ResponseEntity<ResponseDto<Void>> createArtwork(@RequestBody CreateArtworkRequest request) {
@@ -41,13 +97,83 @@ public class ArtworkController {
 
     @Operation(summary = "작품 수정", description = "등록된 작품 정보를 수정합니다. 전시 중인 작품은 일부 정보만 수정 가능합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "400", description = "이미지는 최소 1장 이상 등록해야 합니다 / 이미지는 최대 10장까지 등록 가능합니다 / 작품명은 1~100자 이내여야 합니다 / 작품 설명은 최대 1000자까지 입력 가능합니다 / 유효하지 않은 카테고리입니다"),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다 / 만료된 토큰입니다"),
-            @ApiResponse(responseCode = "403", description = "본인의 작품만 수정할 수 있습니다"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 작품입니다"),
-            @ApiResponse(responseCode = "409", description = "전시 중인 작품은 규격을 변경할 수 없습니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "최소 이미지 개수 미달", value = "{\"code\": \"AW4001\", \"data\": null, \"message\": \"이미지는 최소 1장 이상 등록해야 합니다\"}"),
+                                    @ExampleObject(name = "최대 이미지 개수 초과", value = "{\"code\": \"AW4002\", \"data\": null, \"message\": \"이미지는 최대 10장까지 등록 가능합니다\"}"),
+                                    @ExampleObject(name = "작품명 길이 오류", value = "{\"code\": \"AW4003\", \"data\": null, \"message\": \"작품명은 1~100자 이내여야 합니다\"}"),
+                                    @ExampleObject(name = "작품 설명 길이 오류", value = "{\"code\": \"AW4004\", \"data\": null, \"message\": \"작품 설명은 최대 1000자까지 입력 가능합니다\"}"),
+                                    @ExampleObject(name = "유효하지 않은 카테고리", value = "{\"code\": \"AW4006\", \"data\": null, \"message\": \"유효하지 않은 카테고리입니다\"}"),
+                                    @ExampleObject(name = "대표 이미지 개수 오류", value = "{\"code\": \"AW4008\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"AW4032\", \"data\": null, \"message\": \"본인의 작품만 수정/삭제할 수 있습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "충돌",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"AW4091\", \"data\": null, \"message\": \"전시 중인 작품은 규격을 변경할 수 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
     })
     @PutMapping("/{artworkId}")
     public ResponseEntity<ResponseDto<Void>> updateArtwork(
@@ -62,12 +188,68 @@ public class ArtworkController {
 
     @Operation(summary = "작품 삭제", description = "작품을 삭제합니다. 전시 중이거나 전시 예정인 작품은 삭제할 수 없습니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다 / 만료된 토큰입니다"),
-            @ApiResponse(responseCode = "403", description = "본인의 작품만 삭제할 수 있습니다"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 작품입니다"),
-            @ApiResponse(responseCode = "409", description = "전시 중이거나 전시 예정인 작품은 삭제할 수 없습니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"AW4032\", \"data\": null, \"message\": \"본인의 작품만 수정/삭제할 수 있습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "충돌",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"AW4092\", \"data\": null, \"message\": \"전시 중이거나 전시 예정인 작품은 삭제할 수 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
     })
     @DeleteMapping("/{artworkId}")
     public ResponseEntity<ResponseDto<Void>> deleteArtwork(
@@ -81,9 +263,27 @@ public class ArtworkController {
 
     @Operation(summary = "내 작품 목록 조회", description = "내가 등록한 작품 목록을 조회합니다. 홈에서 작품 피드를 표시할 때 사용합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자입니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"AU4041\", \"data\": null, \"message\": \"존재하지 않는 회원입니다\"}")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @GetMapping("/me")
     public ResponseEntity<ResponseDto<ArtworkListData>> getMyArtworks(
@@ -106,9 +306,27 @@ public class ArtworkController {
 
     @Operation(summary = "특정 작가의 작품 목록 조회", description = "특정 작가의 작품 목록을 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 사용자입니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"AU4041\", \"data\": null, \"message\": \"존재하지 않는 회원입니다\"}")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @GetMapping("/users/{userId}")
     public ResponseEntity<ResponseDto<ArtworkListData>> getUserArtworks(
@@ -133,9 +351,27 @@ public class ArtworkController {
 
     @Operation(summary = "작가/작품 목록 조회", description = "작품 목록을 조회하거나 검색합니다. 키워드 검색, 필터링, 정렬 기능을 제공합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "400", description = "작품 규격 필터는 카페 사장만 사용할 수 있습니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"AW4007\", \"data\": null, \"message\": \"작품 규격 필터는 카페 사장만 사용할 수 있습니다\"}")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @GetMapping
     public ResponseEntity<ResponseDto<ArtworkListData>> searchArtworks(
@@ -178,9 +414,27 @@ public class ArtworkController {
 
     @Operation(summary = "추천 작품 목록 조회", description = "특정 카페에 어울리는 작품 목록을 추천합니다. 알고리즘 기반으로 카페 특성과 작품 특성을 매칭합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 카페입니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"CF4041\", \"data\": null, \"message\": \"존재하지 않는 카페입니다\"}")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @GetMapping("/recommendations")
     public ResponseEntity<ResponseDto<ArtworkListData>> getRecommendedArtworks(
@@ -205,9 +459,27 @@ public class ArtworkController {
 
     @Operation(summary = "작품 상세 조회", description = "특정 작품의 상세 정보를 조회합니다. 작품 정보, 작가 정보, 전시 상태, 전시 장소 정보를 포함합니다. 조회수가 증가합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 작품입니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @GetMapping("/{artworkId}")
     public ResponseEntity<ResponseDto<ArtworkDetailData>> getArtworkDetail(
@@ -246,8 +518,19 @@ public class ArtworkController {
 
     @Operation(summary = "인기 작품 목록 조회", description = "조회수, 북마크 수, 평가를 기반으로 인기 작품을 추천합니다. 최대 20개까지 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @GetMapping("/popular")
     public ResponseEntity<ResponseDto<PopularArtworksData>> getPopularArtworks(
@@ -267,10 +550,38 @@ public class ArtworkController {
 
     @Operation(summary = "작품 북마크 토글", description = "작품을 북마크에 추가하거나 제거합니다 (토글 방식). 북마크가 없으면 추가하고, 이미 있으면 제거합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다 / 만료된 토큰입니다"),
-            @ApiResponse(responseCode = "404", description = "존재하지 않는 작품입니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}")
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @PostMapping("/{artworkId}/bookmarks")
     public ResponseEntity<ResponseDto<BookmarkToggleData>> toggleBookmark(
@@ -287,9 +598,30 @@ public class ArtworkController {
 
     @Operation(summary = "작품 북마크 목록 조회", description = "현재 사용자가 북마크한 작품 목록을 조회합니다. 최신 북마크 순으로 정렬됩니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "정상 처리"),
-            @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰입니다 / 만료된 토큰입니다"),
-            @ApiResponse(responseCode = "500", description = "서버 내부 오류가 발생했습니다")
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4014\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
     })
     @GetMapping("/bookmarks")
     public ResponseEntity<ResponseDto<ArtworkListData>> getBookmarkedArtworks(

@@ -130,7 +130,6 @@ public class CafeController {
                                     @ExampleObject(name = "대표 이미지 오류", value = "{\"code\": \"CF4003\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
                                     @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"data\": null, \"message\": \"매장명은 1~20자 이내여야 합니다\"}"),
                                     @ExampleObject(name = "카페 소개 길이 오류", value = "{\"code\": \"CF4005\", \"data\": null, \"message\": \"카페 소개는 최대 500자까지 입력 가능합니다\"}"),
-                                    @ExampleObject(name = "수수료율 범위 오류", value = "{\"code\": \"CF4006\", \"data\": null, \"message\": \"수수료율은 0~15 사이여야 합니다\"}"),
                                     @ExampleObject(name = "영업시간 형식 오류", value = "{\"code\": \"CF4007\", \"data\": null, \"message\": \"영업시간 형식이 올바르지 않습니다 (HH:mm)\"}")
                             }
                     )
