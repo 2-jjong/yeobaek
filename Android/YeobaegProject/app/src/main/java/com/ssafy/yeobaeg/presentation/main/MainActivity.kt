@@ -8,6 +8,7 @@ import androidx.activity.viewModels
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
+import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -24,7 +25,7 @@ class MainActivity : ComponentActivity() {
                 darkTheme = false,
                 dynamicColor = false
             ) {
-                val startDestination = FullScreen.Splash
+                val startDestination = BottomNavScreen.Home
                 val navBackStack = rememberNavBackStack(startDestination)
 
                 LaunchedNavigator(navBackStack)
@@ -32,12 +33,12 @@ class MainActivity : ComponentActivity() {
                 NavGraph(
                     navBackStack = navBackStack,
                     onTabSelected = {
-                        when (it.route) {
-                            BottomNavScreen.Home -> viewModel.navigateHome()
-                            BottomNavScreen.Cafe -> viewModel.navigateCafe()
-                            BottomNavScreen.Artwork -> viewModel.navigateArtwork()
-                            BottomNavScreen.Chat -> viewModel.navigateChat()
-                            BottomNavScreen.Profile -> viewModel.navigateProfile()
+                        when (it) {
+                            MainTab.HOME -> viewModel.navigateHome()
+                            MainTab.CAFE -> viewModel.navigateCafe()
+                            MainTab.ARTWORK -> viewModel.navigateArtwork()
+                            MainTab.CHAT -> viewModel.navigateChat()
+                            MainTab.PROFILE -> viewModel.navigateProfile()
                         }
                     },
                 )
