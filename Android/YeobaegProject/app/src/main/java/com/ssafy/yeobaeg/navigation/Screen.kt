@@ -35,4 +35,7 @@ sealed interface BottomNavScreen : Screen {
 
     @Serializable
     data object Profile : BottomNavScreen
+
+    @Serializable
+    data object SpaceScanPreview : BottomNavScreen
 }

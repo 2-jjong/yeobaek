@@ -61,6 +61,7 @@ dependencies {
     
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.androidx.runtime)
     kapt(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
     
@@ -73,6 +74,11 @@ dependencies {
     
     // Serialization
     implementation(libs.kotlinx.serialization.json)
+
+    // Coil
+    implementation("com.google.ar:core:1.33.0")
+    implementation("io.github.sceneview:arsceneview:2.3.0")
+    implementation("io.github.sceneview:sceneview:2.3.0")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
