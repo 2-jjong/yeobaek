@@ -1,0 +1,32 @@
+package com.ssafy.yeobaek.cafe.dto.request;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Schema(description = "전시 슬롯 수정 요청")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class UpdateSlotRequest {
+    @Schema(description = "슬롯 이름", example = "1번 벽")
+    private String slotName;
+
+    @Schema(description = "벽면 폭 (cm)", example = "200")
+    private Integer widthCm;
+
+    @Schema(description = "벽면 높이 (cm)", example = "250")
+    private Integer heightCm;
+
+    @Schema(description = "설치 방식 (RAIL, HOOK, OTHER)", example = "RAIL")
+    private String installationMethod;
+
+    @Schema(description = "전시 위치 설명", example = "카페 입구 오른쪽 벽면")
+    private String locationDescription;
+
+    @Schema(description = "AR 공간 스캔 데이터", example = "{}")
+    private String arScanData;
+}

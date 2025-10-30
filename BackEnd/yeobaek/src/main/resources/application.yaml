@@ -21,6 +21,13 @@ spring:
 server:
   port: 8080
 
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
 logging:
   level:
     com.ssafy.yeobaek: debug
