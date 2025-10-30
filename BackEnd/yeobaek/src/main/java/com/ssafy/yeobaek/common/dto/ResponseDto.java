@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.common.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
@@ -13,6 +14,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseDto<T> {
     @Schema(description = "응답 코드", example = "S0000")
     private String code;
