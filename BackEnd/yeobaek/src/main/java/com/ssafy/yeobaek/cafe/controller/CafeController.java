@@ -5,6 +5,7 @@ import com.ssafy.yeobaek.artwork.dto.response.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -527,11 +528,11 @@ public class CafeController {
 
         List<SlotDetail> slots = List.of(
                 new SlotDetail(1L, "1번 벽", 200, 250, "RAIL", 15.0,
-                        "카페 입구 오른쪽 벽면", "EXHIBITING", exhibition, "{}"),
+                        "카페 입구 오른쪽 벽면", ExhibitionStatus.EXHIBITING, exhibition, "{}"),
                 new SlotDetail(2L, "2번 벽", 150, 200, "HOOK", 12.0,
-                        "창가 벽면", "AVAILABLE", null, "{}"),
+                        "창가 벽면", ExhibitionStatus.AVAILABLE, null, "{}"),
                 new SlotDetail(3L, "3번 벽", 180, 220, "RAIL", 15.0,
-                        "내부 중앙 벽면", "SCHEDULED", null, "{}")
+                        "내부 중앙 벽면", ExhibitionStatus.SCHEDULED, null, "{}")
         );
 
         RatingStatsData ratingStats = new RatingStatsData(42, 4.5);
