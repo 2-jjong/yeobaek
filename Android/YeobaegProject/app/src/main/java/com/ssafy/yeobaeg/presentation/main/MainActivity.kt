@@ -17,8 +17,7 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
 
     private val viewModel: MainViewModel by viewModels()
-    @Inject
-    lateinit var navigator: Navigator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

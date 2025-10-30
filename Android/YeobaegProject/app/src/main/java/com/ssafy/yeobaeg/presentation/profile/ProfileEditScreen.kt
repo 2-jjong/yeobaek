@@ -79,7 +79,9 @@ fun ProfileEditScreen(
         topBar = {
             YeobaegTopAppBar(
                 title = "프로필 편집",
-                onBackClick = {viewModel.navigateBack()}
+                onBackClick = {viewModel.navigateBack()},
+                actionIcon = null,
+                onActionClick = {}
             )
         },
         containerColor = YeobaegWhite
@@ -89,7 +91,7 @@ fun ProfileEditScreen(
                 .fillMaxSize()
                 .background(Color.White)
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp, vertical = 24.dp),
+                .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
