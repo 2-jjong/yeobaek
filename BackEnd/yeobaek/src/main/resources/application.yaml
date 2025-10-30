@@ -32,3 +32,8 @@ logging:
   level:
     com.ssafy.yeobaek: debug
     org.hibernate.SQL: debug
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 3600000    # 1시간 (밀리초)
+  refresh-token-expiration: 604800000 # 7일 (밀리초)
