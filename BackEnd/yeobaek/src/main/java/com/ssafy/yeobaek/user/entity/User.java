@@ -5,7 +5,7 @@ import com.ssafy.yeobaek.common.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -19,24 +19,26 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_type", nullable = false, length = 20)
     private UserRole userType;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(nullable = false, length = 30)
+    @Column(nullable = false, length = 255)
     private String password;
 
     @Column(nullable = false, length = 15)
     private String nickname;
 
-    @Column(nullable = false)
-    private Date birthDate;
+    @Column(name = "birth_date", nullable = false)
+    private LocalDate birthDate;
 
-    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
     private Gender gender;
 
-    @Column
+    @Column(name = "profile_image_url", length = 255)
     private String profileImageUrl;
 }
