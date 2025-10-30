@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.artwork.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -43,8 +44,8 @@ public class ArtworkDetail {
     @Schema(description = "제작 연도", example = "2024")
     private Integer productionYear;
 
-    @Schema(description = "작품 상태 (AVAILABLE: 전시 가능, EXHIBITING: 전시 중)", example = "AVAILABLE")
-    private String status;
+    @Schema(description = "작품 상태 (AVAILABLE: 전시 가능, EXHIBITING: 전시 중, SCHEDULED: 예약됨)", example = "AVAILABLE")
+    private ExhibitionStatus status;
 
     @Schema(description = "조회수", example = "150")
     private Integer viewCount;

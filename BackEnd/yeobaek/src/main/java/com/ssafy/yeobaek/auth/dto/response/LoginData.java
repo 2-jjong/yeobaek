@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.auth.dto.response;
 
+import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,5 +20,5 @@ public class LoginData {
     private String refreshToken;
 
     @Schema(description = "회원 유형 (CAFE_OWNER, ARTIST, GENERAL)", example = "GENERAL")
-    private String userType;
+    private UserRole userType;
 }

@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.cafe.dto.response;
 
+import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,7 +35,7 @@ public class SlotDetail {
     private String locationDescription;
 
     @Schema(description = "슬롯 상태 (AVAILABLE: 전시 가능, EXHIBITING: 전시 중, SCHEDULED: 예약 됨)", example = "AVAILABLE")
-    private String status;
+    private ExhibitionStatus status;
 
     @Schema(description = "현재 전시 정보 (전시 중/예정인 경우만)")
     private ExhibitionInfo currentExhibition;

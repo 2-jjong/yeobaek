@@ -1,8 +1,11 @@
 package com.ssafy.yeobaek.auth.dto.request;
 
+import com.ssafy.yeobaek.common.enums.Gender;
+import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -17,9 +20,8 @@ import lombok.Setter;
 @AllArgsConstructor
 public class SignupRequest {
     @Schema(description = "회원 유형 (CAFE_OWNER, ARTIST, GENERAL)", example = "GENERAL", required = true)
-    @NotBlank(message = "MISSING_REQUIRED_FIELD")
-    @Pattern(regexp = "^(CAFE_OWNER|ARTIST|GENERAL)$", message = "INVALID_USER_TYPE")
-    private String userType;
+    @NotNull(message = "MISSING_REQUIRED_FIELD")
+    private UserRole userType;
 
     @Schema(description = "로그인용 이메일 주소", example = "user@example.com", required = true)
     @NotBlank(message = "MISSING_REQUIRED_FIELD")
@@ -47,7 +49,6 @@ public class SignupRequest {
     private String birthDate;
 
     @Schema(description = "성별 (MALE, FEMALE)", example = "MALE", required = true)
-    @NotBlank(message = "MISSING_REQUIRED_FIELD")
-    @Pattern(regexp = "^(MALE|FEMALE)$", message = "INVALID_GENDER")
-    private String gender;
+    @NotNull(message = "MISSING_REQUIRED_FIELD")
+    private Gender gender;
 }

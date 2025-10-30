@@ -1,6 +1,8 @@
 package com.ssafy.yeobaek.user.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.enums.Gender;
+import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,8 +25,8 @@ public class UserData {
     @Schema(description = "닉네임", example = "홍길동")
     private String nickname;
 
-    @Schema(description = "회원 유형", example = "GENERAL")
-    private String userType;
+    @Schema(description = "회원 유형(ARTIST,", example = "GENERAL")
+    private UserRole userType;
 
     @Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.jpg")
     private String profileImageUrl;
@@ -33,5 +35,5 @@ public class UserData {
     private String birthDate;
 
     @Schema(description = "성별", example = "MALE")
-    private String gender;
+    private Gender gender;
 }

@@ -4,6 +4,8 @@ import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
+import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -387,7 +389,7 @@ public class ArtworkController {
             @Parameter(description = "작품 최대 세로 (cm)")
             @RequestParam(required = false) Integer maxHeight,
             @Parameter(description = "정렬 기준 (POPULARITY: 인기순, LATEST: 최신 등록순)")
-            @RequestParam(defaultValue = "LATEST") String sortBy,
+            @RequestParam(defaultValue = "LATEST") ArtworkSortBy sortBy,
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
             @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
@@ -505,7 +507,7 @@ public class ArtworkController {
         ArtworkDetail artwork = new ArtworkDetail(
                 artworkId, "여름의 여백", "여름날 햇살이 비치는 풍경을 표현한 작품입니다.",
                 500000, "풍경화", 80, 60, 2.5, 2024,
-                "EXHIBITING", 150, 42, false, images, artist, exhibition
+                ExhibitionStatus.EXHIBITING, 150, 42, false, images, artist, exhibition
         );
 
         ArtworkDetailData data = new ArtworkDetailData(artwork);
@@ -644,7 +646,7 @@ public class ArtworkController {
     private List<ArtworkSummary> createMockArtworks(int count, Long startId) {
         String[] titles = {"여름의 여백", "가을의 정적", "봄날의 꿈", "겨울의 침묵", "도시의 밤", "산속의 오두막", "추상의 세계", "바다의 속삭임", "황혼의 노래", "새벽의 기도", "꽃병과 과일", "푸른 하늘", "고요한 아침", "빛과 그림자", "시간의 흐름", "미지의 공간", "노을 진 풍경", "밤하늘의 별", "꿈속의 정원", "자유로운 영혼"};
         String[] categories = {"풍경화", "인물화", "정물화", "장르화", "기타", "역사화"};
-        String[] statuses = {"AVAILABLE", "EXHIBITING"};
+        ExhibitionStatus[] statuses = {ExhibitionStatus.AVAILABLE, ExhibitionStatus.EXHIBITING};
         String[] exhibitLocations = {null, "카페 여백", "아트카페", "오션뷰 카페", null};
 
         return IntStream.range(0, count)
@@ -656,7 +658,7 @@ public class ArtworkController {
                     String category = categories[i % categories.length];
                     int width = 60 + (i * 5) % 60;
                     int height = 70 + (i * 5) % 50;
-                    String status = statuses[i % statuses.length];
+                    ExhibitionStatus status = statuses[i % statuses.length];
                     int views = 30 + (i * 10);
                     String location = exhibitLocations[i % exhibitLocations.length];
                     String artistName = (id % 3 == 0) ? "김작가" : "이작가";

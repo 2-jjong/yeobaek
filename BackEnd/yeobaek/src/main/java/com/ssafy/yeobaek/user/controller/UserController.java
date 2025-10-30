@@ -1,6 +1,8 @@
 package com.ssafy.yeobaek.user.controller;
 
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import com.ssafy.yeobaek.common.enums.Gender;
+import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.user.dto.request.ChangePasswordRequest;
 import com.ssafy.yeobaek.user.dto.request.DeleteAccountRequest;
 import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
@@ -80,10 +82,10 @@ public class UserController {
             1L,
             "artist@example.com",
             "작가 홍길동",
-            "ARTIST",
+            UserRole.ARTIST,
             "https://example.com/artist-profile.jpg",
             "1990-01-01",
-            "MALE"
+            Gender.MALE
         );
 
         RatingStatsData ratingStats = new RatingStatsData(42, 4.5);
@@ -145,7 +147,7 @@ public class UserController {
             userId,
             null, // 이메일은 공개 프로필에서 제외
             "작가명",
-            "ARTIST",
+            UserRole.ARTIST,
             "https://example.com/artist.jpg",
             null, // 생년월일은 공개 프로필에서 제외
             null  // 성별은 공개 프로필에서 제외

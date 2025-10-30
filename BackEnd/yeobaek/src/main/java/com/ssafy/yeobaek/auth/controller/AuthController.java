@@ -3,6 +3,7 @@ package com.ssafy.yeobaek.auth.controller;
 import com.ssafy.yeobaek.auth.dto.request.*;
 import com.ssafy.yeobaek.auth.dto.response.*;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -196,7 +197,7 @@ public class AuthController {
         LoginData data = new LoginData(
             "mock.access.token.jwt.string",
             "mock.refresh.token.jwt.string",
-            "GENERAL"
+            UserRole.GENERAL
         );
         return ResponseEntity
             .status(HttpStatus.OK)
