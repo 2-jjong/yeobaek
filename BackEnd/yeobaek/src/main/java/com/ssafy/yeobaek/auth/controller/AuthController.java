@@ -2,6 +2,7 @@ package com.ssafy.yeobaek.auth.controller;
 
 import com.ssafy.yeobaek.auth.dto.request.*;
 import com.ssafy.yeobaek.auth.dto.response.*;
+import com.ssafy.yeobaek.auth.service.AuthServiceImpl;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,9 +24,12 @@ import java.time.format.DateTimeFormatter;
 @Tag(name = "회원 관리", description = "회원 인증 및 관리 API")
 @RestController
 @RequestMapping("/api/v1/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Operation(summary = "이메일 중복 검증", description = "회원가입 전 이메일 중복 여부를 확인합니다.")
+    private final AuthServiceImpl authServiceImpl;
+
+    @Operation(summary = "이메일 중복 검사", description = "회원가입 전 이메일 중복 여부를 확인합니다.")
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
@@ -67,8 +72,7 @@ public class AuthController {
     })
     @PostMapping("/email/check")
     public ResponseEntity<ResponseDto<EmailCheckData>> checkEmail(@Valid @RequestBody EmailCheckRequest request) {
-        // Mock 데이터: 사용 가능한 이메일로 반환
-        EmailCheckData data = new EmailCheckData(request.getEmail(), true);
+        EmailCheckData data = authServiceImpl.checkEmailDuplicate(request.getEmail());
         return ResponseEntity
             .status(HttpStatus.OK)
             .body(ResponseDto.success(data));
