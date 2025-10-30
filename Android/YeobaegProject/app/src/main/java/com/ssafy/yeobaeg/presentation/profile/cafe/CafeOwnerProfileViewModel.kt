@@ -1,19 +1,13 @@
 package com.ssafy.yeobaeg.presentation.profile.cafe
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.ArtType
-import com.ssafy.yeobaeg.domain.model.Cafe
-import com.ssafy.yeobaeg.domain.model.Gender
+import com.ssafy.yeobaeg.domain.model.CafeInfo
 import com.ssafy.yeobaeg.domain.model.UserInfo
-import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
-import com.ssafy.yeobaeg.presentation.profile.ProfileUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,8 +17,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 data class CafeProfileUiState(
     val isLoading: Boolean = false,
-    val userInfo: UserInfo? = null,
-    val cafeInfo: Cafe? = null,
+    val userInfo: UserInfo = UserInfo(),
+    val cafeInfo: CafeInfo= CafeInfo(),
     val errorMessage: String? = null
 )
 

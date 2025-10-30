@@ -1,6 +1,6 @@
 package com.ssafy.yeobaeg.presentation.profile.cafe
 
-import android.graphics.drawable.Icon
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
@@ -27,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,54 +40,50 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.Cafe
+import com.ssafy.yeobaeg.domain.model.CafeInfo
 import com.ssafy.yeobaeg.domain.model.UserInfo
-import com.ssafy.yeobaeg.navigation.FullScreen
-import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.jansilFont
-import kotlinx.coroutines.launch
 
 @Composable
 fun CafeOwnerProfileScreen(
     modifier: Modifier = Modifier,
-    viewModel: CafeOwnerProfileViewModel= hiltViewModel()
+    viewModel: CafeOwnerProfileViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-     Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
+
             uiState.errorMessage != null -> {
                 ErrorContent(
                     message = uiState.errorMessage!!,
-                    onRetry = { viewModel.refresh() },
+                    onRetry = viewModel::refresh,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-            uiState.userInfo != null && uiState.cafeInfo != null -> {
-                CafeOwnerProfileContent(
-                    userInfo = uiState.userInfo!!,
-                    cafeInfo = uiState.cafeInfo!!,
-                    viewModel = viewModel
-                )
-            }
         }
+        CafeOwnerProfileContent(
+            userInfo = uiState.userInfo,
+            cafeInfo = uiState.cafeInfo,
+            onEditClick = viewModel::navigateToEditProfile
+        )
     }
 }
 
 @Composable
 fun CafeOwnerProfileContent(
     userInfo: UserInfo,
-    cafeInfo: Cafe,
-    viewModel: CafeOwnerProfileViewModel
+    cafeInfo: CafeInfo,
+    onEditClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -103,7 +97,7 @@ fun CafeOwnerProfileContent(
         // 프로필 부분
         ProfileSection(
             userInfo = userInfo,
-            onEditClick = {viewModel.navigateToEditProfile()}
+            onEditClick = onEditClick
         )
 
         Spacer(modifier = Modifier.height(40.dp))
@@ -126,7 +120,7 @@ fun CafeOwnerProfileContent(
 @Composable
 fun ProfileSection(
     userInfo: UserInfo,
-    onEditClick:()->Unit={}
+    onEditClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -189,8 +183,9 @@ fun ProfileSection(
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
-fun StoreInfoSection(cafeInfo: Cafe) {
+fun StoreInfoSection(cafeInfo: CafeInfo) {
     Column {
         // Title
         Text(
@@ -206,14 +201,14 @@ fun StoreInfoSection(cafeInfo: Cafe) {
         StoreDetailItem(
             title = cafeInfo.cafeName,
             subtitle = cafeInfo.address,
-            icon= R.drawable.ic_storeedit
+            icon = R.drawable.ic_storeedit
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         StoreDetailItem(
             title = "운영시간",
-            subtitle =cafeInfo.businessHours,
+            subtitle = cafeInfo.businessHours,
             icon = R.drawable.ic_time
         )
 
@@ -221,7 +216,12 @@ fun StoreInfoSection(cafeInfo: Cafe) {
 
         StoreDetailItem(
             title = "리뷰 ${cafeInfo.ratingStats.totalReviews}개",
-            subtitle = "평균 평점: ${String.format("%.1f", cafeInfo.ratingStats.averageRating)}",  // 실제 데이터 사용
+            subtitle = "평균 평점: ${
+                String.format(
+                    "%.1f",
+                    cafeInfo.ratingStats.averageRating
+                )
+            }",  // 실제 데이터 사용
             icon = R.drawable.ic_star
         )
     }
@@ -233,7 +233,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "좋아요 한 목록",
             badge = "12",
-            icon=R.drawable.ic_heart
+            icon = R.drawable.ic_heart
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -241,7 +241,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "매장 정보 수정",
             badge = null,
-            icon=R.drawable.ic_storeedit
+            icon = R.drawable.ic_storeedit
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -249,7 +249,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "리뷰 관리",
             badge = "5",
-            icon=R.drawable.ic_star
+            icon = R.drawable.ic_star
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -257,7 +257,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "알림 설정",
             badge = null,
-            icon=R.drawable.ic_time
+            icon = R.drawable.ic_time
         )
     }
 }
@@ -320,7 +320,7 @@ fun StoreDetailItem(
 fun MenuListItem(
     title: String,
     badge: String?,
-    icon:Int
+    icon: Int
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -359,6 +359,7 @@ fun MenuListItem(
         }
     }
 }
+
 @Composable
 fun ErrorContent(
     message: String,

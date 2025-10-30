@@ -1,12 +1,14 @@
 package com.ssafy.yeobaeg.data.model.profile
 
-import com.ssafy.yeobaeg.domain.model.Artist
-import com.ssafy.yeobaeg.domain.model.Cafe
+import com.ssafy.yeobaeg.domain.model.ArtistInfo
+import com.ssafy.yeobaeg.domain.model.CafeInfo
 import com.ssafy.yeobaeg.domain.model.Profile
 import com.ssafy.yeobaeg.domain.model.RatingStats
 import com.ssafy.yeobaeg.domain.model.UserInfo
 import com.ssafy.yeobaeg.domain.model.UserRole
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class GetProfileResponseDto(
     val user: UserProfileResponse,
     val cafe: CafeProfileResponse?,
@@ -30,7 +32,7 @@ fun UserProfileResponse.toDomain(): UserInfo = UserInfo(
     gender = gender
 )
 
-fun CafeProfileResponse.toDomain(): Cafe = Cafe(
+fun CafeProfileResponse.toDomain(): CafeInfo = CafeInfo(
     cafeId = cafeId,
     cafeName = cafeName,
     address = address,
@@ -40,7 +42,7 @@ fun CafeProfileResponse.toDomain(): Cafe = Cafe(
     ratingStats = ratingStats.toDomain()
 )
 
-fun ArtistProfileResponse.toDomain(): Artist = Artist(
+fun ArtistProfileResponse.toDomain(): ArtistInfo = ArtistInfo(
     introduction = introduction,
     artworkCount = artworkCount,
     exhibitingCount = exhibitingCount,
