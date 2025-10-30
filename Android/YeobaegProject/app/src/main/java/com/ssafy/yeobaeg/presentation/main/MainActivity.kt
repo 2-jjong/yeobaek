@@ -7,7 +7,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
-import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
