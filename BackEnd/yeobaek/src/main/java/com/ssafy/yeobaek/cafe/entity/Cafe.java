@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.cafe.entity;
 
+import com.ssafy.yeobaek.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -16,7 +17,11 @@ public class Cafe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cateId;
+    private Long cafeId;
+
+    @OneToOne
+    @JoinColumn(name = "owner_id", nullable = false, unique = true)
+    private User cafeOwner;
 
     @Column(name = "cafe_name", nullable = false)
     private String cafeName;
