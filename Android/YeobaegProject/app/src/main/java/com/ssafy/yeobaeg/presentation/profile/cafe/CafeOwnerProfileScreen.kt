@@ -38,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.CafeInfo
@@ -50,12 +51,11 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable
 fun CafeOwnerProfileScreen(
-    modifier: Modifier = Modifier,
     viewModel: CafeOwnerProfileViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
         when {
             uiState.isLoading -> {
                 CircularProgressIndicator(
