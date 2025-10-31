@@ -1,5 +1,7 @@
 package com.ssafy.yeobaeg.domain.model
 
+enum class SlotStatus { AVAILABLE, ONGOING, RESERVED }
+
 // 전시 상태
 enum class WallStatus {
     NOT_POSSIBLE,   // 전시 불가능 (회색)
@@ -42,19 +44,21 @@ data class CreateDisplayWallResponse(
 
 // 전시 슬롯 조회 응답 dto
 data class DisplaySlot(
-    val wid: Long,
-    val wName: String,
-    val width: Float,
-    val height: Float,
-    val status: WallStatus,
-    val commission: Float, // 수수료
-    val requirements: String, // 기타 요구 사항
-    val deadline: String, // 전시 마감 일자
-    val artId: Long,
-    val artTitle: String,
-    val artist: String,
-    val artImgUrl: String
-)
+    val wid: Long = 0L,
+    val wName: String = "",
+    val width: Float = 0f,
+    val height: Float = 0f,
+    val status: SlotStatus = SlotStatus.AVAILABLE,
+    val commission: Float = 0f, // 수수료
+    val requirements: String = "", // 기타 요구 사항
+    val deadline: String = "", // 전시 마감 일자
+    val artId: Long = 0L,
+    val artTitle: String = "",
+    val artist: String = "",
+    val artImgUrl: String = ""
+) {
+    val sizeText = "${width.toInt()}m x ${height.toInt()}m"
+}
 
 // 전시 슬롯 생성 요청 dto
 data class CreateDisplaySlotRequest(

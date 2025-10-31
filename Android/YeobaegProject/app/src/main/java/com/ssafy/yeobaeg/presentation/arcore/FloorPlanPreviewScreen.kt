@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.yeobaeg.domain.model.WallStatus
 import kotlin.math.hypot
 import kotlin.math.max
@@ -28,12 +29,13 @@ import kotlin.math.sqrt
 
 @Composable
 fun FloorPlanPreview(
+    modifier: Modifier = Modifier,
     viewModel: ARMeasureViewModel = hiltViewModel()
 ) {
     val state = viewModel.uiState.collectAsState()
     val walls = state.value.walls
 
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier) {
         if (walls.isEmpty()) {
             Text("도면 데이터가 없습니다.", modifier = Modifier.align(Alignment.Center))
             return@Box

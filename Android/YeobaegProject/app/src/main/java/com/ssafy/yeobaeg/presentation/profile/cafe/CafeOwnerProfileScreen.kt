@@ -1,6 +1,5 @@
 package com.ssafy.yeobaeg.presentation.profile.cafe
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
@@ -24,10 +22,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,14 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.navigation.FullScreen
-import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.jansilFont
-import kotlinx.coroutines.launch
 
 @Composable
 fun CafeOwnerProfileScreen(
@@ -275,7 +268,7 @@ fun MenuListItem(
             painter = painterResource(id = icon),
             contentDescription = "설정 아이콘",
             modifier = Modifier.size(20.dp),
-            tint = YeobaegDarkGray
+            tint = YeobaegGray
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(

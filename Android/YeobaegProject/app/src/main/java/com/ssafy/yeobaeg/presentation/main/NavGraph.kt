@@ -21,6 +21,7 @@ import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
 import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
 import com.ssafy.yeobaeg.presentation.arcore.ARMeasureViewModel
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
+import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
@@ -84,11 +85,11 @@ fun NavGraph(
                     }
 
                     is BottomNavScreen.Home -> NavEntry(key) {
-                        ARMeasureScreen(arMeasureViewModel)
+                        CafeOwnerHomeScreen()
                     }
 
                     is BottomNavScreen.SpaceScanPreview -> NavEntry(key) {
-                        FloorPlanPreview(arMeasureViewModel)
+                        FloorPlanPreview(viewModel = arMeasureViewModel)
                     }
 
                     is BottomNavScreen.Profile-> NavEntry(key){
