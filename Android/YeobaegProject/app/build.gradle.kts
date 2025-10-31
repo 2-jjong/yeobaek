@@ -53,7 +53,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    
+
     // Navigation 3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
@@ -75,10 +75,22 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // Coil
-    implementation("com.google.ar:core:1.33.0")
-    implementation("io.github.sceneview:arsceneview:2.3.0")
-    implementation("io.github.sceneview:sceneview:2.3.0")
-    
+    implementation(libs.core)
+    implementation(libs.arsceneview)
+    implementation(libs.sceneview)
+
+    //Coil
+    implementation(libs.coil.compose)
+
+    // Network
+    implementation(libs.retrofit)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.okhttp.urlconnection)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.serialization.converter)
+    implementation(libs.kotlinx.serialization.json)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

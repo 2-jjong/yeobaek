@@ -11,8 +11,15 @@ val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
 // 여백 앱 커스텀 컬러
-val YeobaegBrown = Color(0xFF8B6F47)  // 로고 브라운 색상
-val YeobaegDarkBrown = Color(0xFF6B4423)  // 버튼 다크 브라운
-val YeobaegLightGray = Color(0xFFF5F5F5)  // 배경색
-val YeobaegTextGray = Color(0xFF666666)  // 텍스트 회색
+val YeobaegBrown = Color(0xFF754106)  // 로고 브라운 색상
+val YeobaegDarkBrown = Color(0xFF754106)  // 버튼 다크 브라운
+val YeobaegYellow = Color(0xFFFFFBEB)  // 연한 노랑 배경
+
+val YeobaegTextGray = Color(0xFF6B7280)  // 텍스트 회색
+val YeobaegLightGray = Color(0xFFE5E7EB)  // 연한 회색
+val YeobaegDarkGray = Color(0xFF5B5F66)  // 진한 회색
+
+val YeobaegWhite = Color(0xFFFFFFFF)  // 흰색
+val YeobaegBlack = Color(0xFF000000)  // 검은색
+
 val YeobaegDivider = Color(0xFFE0E0E0)  // 구분선

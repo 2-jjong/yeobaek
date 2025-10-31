@@ -18,6 +18,9 @@ sealed interface FullScreen : Screen {
 
     @Serializable
     data object SignUp : FullScreen
+
+    @Serializable
+    data object  ProfileEdit: FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {
