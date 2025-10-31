@@ -18,7 +18,6 @@ import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
-import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
 import com.ssafy.yeobaeg.presentation.arcore.ARMeasureViewModel
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
@@ -89,7 +88,7 @@ fun NavGraph(
                     }
 
                     is BottomNavScreen.SpaceScanPreview -> NavEntry(key) {
-                        FloorPlanPreview(viewModel = arMeasureViewModel)
+                        FloorPlanPreview(key.displayWalls)
                     }
 
                     is BottomNavScreen.Profile-> NavEntry(key){

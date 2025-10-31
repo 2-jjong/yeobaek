@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.domain.model
 
+import kotlinx.serialization.Serializable
 enum class SlotStatus { AVAILABLE, ONGOING, RESERVED }
 
 // 전시 상태
@@ -10,6 +11,7 @@ enum class WallStatus {
     RESERVED        // 전시 예약   (노랑)
 }
 
+@Serializable
 data class Vec2(val x: Float, val y: Float) {
     operator fun plus(o: Vec2) = Vec2(x + o.x, y + o.y)
     operator fun minus(o: Vec2) = Vec2(x - o.x, y - o.y)
@@ -17,9 +19,10 @@ data class Vec2(val x: Float, val y: Float) {
 }
 
 // 도면 조회 응답 dto
+@Serializable
 data class DisplayWall(
     val id: Long? = null,
-    val wName: String,         // "벽 A", "벽 B" ...
+    val wName: String = "",         // "벽 A", "벽 B" ...
     val start: Vec2,          // 로컬 XZ 시작점
     val end: Vec2,            // 로컬 XZ 끝점
     val status: WallStatus = WallStatus.POSSIBLE

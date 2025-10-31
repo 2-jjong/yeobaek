@@ -1,5 +1,8 @@
 [versions]
 agp = "8.13.0"
+arsceneview = "2.3.0"
+coilCompose = "2.7.0"
+core = "1.51.0"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -15,7 +18,8 @@ lifecycleViewmodelCompose = "2.9.4"
 lifecycleViewmodelNavigation3Android = "1.0.0-alpha04"
 kotlinxCoroutines = "1.9.0"
 kotlinxSerialization = "1.7.3"
-coilCompose = "2.7.0"
+retrofit = "2.11.0"
+okhttp = "5.0.0-alpha.14"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -55,6 +59,18 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 # Coil
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+
+# Arcore & SceneView
+arsceneview = { module = "io.github.sceneview:arsceneview", version.ref = "arsceneview" }
+core = { module = "com.google.ar:core", version.ref = "core" }
+
+# Retrofit & OkHttp
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
+okhttp-urlconnection = { module = "com.squareup.okhttp3:okhttp-urlconnection", version.ref = "okhttp" }
+retrofit-serialization-converter = { group = "com.jakewharton.retrofit", name = "retrofit2-kotlinx-serialization-converter", version = "1.0.0" }
+sceneview = { module = "io.github.sceneview:sceneview", version.ref = "arsceneview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

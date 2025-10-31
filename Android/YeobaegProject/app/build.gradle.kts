@@ -74,12 +74,22 @@ dependencies {
     // Serialization
     implementation(libs.kotlinx.serialization.json)
 
-    // Coil
+    implementation(libs.core)
+    implementation(libs.arsceneview)
+    implementation(libs.sceneview)
+
+    //Coil
     implementation(libs.coil.compose)
-    implementation("com.google.ar:core:1.33.0")
-    implementation("io.github.sceneview:arsceneview:2.3.0")
-    implementation("io.github.sceneview:sceneview:2.3.0")
-    
+
+    // Network
+    implementation(libs.retrofit)
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
+    implementation(libs.okhttp.urlconnection)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.serialization.converter)
+    implementation(libs.kotlinx.serialization.json)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
