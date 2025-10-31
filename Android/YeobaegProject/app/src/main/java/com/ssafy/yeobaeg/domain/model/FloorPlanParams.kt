@@ -21,7 +21,7 @@ data class Vec2(val x: Float, val y: Float) {
 @Serializable
 data class DisplayWall(
     val id: Long? = null,
-    val wName: String,         // "벽 A", "벽 B" ...
+    val wName: String = "",         // "벽 A", "벽 B" ...
     val start: Vec2,          // 로컬 XZ 시작점
     val end: Vec2,            // 로컬 XZ 끝점
     val status: WallStatus = WallStatus.POSSIBLE

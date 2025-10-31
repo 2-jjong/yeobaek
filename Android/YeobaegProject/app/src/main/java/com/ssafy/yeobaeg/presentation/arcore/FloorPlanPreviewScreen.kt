@@ -8,7 +8,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -17,31 +20,27 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import com.ssafy.yeobaeg.domain.model.DisplayWall
+import com.ssafy.yeobaeg.domain.model.Vec2
 import com.ssafy.yeobaeg.domain.model.WallStatus
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
-import androidx.core.graphics.toColorInt
 
-/**
- * - ViewModel에 의존하지 않고, 전달받은 초기 walls를 내부 상태로 복사하여 관리합니다.
- * - 탭: 가능 <-> 불가능 토글
- * - 롱탭: 전시중 <-> 가능 토글
- */
 @SuppressLint("DefaultLocale")
 @Composable
 fun FloorPlanPreview(
     initialWalls: List<DisplayWall>,
     modifier: Modifier = Modifier
 ) {
-    // 전달받은 초기 데이터로 내부 상태 구성(프리뷰 단독 관리)
     val wallsState = remember(initialWalls) { initialWalls.toMutableStateList() }
     val walls = wallsState as List<DisplayWall>
 
-    Box(modifier.fillMaxSize()) {
+    Box(modifier) {
         if (walls.isEmpty()) {
             Text("도면 데이터가 없습니다.", modifier = Modifier.align(Alignment.Center))
             return@Box
@@ -51,9 +50,7 @@ fun FloorPlanPreview(
         val mappedSegmentsState = remember { mutableStateOf(emptyList<Pair<Offset, Offset>>()) }
 
         Box(
-            Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            Modifier.padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Canvas(
@@ -248,4 +245,98 @@ private fun pointToSegmentDistance(p: Offset, a: Offset, b: Offset): Float {
     val tt = t.coerceIn(0f, 1f)
     val cx = a.x + abx * tt; val cy = a.y + aby * tt
     return hypot(p.x - cx, p.y - cy)
+}
+
+@Preview(showBackground = true, name = "사각형 방")
+@Composable
+private fun PreviewFloorPlan_Rectangle() {
+    val walls = listOf(
+        DisplayWall(
+            start = Vec2(0f, 0f),
+            end = Vec2(5f, 0f),
+            status = WallStatus.POSSIBLE
+        ),
+        DisplayWall(
+            start = Vec2(5f, 0f),
+            end = Vec2(5f, 4f),
+            status = WallStatus.IN_USE
+        ),
+        DisplayWall(
+            start = Vec2(5f, 4f),
+            end = Vec2(0f, 4f),
+            status = WallStatus.POSSIBLE
+        ),
+        DisplayWall(
+            start = Vec2(0f, 4f),
+            end = Vec2(0f, 0f),
+            status = WallStatus.NOT_POSSIBLE
+        )
+    )
+    FloorPlanPreview(initialWalls = walls)
+}
+
+@Preview(showBackground = true, name = "L자형 방")
+@Composable
+private fun PreviewFloorPlan_LShape() {
+    val walls = listOf(
+        DisplayWall(
+            start = Vec2(0f, 0f),
+            end = Vec2(6f, 0f),
+            status = WallStatus.POSSIBLE
+        ),
+        DisplayWall(
+            start = Vec2(6f, 0f),
+            end = Vec2(6f, 3f),
+            status = WallStatus.IN_USE
+        ),
+        DisplayWall(
+            start = Vec2(6f, 3f),
+            end = Vec2(3f, 3f),
+            status = WallStatus.RESERVED
+        ),
+        DisplayWall(
+            start = Vec2(3f, 3f),
+            end = Vec2(3f, 5f),
+            status = WallStatus.POSSIBLE
+        ),
+        DisplayWall(
+            start = Vec2(3f, 5f),
+            end = Vec2(0f, 5f),
+            status = WallStatus.NOT_POSSIBLE
+        ),
+        DisplayWall(
+            start = Vec2(0f, 5f),
+            end = Vec2(0f, 0f),
+            status = WallStatus.POSSIBLE
+        )
+    )
+    FloorPlanPreview(initialWalls = walls)
+}
+
+@Preview(showBackground = true, name = "갤러리 공간")
+@Composable
+private fun PreviewFloorPlan_Gallery() {
+    val walls = listOf(
+        DisplayWall(
+            start = Vec2(0f, 0f),
+            end = Vec2(8f, 0f),
+            status = WallStatus.POSSIBLE
+        ),
+        DisplayWall(
+            start = Vec2(8f, 0f),
+            end = Vec2(8f, 6f),
+            status = WallStatus.IN_USE
+        ),
+        DisplayWall(
+            start = Vec2(8f, 6f),
+            end = Vec2(0f, 6f),
+            status = WallStatus.RESERVED
+        ),
+        DisplayWall(
+            start = Vec2(0f, 6f),
+            end = Vec2(0f, 0f),
+            status = WallStatus.POSSIBLE
+        )
+    )
+    FloorPlanPreview(initialWalls = walls)
 }
