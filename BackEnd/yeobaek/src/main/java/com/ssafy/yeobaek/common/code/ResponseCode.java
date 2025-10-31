@@ -7,8 +7,12 @@ public enum ResponseCode {
     SUCCESS("S0000", "정상 처리", HttpStatus.OK),
     CREATED("S0000", "정상 처리", HttpStatus.CREATED),
 
-    // 공통 에러 (400 Bad Request
+    // 공통 에러 (400 Bad Request)
     MISSING_REQUIRED_FIELD("S4001", "필수 입력값이 누락되었습니다", HttpStatus.BAD_REQUEST),
+
+    // 공통 에러 (401 Unauthorized)
+    UNAUTHORIZED("S4011", "인증이 필요합니다", HttpStatus.UNAUTHORIZED),
+    TOKEN_MISSING("S4012", "토큰이 누락되었습니다", HttpStatus.UNAUTHORIZED),
 
     // 회원 관련 에러 (400 Bad Request)
     EMAIL_ALREADY_EXISTS("AU4001", "이미 사용 중인 이메일입니다", HttpStatus.BAD_REQUEST),
