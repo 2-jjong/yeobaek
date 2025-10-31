@@ -1,6 +1,6 @@
 package com.ssafy.yeobaeg.presentation.profile.cafe
 
-import android.graphics.drawable.Icon
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,44 +15,80 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.navigation.FullScreen
-import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.domain.model.CafeInfo
+import com.ssafy.yeobaeg.domain.model.UserInfo
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.jansilFont
-import kotlinx.coroutines.launch
 
 @Composable
 fun CafeOwnerProfileScreen(
-    modifier: Modifier = Modifier,
-    viewModel: CafeOwnerProfileViewModel= hiltViewModel()
+    viewModel: CafeOwnerProfileViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            uiState.isLoading -> {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            uiState.errorMessage != null -> {
+                ErrorContent(
+                    message = uiState.errorMessage!!,
+                    onRetry = viewModel::refresh,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+        }
+        CafeOwnerProfileContent(
+            userInfo = uiState.userInfo,
+            cafeInfo = uiState.cafeInfo,
+            onEditClick = viewModel::navigateToEditProfile
+        )
+    }
+}
+
+@Composable
+fun CafeOwnerProfileContent(
+    userInfo: UserInfo,
+    cafeInfo: CafeInfo,
+    onEditClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
+
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
             .verticalScroll(scrollState)
@@ -60,13 +96,14 @@ fun CafeOwnerProfileScreen(
     ) {
         // 프로필 부분
         ProfileSection(
-            onEditClick = {viewModel.navigateToEditProfile()}
+            userInfo = userInfo,
+            onEditClick = onEditClick
         )
 
         Spacer(modifier = Modifier.height(40.dp))
 
         // 매장 정보 부분
-        StoreInfoSection()
+        StoreInfoSection(cafeInfo = cafeInfo)
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -82,25 +119,37 @@ fun CafeOwnerProfileScreen(
 
 @Composable
 fun ProfileSection(
-    onEditClick:()->Unit={}
+    userInfo: UserInfo,
+    onEditClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        //일단 기본 이미지
-        Image(
-            painter = painterResource(id = R.drawable.profile),
-            contentDescription = "프로필 이미지",
-            modifier = Modifier.size(100.dp)
-        )
+        // 프로필 이미지
+        if (userInfo.profileImageUrl != null) {
+            AsyncImage(
+                model = userInfo.profileImageUrl,
+                contentDescription = "프로필 이미지",
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(50.dp)),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.profile),
+                contentDescription = "프로필 이미지",
+                modifier = Modifier.size(100.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.width(16.dp))
 
         // Name and Email
         Column {
             Text(
-                text = "이수연",
+                text = userInfo.nickname,
                 fontSize = 22.sp,
                 fontFamily = jansilFont,
                 fontWeight = FontWeight.Bold,
@@ -110,7 +159,7 @@ fun ProfileSection(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "suyeon.lee@email.com",
+                text = userInfo.email,
                 fontSize = 14.sp,
                 color = YeobaegTextGray
             )
@@ -134,8 +183,9 @@ fun ProfileSection(
     }
 }
 
+@SuppressLint("DefaultLocale")
 @Composable
-fun StoreInfoSection() {
+fun StoreInfoSection(cafeInfo: CafeInfo) {
     Column {
         // Title
         Text(
@@ -149,24 +199,29 @@ fun StoreInfoSection() {
 
         // Store Details
         StoreDetailItem(
-            title = "Brew & Canvas",
-            subtitle = "서울 용대입구역 2번 출구",
-            icon= R.drawable.ic_storeedit
+            title = cafeInfo.cafeName,
+            subtitle = cafeInfo.address,
+            icon = R.drawable.ic_storeedit
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         StoreDetailItem(
             title = "운영시간",
-            subtitle = "09:00 - 22:00",
+            subtitle = cafeInfo.businessHours,
             icon = R.drawable.ic_time
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         StoreDetailItem(
-            title = "리뷰 1개",
-            subtitle = "전시 공간 3개",
+            title = "리뷰 ${cafeInfo.ratingStats.totalReviews}개",
+            subtitle = "평균 평점: ${
+                String.format(
+                    "%.1f",
+                    cafeInfo.ratingStats.averageRating
+                )
+            }",  // 실제 데이터 사용
             icon = R.drawable.ic_star
         )
     }
@@ -178,7 +233,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "좋아요 한 목록",
             badge = "12",
-            icon=R.drawable.ic_heart
+            icon = R.drawable.ic_heart
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -186,7 +241,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "매장 정보 수정",
             badge = null,
-            icon=R.drawable.ic_storeedit
+            icon = R.drawable.ic_storeedit
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -194,7 +249,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "리뷰 관리",
             badge = "5",
-            icon=R.drawable.ic_star
+            icon = R.drawable.ic_star
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -202,7 +257,7 @@ fun MenuListSection() {
         MenuListItem(
             title = "알림 설정",
             badge = null,
-            icon=R.drawable.ic_time
+            icon = R.drawable.ic_time
         )
     }
 }
@@ -265,7 +320,7 @@ fun StoreDetailItem(
 fun MenuListItem(
     title: String,
     badge: String?,
-    icon:Int
+    icon: Int
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -301,6 +356,29 @@ fun MenuListItem(
                     fontWeight = FontWeight.Medium
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun ErrorContent(
+    message: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = message,
+            fontSize = 16.sp,
+            color = Color.Red,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedButton(onClick = onRetry) {
+            Text("다시 시도")
         }
     }
 }
