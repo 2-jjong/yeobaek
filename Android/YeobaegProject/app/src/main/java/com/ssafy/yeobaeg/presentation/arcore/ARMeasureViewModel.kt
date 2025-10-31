@@ -34,7 +34,6 @@ class ARMeasureViewModel @Inject constructor(
     data class ARMeasureState(
         val planePose: Pose? = null,
         val cornersWorld: List<Position> = emptyList(),
-        val walls: List<DisplayWall> = emptyList(),  // ← 프리뷰가 보는 데이터
         val isBuilding: Boolean = false
     )
 
@@ -82,9 +81,9 @@ class ARMeasureViewModel @Inject constructor(
             // 로컬 좌표들을 '연속 세그먼트'로 쪼개 DisplayWall 리스트 생성
             val walls = buildWallsFromPolyline(closed)
 
-            _uiState.update { it.copy(walls = walls, isBuilding = false) }
+            _uiState.update { it.copy(isBuilding = false) }
 
-            navigator.navigate(BottomNavScreen.SpaceScanPreview)
+            navigator.navigate(BottomNavScreen.SpaceScanPreview(walls))
         }
     }
 
@@ -110,44 +109,6 @@ class ARMeasureViewModel @Inject constructor(
         return result
     }
 
-    /* ---------------------------
-     * 벽 상태 토글/설정
-     * - onTap: 가능 <-> 불가능
-     * - onLongPress: 전시 중 <-> 가능
-     * --------------------------- */
-    fun toggleWallPossible(index: Int) {
-        val cur = _uiState.value.walls
-        if (index !in cur.indices) return
-        val next = cur.toMutableList()
-        val w = next[index]
-        val newStatus = when (w.status) {
-            WallStatus.NOT_POSSIBLE -> WallStatus.POSSIBLE
-            WallStatus.POSSIBLE, WallStatus.IN_USE, WallStatus.RESERVED -> WallStatus.NOT_POSSIBLE
-        }
-        next[index] = w.copy(status = newStatus)
-        _uiState.update { it.copy(walls = next) }
-    }
-
-    fun toggleWallInUse(index: Int) {
-        val cur = _uiState.value.walls
-        if (index !in cur.indices) return
-        val next = cur.toMutableList()
-        val w = next[index]
-        val newStatus = when (w.status) {
-            WallStatus.IN_USE -> WallStatus.POSSIBLE
-            else -> WallStatus.IN_USE
-        }
-        next[index] = w.copy(status = newStatus)
-        _uiState.update { it.copy(walls = next) }
-    }
-
-    fun setWallStatus(index: Int, status: WallStatus) {
-        val cur = _uiState.value.walls
-        if (index !in cur.indices) return
-        val next = cur.toMutableList()
-        next[index] = next[index].copy(status = status)
-        _uiState.update { it.copy(walls = next) }
-    }
 
     /* ---------------------------
      * 좌표/스냅 유틸

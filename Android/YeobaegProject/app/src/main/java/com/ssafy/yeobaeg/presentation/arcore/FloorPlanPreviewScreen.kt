@@ -1,45 +1,53 @@
 // FloorPlanPreviewScreen.kt (전체)
 package com.ssafy.yeobaeg.presentation.arcore
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssafy.yeobaeg.domain.model.DisplayWall
 import com.ssafy.yeobaeg.domain.model.WallStatus
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import androidx.core.graphics.toColorInt
 
+/**
+ * - ViewModel에 의존하지 않고, 전달받은 초기 walls를 내부 상태로 복사하여 관리합니다.
+ * - 탭: 가능 <-> 불가능 토글
+ * - 롱탭: 전시중 <-> 가능 토글
+ */
+@SuppressLint("DefaultLocale")
 @Composable
 fun FloorPlanPreview(
-    viewModel: ARMeasureViewModel = hiltViewModel()
+    initialWalls: List<DisplayWall>,
+    modifier: Modifier = Modifier
 ) {
-    val state = viewModel.uiState.collectAsState()
-    val walls = state.value.walls
+    // 전달받은 초기 데이터로 내부 상태 구성(프리뷰 단독 관리)
+    val wallsState = remember(initialWalls) { initialWalls.toMutableStateList() }
+    val walls = wallsState as List<DisplayWall>
 
-    Box(Modifier.fillMaxSize()) {
+    Box(modifier.fillMaxSize()) {
         if (walls.isEmpty()) {
             Text("도면 데이터가 없습니다.", modifier = Modifier.align(Alignment.Center))
             return@Box
         }
 
-        // 탭 히트테스트를 위한 '화면 좌표상의 선분' 보관
+        // 탭 히트테스트용: 화면 좌표 선분 캐시
         val mappedSegmentsState = remember { mutableStateOf(emptyList<Pair<Offset, Offset>>()) }
 
         Box(
@@ -54,26 +62,17 @@ fun FloorPlanPreview(
                     .pointerInput(walls) {
                         detectTapGestures(
                             onTap = { tap ->
-                                val segs = mappedSegmentsState.value
-                                if (segs.isEmpty()) return@detectTapGestures
-                                val (idx, dist) = findNearestSegment(segs, tap)
-                                if (idx != null && dist <= 30f) {
-                                    viewModel.toggleWallPossible(idx)
-                                }
+                                val (idx, dist) = findNearestSegment(mappedSegmentsState.value, tap)
+                                if (idx != null && dist <= 30f) toggleWallPossible(wallsState, idx)
                             },
                             onLongPress = { tap ->
-                                val segs = mappedSegmentsState.value
-                                if (segs.isEmpty()) return@detectTapGestures
-                                val (idx, dist) = findNearestSegment(segs, tap)
-                                if (idx != null && dist <= 30f) {
-                                    viewModel.toggleWallInUse(idx)
-                                }
+                                val (idx, dist) = findNearestSegment(mappedSegmentsState.value, tap)
+                                if (idx != null && dist <= 30f) toggleWallInUse(wallsState, idx)
                             }
                         )
                     }
             ) {
-                // ---- 0) 그릴 데이터 준비 ----
-                // 모든 점(시작/끝)을 모아 bounds 계산
+                // ---- 0) bounds 계산 ----
                 val allPoints = walls.flatMap { listOf(it.start, it.end) }
                 var minX = Float.POSITIVE_INFINITY
                 var maxX = Float.NEGATIVE_INFINITY
@@ -94,17 +93,13 @@ fun FloorPlanPreview(
                 fun map(x: Float, y: Float): Offset {
                     val mx = (x - minX) * s + pad
                     val my = (y - minY) * s + pad
-                    // 상단이 +Y (미러 방지)
+                    // 상단이 +Y
                     return Offset(mx, my)
                 }
 
-                // ---- 1) 외곽 가이드 Path (연한 회색) ----
-                // 벽들이 폐곡선을 이룬다는 가정하에, 꼭짓점 순서를 구성한다.
-                // 일반적으로 walls[i].end == walls[i+1].start 구조일 것이라 가정.
-                val orderedVertices = walls.map { it.start } +
-                        listOf(walls.last().end) // 마지막 꼭짓점으로 닫기
+                // ---- 1) 외곽 가이드 ----
+                val orderedVertices = walls.map { it.start } + listOf(walls.last().end)
                 val mappedVertices = orderedVertices.map { map(it.x, it.y) }
-
                 if (mappedVertices.size >= 3) {
                     val outline = Path().apply {
                         val p0 = mappedVertices.first()
@@ -115,32 +110,30 @@ fun FloorPlanPreview(
                         }
                         close()
                     }
-                    val guideStroke = 6f
                     drawPath(
                         path = outline,
                         color = Color(0xFFE5E7EB),
-                        style = androidx.compose.ui.graphics.drawscope.Stroke(width = guideStroke)
+                        style = Stroke(width = 6f)
                     )
                 }
 
-                // ---- 2) 벽 선분 그리기 + 세그먼트(화면좌표) 수집 ----
+                // ---- 2) 벽 선분 + 히트맵 ----
                 val mappedSegments = ArrayList<Pair<Offset, Offset>>(walls.size)
-                for ((i, wall) in walls.withIndex()) {
+                for (wall in walls) {
                     val a = map(wall.start.x, wall.start.y)
                     val b = map(wall.end.x, wall.end.y)
                     val (stroke, color) = when (wall.status) {
                         WallStatus.NOT_POSSIBLE -> 20f to Color(0xFFCBD5E1)   // 회색
                         WallStatus.POSSIBLE     -> 20f to Color(0xFF10B981)  // 초록
                         WallStatus.IN_USE       -> 20f to Color(0xFFEF4444)  // 빨강
-                        WallStatus.RESERVED -> 20f to Color(0xFFF59E0B)  // 주황
+                        WallStatus.RESERVED     -> 20f to Color(0xFFF59E0B)  // 주황
                     }
                     drawLine(color = color, start = a, end = b, strokeWidth = stroke)
                     mappedSegments += a to b
                 }
                 mappedSegmentsState.value = mappedSegments
 
-                // ---- 3) 라벨(길이) 그리기: 불가능(NOT_POSSIBLE)은 생략 ----
-                // 폴리곤 방향 (라벨을 바깥으로 밀기 위한 법선 방향 판단)
+                // ---- 3) 라벨(길이) ----
                 fun signedArea(vertices: List<Offset>): Float {
                     var area = 0f
                     for (i in 0 until vertices.size - 1) {
@@ -150,12 +143,12 @@ fun FloorPlanPreview(
                     }
                     return area * 0.5f
                 }
-                val isCCW = signedArea(mappedVertices) > 0f
+                val isCCW = mappedVertices.size >= 3 && signedArea(mappedVertices) > 0f
 
                 val native = drawContext.canvas.nativeCanvas
                 val textPaint = android.graphics.Paint().apply {
                     isAntiAlias = true
-                    color = android.graphics.Color.parseColor("#334155")
+                    color = "#334155".toColorInt()
                     textSize = max(24f, 36f)
                     typeface = android.graphics.Typeface.DEFAULT_BOLD
                     textAlign = android.graphics.Paint.Align.CENTER
@@ -164,21 +157,20 @@ fun FloorPlanPreview(
                 val marginPx = 8f
                 val outwardOffsetPx = wallStrokePx * 0.5f + marginPx
 
-                for ((i, wall) in walls.withIndex()) {
-                    if (wall.status == WallStatus.NOT_POSSIBLE) continue
+                walls.forEach { wall ->
+                    if (wall.status == WallStatus.NOT_POSSIBLE) return@forEach
 
                     val dx = wall.end.x - wall.start.x
                     val dy = wall.end.y - wall.start.y
                     val lengthM = sqrt(dx * dx + dy * dy)
-                    if (!lengthM.isFinite() || lengthM <= 1e-6f) continue
+                    if (!lengthM.isFinite() || lengthM <= 1e-6f) return@forEach
 
                     val midX = (wall.start.x + wall.end.x) * 0.5f
                     val midY = (wall.start.y + wall.end.y) * 0.5f
                     val mid = map(midX, midY)
 
-                    // 단위 외부 법선(폴리곤 CCW 기준)
                     val len = sqrt(dx * dx + dy * dy)
-                    var nx =  dy / len      // (dx,dy)에 수직인 후보
+                    var nx =  dy / len
                     var ny = -dx / len
                     if (!isCCW) { nx = -nx; ny = -ny }
 
@@ -195,8 +187,8 @@ fun FloorPlanPreview(
                     native.drawText(text, labelPos.x, labelPos.y, textPaint)
                 }
 
-                // ---- 4) 코너 포인트(옵션) ----
-                mappedVertices.dropLast(1).forEach { p -> // 마지막(닫는 점) 제외
+                // ---- 4) 코너 표시 ----
+                mappedVertices.dropLast(1).forEach { p ->
                     drawCircle(
                         Color(0xFF1B5E20),
                         radius = 15f,
@@ -206,6 +198,28 @@ fun FloorPlanPreview(
             }
         }
     }
+}
+
+/* ====== 내부 토글 로직 ====== */
+
+private fun toggleWallPossible(walls: MutableList<DisplayWall>, index: Int) {
+    if (index !in walls.indices) return
+    val w = walls[index]
+    val newStatus = when (w.status) {
+        WallStatus.NOT_POSSIBLE -> WallStatus.POSSIBLE
+        WallStatus.POSSIBLE, WallStatus.IN_USE, WallStatus.RESERVED -> WallStatus.NOT_POSSIBLE
+    }
+    walls[index] = w.copy(status = newStatus)
+}
+
+private fun toggleWallInUse(walls: MutableList<DisplayWall>, index: Int) {
+    if (index !in walls.indices) return
+    val w = walls[index]
+    val newStatus = when (w.status) {
+        WallStatus.IN_USE -> WallStatus.POSSIBLE
+        else -> WallStatus.IN_USE
+    }
+    walls[index] = w.copy(status = newStatus)
 }
 
 /* ====== 탭 히트 테스트 (화면 좌표 선분들 대상) ====== */

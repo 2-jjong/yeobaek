@@ -86,7 +86,7 @@ fun NavGraph(
                     }
 
                     is BottomNavScreen.SpaceScanPreview -> NavEntry(key) {
-                        FloorPlanPreview(arMeasureViewModel)
+                        FloorPlanPreview(key.displayWalls)
                     }
 
                     else -> throw IllegalArgumentException("Unknown route: $key")
