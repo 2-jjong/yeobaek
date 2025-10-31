@@ -86,7 +86,7 @@ public class SecurityConfig {
     }
 
     /**
-     * 비밀번호 암호화
+     * BCrypt 암호화 방식을 사용하는 PasswordEncoder Bean 등록
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
