@@ -32,6 +32,7 @@ public class CafeServiceImpl implements CafeService {
     @Override
     @Transactional
     public void createCafe(CreateCafeRequest request) {
+
         // 1. 유효성 검사
         validateCreateRequest(request);
 
@@ -110,6 +111,12 @@ public class CafeServiceImpl implements CafeService {
         long primaryImageCount = images.stream().filter(CafeImageRequest::getIsPrimary).count();
         if (primaryImageCount != 1) {
             throw new CustomException(ResponseCode.CAFE_PRIMARY_IMAGE_ONLY_ONE);
+        }
+
+        // 영업시간 형식 (HH:mm)
+        String timeRegex = "^([01]\\d|2[0-3]):([0-5]\\d)$";
+        if (!request.getBusinessHoursStart().matches(timeRegex) || !request.getBusinessHoursEnd().matches(timeRegex)) {
+            throw new CustomException(ResponseCode.CAFE_INVALID_HOURS_FORMAT);
         }
     }
 }

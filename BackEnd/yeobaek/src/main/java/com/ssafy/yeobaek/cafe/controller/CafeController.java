@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
 import com.ssafy.yeobaek.artwork.dto.response.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
+import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +27,12 @@ import java.util.stream.IntStream;
 @Tag(name = "카페 관리", description = "카페 관리 API")
 @RestController
 @RequestMapping("/api/v1/cafes")
+@RequiredArgsConstructor
 public class CafeController {
 
     private final int MOCK_CAFE_COUNT = 20;
+
+    private final CafeService cafeService;
 
     @Operation(summary = "카페 정보 등록", description = "카페 사장이 매장 상세 정보, 전시 슬롯, 전시 조건을 등록합니다. 회원가입 후 처음 카페 정보를 등록할 때 사용합니다. 이미지는 최소 3장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
@@ -102,6 +107,7 @@ public class CafeController {
     })
     @PostMapping
     public ResponseEntity<ResponseDto<Void>> createCafe(@RequestBody CreateCafeRequest request) {
+        cafeService.createCafe(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ResponseDto.created());
