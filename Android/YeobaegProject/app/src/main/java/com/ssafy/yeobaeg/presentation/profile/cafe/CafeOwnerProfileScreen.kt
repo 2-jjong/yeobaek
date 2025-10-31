@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.presentation.profile.cafe
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +43,7 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.CafeInfo
 import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
@@ -51,9 +52,10 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable
 fun CafeOwnerProfileScreen(
-    viewModel: CafeOwnerProfileViewModel = hiltViewModel()
+    cafeViewModel: CafeOwnerProfileViewModel = hiltViewModel(),
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val uiState by cafeViewModel.uiState.collectAsStateWithLifecycle()
 
     Box(modifier = Modifier.fillMaxSize()) {
         when {
@@ -66,7 +68,7 @@ fun CafeOwnerProfileScreen(
             uiState.errorMessage != null -> {
                 ErrorContent(
                     message = uiState.errorMessage!!,
-                    onRetry = viewModel::refresh,
+                    onRetry = cafeViewModel::refresh,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -74,7 +76,8 @@ fun CafeOwnerProfileScreen(
         CafeOwnerProfileContent(
             userInfo = uiState.userInfo,
             cafeInfo = uiState.cafeInfo,
-            onEditClick = viewModel::navigateToEditProfile
+            onEditClick = profileViewModel::navigateToEditProfile,
+            onBookmarkClick = profileViewModel::navigateToBookmark
         )
     }
 }
@@ -83,7 +86,8 @@ fun CafeOwnerProfileScreen(
 fun CafeOwnerProfileContent(
     userInfo: UserInfo,
     cafeInfo: CafeInfo,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    onBookmarkClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -108,7 +112,7 @@ fun CafeOwnerProfileContent(
         Spacer(modifier = Modifier.height(32.dp))
 
         // 설정 메뉴 부분
-        MenuListSection()
+        MenuListSection(onClick = onBookmarkClick)
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -228,12 +232,15 @@ fun StoreInfoSection(cafeInfo: CafeInfo) {
 }
 
 @Composable
-fun MenuListSection() {
+fun MenuListSection(
+    onClick: () -> Unit
+) {
     Column {
         MenuListItem(
             title = "좋아요 한 목록",
             badge = "12",
-            icon = R.drawable.ic_heart
+            icon = R.drawable.ic_heart,
+            onClick = onClick
         )
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
@@ -320,11 +327,14 @@ fun StoreDetailItem(
 fun MenuListItem(
     title: String,
     badge: String?,
-    icon: Int
+    icon: Int,
+    onClick: () -> Unit = {}
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(
             painter = painterResource(id = icon),
@@ -337,7 +347,7 @@ fun MenuListItem(
             text = title,
             fontSize = 16.sp,
             color = Color.Black,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
 
         if (badge != null) {
