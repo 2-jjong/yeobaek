@@ -47,6 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.DisplayWall
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
@@ -63,12 +64,17 @@ fun CafeOwnerHomeScreen(
 
     val cafeOwnerInfo = state.value.cafeOwnerInfo
     val displaySlots = state.value.displaySlots
+    val displayWalls = state.value.displayWalls
+    val selectedTab = state.value.selectedTab
 
     val colors = if (cafeOwnerInfo == null) RegisteredColors else UnregisteredColors
     CompositionLocalProvider(LocalCafeOwnerColors provides colors) {
         CafeOwnerHomeScreen(
             cafeOwnerInfo = cafeOwnerInfo,
-            displaySlots = displaySlots
+            displaySlots = displaySlots,
+            displayWalls = displayWalls,
+            selectedTab = selectedTab,
+            onTabSelected = { viewModel.selectTab(it) }
         )
     }
 }
@@ -76,7 +82,10 @@ fun CafeOwnerHomeScreen(
 @Composable
 private fun CafeOwnerHomeScreen(
     cafeOwnerInfo: CafeOwnerInfo?,
-    displaySlots: List<DisplaySlot> = emptyList()
+    displaySlots: List<DisplaySlot> = emptyList(),
+    displayWalls: List<DisplayWall> = emptyList(),
+    selectedTab: CafeOwnerTab = CafeOwnerTab.PLAN,
+    onTabSelected: (CafeOwnerTab) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -124,7 +133,7 @@ private fun CafeOwnerHomeScreen(
                 CafeOwnerHomeActions()
                 Spacer(Modifier.height(8.dp))
 
-                CafeOwnerHomeContent(displaySlots)
+                CafeOwnerHomeContent(displaySlots, displayWalls, selectedTab, onTabSelected)
             }
         }
     }
@@ -201,10 +210,11 @@ enum class CafeOwnerTab(val label: String) {
 
 @Composable
 fun CafeOwnerHomeContent(
-    slots: List<DisplaySlot>
+    slots: List<DisplaySlot>,
+    walls: List<DisplayWall>,
+    tab: CafeOwnerTab,
+    onTabSelected: (CafeOwnerTab) -> Unit = { }
 ) {
-    var tab by remember { mutableStateOf(CafeOwnerTab.PLAN) }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -221,7 +231,7 @@ fun CafeOwnerHomeContent(
                 val selected = tab.ordinal == index
                 Tab(
                     selected = selected,
-                    onClick = { tab = t },
+                    onClick = { onTabSelected(t) },
                     text = {
                         Text(
                             text = t.label,
@@ -242,20 +252,33 @@ fun CafeOwnerHomeContent(
         Spacer(Modifier.height(16.dp))
 
         when (tab) {
-            CafeOwnerTab.PLAN -> FloorPlanSection()
+            CafeOwnerTab.PLAN -> FloorPlanSection(walls = walls)
             CafeOwnerTab.STATUS -> ExhibitionStatusSection(slots = slots)
         }
     }
 }
 
 @Composable
-fun FloorPlanSection() {
-    FloorPlanPreview(Modifier.fillMaxWidth())
+fun FloorPlanSection(walls: List<DisplayWall>) {
+    Spacer(Modifier.height(8.dp))
+    FloorPlanPreview(
+        initialWalls = walls,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(400.dp)
+    )
 }
 
 @Composable
 fun ExhibitionStatusSection(slots: List<DisplaySlot>) {
-    DisplaySlotList(slots = slots)
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        DisplaySlotList(slots = slots)
+    }
 }
 
 @Composable
@@ -372,3 +395,42 @@ fun CafeOwnerHomeScreenPreview() {
     }
 }
 
+@Preview(showBackground = true, name = "카페 등록 완료")
+@Composable
+private fun PreviewCafeOwnerHomeScreen_Registered_Plan() {
+    YeobaegProjectTheme {
+        CafeOwnerHomeScreen(
+            cafeOwnerInfo = CafeOwnerInfo(
+                cafeName = "아트카페 여백",
+                cafeAddress = "서울시 강남구 테헤란로 123",
+                cafeImageUrl = "",
+                numExhibitionSpaces = 5,
+                numExhibitedWorks = 12,
+                numArtistsWorkedWith = 8
+            ),
+            displaySlots = dummyDisplaySlots,
+            displayWalls = dummyDisplayWalls,
+            selectedTab = CafeOwnerTab.PLAN
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "카페 등록 완료")
+@Composable
+private fun PreviewCafeOwnerHomeScreen_Registered_Status() {
+    YeobaegProjectTheme {
+        CafeOwnerHomeScreen(
+            cafeOwnerInfo = CafeOwnerInfo(
+                cafeName = "아트카페 여백",
+                cafeAddress = "서울시 강남구 테헤란로 123",
+                cafeImageUrl = "",
+                numExhibitionSpaces = 5,
+                numExhibitedWorks = 12,
+                numArtistsWorkedWith = 8
+            ),
+            displaySlots = dummyDisplaySlots,
+            displayWalls = dummyDisplayWalls,
+            selectedTab = CafeOwnerTab.STATUS
+        )
+    }
+}

@@ -129,7 +129,7 @@ fun ExhibitionListItem(
                         Text("🎨 $workTitle", fontSize = 13.sp, color = YeobaegDarkGray)
                         Text("👩‍🎨 $artist", fontSize = 13.sp, color = YeobaegDarkGray)
                         Spacer(Modifier.height(2.dp))
-                        Text(endDate, fontSize = 12.sp, color = YeobaegGray)
+                        Text("종료 : $endDate", fontSize = 12.sp, color = YeobaegGray)
                     }
 
                     SlotStatus.AVAILABLE -> {

@@ -91,13 +91,13 @@ fun YeobaegOutlinedButton(
                 Icon(
                     painter = painterResource(it),
                     contentDescription = null,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.height(8.dp))
             }
             Text(
                 text = text,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
         }
