@@ -214,10 +214,10 @@ fun SavedCard(
         }
 
         Icon(
-            painter = painterResource(id = R.drawable.ic_heart),
+            painter = painterResource(id = R.drawable.ic_fill_heart),
             contentDescription = "Heart",
             tint = Color(0xFFFF5A5A),
-            modifier = Modifier.size(22.dp)
+            modifier = Modifier.size(40.dp)
         )
     }
 }
