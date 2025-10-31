@@ -21,6 +21,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    private const val BASE_URL = "http://k13d207.p.ssafy.io:8080/api/v1/"
+
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
@@ -49,7 +51,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
-            .baseUrl("https://your-api-base-url.com/")
+            .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
