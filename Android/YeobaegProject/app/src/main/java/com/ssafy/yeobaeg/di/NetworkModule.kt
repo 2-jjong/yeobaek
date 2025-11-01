@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.ssafy.yeobaeg.BuildConfig
+import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import dagger.Module
 import dagger.Provides
@@ -21,8 +22,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-
-    private const val BASE_URL = "http://k13d207.p.ssafy.io:8080/api/v1/"
 
     @Provides
     @Singleton
@@ -63,5 +62,10 @@ object NetworkModule {
     @Singleton
     fun provideProfileApiService(retrofit: Retrofit): ProfileApiService =
         retrofit.create(ProfileApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideCafeApiService(retrofit: Retrofit): CafeApiService =
+        retrofit.create(CafeApiService::class.java)
 
 }

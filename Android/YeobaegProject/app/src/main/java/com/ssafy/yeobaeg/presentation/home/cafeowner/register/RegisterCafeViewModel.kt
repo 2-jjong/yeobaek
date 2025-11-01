@@ -1,8 +1,12 @@
 // RegisterCafeViewModel.kt
 package com.ssafy.yeobaeg.presentation.home.cafeowner.register
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
+import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafeImage
+import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +22,7 @@ const val TOTAL_STEPS = 2
 
 @HiltViewModel
 class RegisterCafeViewModel @Inject constructor(
+    private val cafeRepository: CafeRepository,
     private val navigator: Navigator
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RegisterCafeState())
@@ -29,7 +34,7 @@ class RegisterCafeViewModel @Inject constructor(
 
     fun next() {
         if(_uiState.value.step == TOTAL_STEPS) {
-            navigateToCafeOwnerHome()
+            registerCafe()
         }
         update { copy(step = if (step == STEP1) STEP2 else step) }
     }
@@ -46,8 +51,37 @@ class RegisterCafeViewModel @Inject constructor(
     fun addImage(uri: String) = update { if (images.size >= 10) this else copy(images = images + uri) }
     fun removeImage(uri: String) = update { copy(images = images - uri) }
 
-    fun navigateToCafeOwnerHome() = viewModelScope.launch {
+    private fun navigateToCafeOwnerHome() = viewModelScope.launch {
         navigator.navigate(BottomNavScreen.Home)
+    }
+
+    private fun registerCafe() = viewModelScope.launch {
+        val s = _uiState.value
+        val cafe = RegisterCafe(
+            cafeName = s.name,
+            address = s.address,
+            description = s.description.ifBlank { null },
+            contact = s.phone,
+            businessHoursStart = s.openTime,
+            businessHoursEnd = s.closeTime,
+            categories = s.selectedStyles.toList(),
+            dailyVisitors = requireNotNull(s.visitorsBand),
+            images = s.images.toList().mapIndexed { index, url ->
+                RegisterCafeImage(
+                    imageUrl = url,
+                    isPrimary = index == 0,
+                    displayOrder = index
+                )
+            }
+        )
+
+        runCatching { cafeRepository.registerCafe(cafe) }
+            .onSuccess {
+                navigateToCafeOwnerHome()
+            }
+            .onFailure {
+                Log.d("RegisterCafeViewModel http", "카페 등록 실패: ${it.message}")
+            }
     }
 }
 
@@ -76,6 +110,6 @@ enum class CafeInteriorStyle(val label: String) {
 }
 
 enum class VisitorsBand(val label: String) {
-    UNDER_50("~ 50명"), V50_100("50 ~ 100명"), V100_200("100 ~ 200명"),
-    V200_300("200 ~ 300명"), V300_500("300 ~ 500명"), OVER_500("500명 이상");
+    UNDER_50("50명 이하"), V50_100("51 ~ 100명"), V100_200("101 ~ 200명"),
+    V200_300("201 ~ 300명"), V300_500("301 ~ 500명"), OVER_500("500명 초과");
 }
