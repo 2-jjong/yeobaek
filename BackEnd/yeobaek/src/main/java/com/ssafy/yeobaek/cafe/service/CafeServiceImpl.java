@@ -29,6 +29,10 @@ public class CafeServiceImpl implements CafeService {
     private final CafeCategoryRepository cafeCategoryRepository;
     private final CafeImageRepository cafeImageRepository;
 
+    /**
+     * 카페 등록
+     * @param request 카페 등록 정보
+     */
     @Override
     @Transactional
     public void createCafe(CreateCafeRequest request) {
