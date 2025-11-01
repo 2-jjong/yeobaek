@@ -24,8 +24,6 @@ import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
-import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileScreen
-import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
 
@@ -93,7 +91,7 @@ fun NavGraph(
                     }
 
                     is BottomNavScreen.Profile-> NavEntry(key){
-                        GeneralProfileScreen()
+//                        GeneralProfileScreen()
                     }
 
                     is FullScreen.ProfileEdit -> NavEntry(key) {
