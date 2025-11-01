@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import com.ssafy.yeobaeg.BuildConfig
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import dagger.Module
 import dagger.Provides
@@ -20,6 +21,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
+    private const val BASE_URL = "http://k13d207.p.ssafy.io:8080/api/v1/"
 
     @Provides
     @Singleton
@@ -49,7 +52,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
-            .baseUrl("https://your-api-base-url.com/")
+            .baseUrl(BuildConfig.BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
