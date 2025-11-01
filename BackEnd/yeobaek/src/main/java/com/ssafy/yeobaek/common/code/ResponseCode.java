@@ -25,7 +25,7 @@ public enum ResponseCode {
     INVALID_GENDER("AU4009", "유효하지 않은 성별입니다", HttpStatus.BAD_REQUEST),
 
     // 회원 관련 에러 (401 Unauthorized)
-    INVALID_CREDENTIALS("AU4011", "이메일 또는 비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED),
+    INVALID_CREDENTIALS("AU4011", "비밀번호가 일치하지 않습니다", HttpStatus.UNAUTHORIZED),
     INVALID_TOKEN("AU4012", "유효하지 않은 토큰입니다", HttpStatus.UNAUTHORIZED),
     EXPIRED_TOKEN("AU4013", "만료된 토큰입니다", HttpStatus.UNAUTHORIZED),
 

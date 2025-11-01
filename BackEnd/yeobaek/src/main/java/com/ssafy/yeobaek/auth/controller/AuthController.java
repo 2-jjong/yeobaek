@@ -50,11 +50,11 @@ public class AuthController {
                             examples = {
                                     @ExampleObject(
                                             name = "이메일 형식 오류",
-                                            value = "{\"code\": \"AU4004\", \"data\": null, \"message\": \"이메일 형식이 올바르지 않습니다\"}"
+                                            value = "{\"code\": \"AU4004\", \"message\": \"이메일 형식이 올바르지 않습니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "필수 입력값 누락",
-                                            value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}"
+                                            value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}"
                                     )
                             }
                     )
@@ -65,7 +65,7 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -87,7 +87,7 @@ public class AuthController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
                             )
                     )
             ),
@@ -99,39 +99,39 @@ public class AuthController {
                             examples = {
                                     @ExampleObject(
                                             name = "필수 입력값 누락",
-                                            value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}"
+                                            value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "이미 사용 중인 이메일",
-                                            value = "{\"code\": \"AU4001\", \"data\": null, \"message\": \"이미 사용 중인 이메일입니다\"}"
+                                            value = "{\"code\": \"AU4001\", \"message\": \"이미 사용 중인 이메일입니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "비밀번호 형식 오류",
-                                            value = "{\"code\": \"AU4002\", \"data\": null, \"message\": \"비밀번호는 8자 이상 20자 이하이어야 합니다\"}"
+                                            value = "{\"code\": \"AU4002\", \"message\": \"비밀번호는 8자 이상 20자 이하이어야 합니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "비밀번호 불일치",
-                                            value = "{\"code\": \"AU4003\", \"data\": null, \"message\": \"비밀번호가 일치하지 않습니다\"}"
+                                            value = "{\"code\": \"AU4003\", \"message\": \"비밀번호가 일치하지 않습니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "이메일 형식 오류",
-                                            value = "{\"code\": \"AU4004\", \"data\": null, \"message\": \"이메일 형식이 올바르지 않습니다\"}"
+                                            value = "{\"code\": \"AU4004\", \"message\": \"이메일 형식이 올바르지 않습니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "회원 유형 불일치",
-                                            value = "{\"code\": \"AU4006\", \"data\": null, \"message\": \"유효하지 않은 회원 유형입니다\"}"
+                                            value = "{\"code\": \"AU4006\", \"message\": \"유효하지 않은 회원 유형입니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "닉네임 길이 오류",
-                                            value = "{\"code\": \"AU4007\", \"data\": null, \"message\": \"닉네임은 2~15자 이내여야 합니다\"}"
+                                            value = "{\"code\": \"AU4007\", \"message\": \"닉네임은 2~15자 이내여야 합니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "생년월일 형식 오류",
-                                            value = "{\"code\": \"AU4008\", \"data\": null, \"message\": \"생년월일 형식이 올바르지 않습니다\"}"
+                                            value = "{\"code\": \"AU4008\", \"message\": \"생년월일 형식이 올바르지 않습니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "성별 유형 불일치",
-                                            value = "{\"code\": \"AU4009\", \"data\": null, \"message\": \"유효하지 않은 성별입니다\"}"
+                                            value = "{\"code\": \"AU4009\", \"message\": \"유효하지 않은 성별입니다\"}"
                                     )
                             }
                     )
@@ -142,7 +142,7 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -173,10 +173,16 @@ public class AuthController {
                     description = "잘못된 요청",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    name = "필수 입력값 누락",
-                                    value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}"
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "필수 입력값 누락",
+                                            value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "이메일 형식 오류",
+                                            value = "{\"code\": \"AU4004\", \"message\": \"이메일 형식이 올바르지 않습니다\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -185,8 +191,8 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    name = "이메일 또는 비밀번호 불일치",
-                                    value = "{\"code\": \"AU4011\", \"data\": null, \"message\": \"이메일 또는 비밀번호가 일치하지 않습니다\"}"
+                                    name = "비밀번호 불일치",
+                                    value = "{\"code\": \"AU4011\", \"message\": \"비밀번호가 일치하지 않습니다\"}"
                             )
                     )
             ),
@@ -196,7 +202,7 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"AU4041\", \"data\": null, \"message\": \"존재하지 않는 회원입니다\"}"
+                                    value = "{\"code\": \"AU4041\", \"message\": \"존재하지 않는 회원입니다\"}"
                             )
                     )
             ),
@@ -206,19 +212,14 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
     })
     @PostMapping("/login")
     public ResponseEntity<ResponseDto<LoginData>> login(@Valid @RequestBody LoginRequest request) {
-        // Mock 데이터: JWT 토큰 반환
-        LoginData data = new LoginData(
-                "mock.access.token.jwt.string",
-                "mock.refresh.token.jwt.string",
-                UserRole.GENERAL
-        );
+        LoginData data = authServiceImpl.login(request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
