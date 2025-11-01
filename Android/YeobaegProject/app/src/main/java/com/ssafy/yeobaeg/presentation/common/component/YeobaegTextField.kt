@@ -1,8 +1,11 @@
 package com.ssafy.yeobaeg.presentation.common.component
 
+import android.R.attr.label
+import android.R.attr.singleLine
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.OutlinedTextField
@@ -31,7 +34,9 @@ fun YeobaegTextField(
     showLabel: Boolean = true,
     placeholder: String = "",
     visualTransformation: VisualTransformation = VisualTransformation.None,
-    singleLine: Boolean = true
+    singleLine: Boolean = true,
+    minLine:Int = 1,
+    maxLine:Int = if (singleLine) 1 else Int.MAX_VALUE,
 ) {
     Column(modifier = modifier) {
         // 라벨
@@ -57,7 +62,7 @@ fun YeobaegTextField(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
+                .heightIn(min = 56.dp),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = YeobaegLightGray,
@@ -66,7 +71,9 @@ fun YeobaegTextField(
                 focusedContainerColor = Color.White
             ),
             visualTransformation = visualTransformation,
-            singleLine = singleLine
+            singleLine = singleLine,
+            minLines = minLine,
+            maxLines = maxLine
         )
     }
 }

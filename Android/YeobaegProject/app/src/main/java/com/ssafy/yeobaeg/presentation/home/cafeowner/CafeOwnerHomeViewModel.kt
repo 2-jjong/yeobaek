@@ -1,15 +1,20 @@
 package com.ssafy.yeobaeg.presentation.home.cafeowner
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.DisplayWall
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.domain.model.Vec2
 import com.ssafy.yeobaeg.domain.model.WallStatus
+import com.ssafy.yeobaeg.navigation.FullScreen
+import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -23,20 +28,34 @@ data class CafeOwnerInfo(
 )
 
 data class CafeOwnerHomeUiState(
-    val cafeOwnerInfo: CafeOwnerInfo? = dummyCafeOwnerInfo,
+    val cafeOwnerInfo: CafeOwnerInfo? = null,
     val displaySlots: List<DisplaySlot> = dummyDisplaySlots,
     val displayWalls: List<DisplayWall> = dummyDisplayWalls,
     val selectedTab: CafeOwnerTab = CafeOwnerTab.PLAN
 )
 
 @HiltViewModel
-class CafeOwnerHomeViewModel @Inject constructor(): ViewModel() {
+class CafeOwnerHomeViewModel @Inject constructor(
+    private val navigator: Navigator
+): ViewModel() {
 
     private var _uiState = MutableStateFlow(CafeOwnerHomeUiState())
     val uiState = _uiState.asStateFlow()
 
     fun selectTab(tab: CafeOwnerTab) {
         _uiState.update { it.copy(selectedTab = tab) }
+    }
+
+    fun navigateToSpaceScan() = viewModelScope.launch {
+        navigator.navigate(
+            FullScreen.SpaceScan
+        )
+    }
+
+    fun navigateToRegister() = viewModelScope.launch {
+        navigator.navigate(
+            FullScreen.RegisterCafe
+        )
     }
 }
 
