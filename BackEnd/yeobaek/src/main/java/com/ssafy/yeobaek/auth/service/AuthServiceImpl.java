@@ -1,13 +1,15 @@
 package com.ssafy.yeobaek.auth.service;
 
+import com.ssafy.yeobaek.auth.dto.request.LoginRequest;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.auth.dto.response.EmailCheckData;
+import com.ssafy.yeobaek.auth.dto.response.LoginData;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.common.util.JwtUtil;
 import com.ssafy.yeobaek.user.entity.User;
-import com.ssafy.yeobaek.user.repository.UserRepository;
 import com.ssafy.yeobaek.user.service.UserServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,8 +24,8 @@ import java.time.LocalDate;
 public class AuthServiceImpl implements AuthService{
 
     private final UserServiceImpl userServiceImpl;
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     /**
      * 이메일 중복 체크
@@ -68,6 +70,32 @@ public class AuthServiceImpl implements AuthService{
                 .build();
 
         // DB 저장
-        userRepository.save(user);
+        userServiceImpl.save(user);
+    }
+
+    /**
+     * 로그인
+     * @param request 로그인 요청 정보 (이메일, 비밀번호)
+     * @return LoginData (accessToken, refreshToken, userType)
+     */
+    @Override
+    public LoginData login(LoginRequest request) {
+        // 이메일로 사용자 조회
+        User user = userServiceImpl.findByEmail(request.getEmail())
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 비밀번호 검증
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new CustomException(ResponseCode.INVALID_CREDENTIALS);
+        }
+
+        // JWT Access Token 생성 (userId, userType 포함)
+        String accessToken = jwtUtil.generateAccessToken(user.getId(), user.getUserType());
+
+        // JWT Refresh Token 생성 (userId만 포함)
+        String refreshToken = jwtUtil.generateRefreshToken(user.getId());
+
+        // LoginData 반환
+        return new LoginData(accessToken, refreshToken, user.getUserType());
     }
 }
