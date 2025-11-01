@@ -11,8 +11,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetProfileResponseDto(
     val user: UserProfileResponse,
-    val cafe: CafeProfileResponse?,
-    val artist: ArtistProfileResponse?
+    val cafe: CafeProfileResponse?=null,
+    val artist: ArtistProfileResponse?=null
 )
 
 // DTO → Domain 변환
