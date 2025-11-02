@@ -26,4 +26,10 @@ public interface AuthService {
      * @return LoginData (accessToken, refreshToken, userType)
      */
     LoginData login(LoginRequest request);
+
+    /**
+     * 로그아웃
+     * - Redis에서 Refresh Token 삭제
+     */
+    void logout();
 }
