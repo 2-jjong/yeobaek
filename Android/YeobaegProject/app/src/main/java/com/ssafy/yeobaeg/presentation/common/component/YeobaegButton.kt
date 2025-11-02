@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
@@ -61,6 +62,36 @@ fun YeobaegButton(
     }
 }
 
+
+@Composable
+fun YeobaegButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    fontSize: TextUnit = 16.sp
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = YeobaegDarkBrown,
+            disabledContainerColor = YeobaegTextGray.copy(alpha = 0.3f)
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = fontSize,
+            fontWeight = FontWeight.Bold,
+            color = Color.White,
+            modifier = Modifier.padding(4.dp)
+        )
+    }
+}
+
+
 @Composable
 fun YeobaegOutlinedButton(
     modifier: Modifier = Modifier,
@@ -72,7 +103,7 @@ fun YeobaegOutlinedButton(
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.heightIn(min = 40.dp),
+        modifier = modifier,
         colors = ButtonDefaults.outlinedButtonColors(
             contentColor = YeobaegDarkGray,
             disabledContentColor = YeobaegTextGray.copy(alpha = 0.5f)

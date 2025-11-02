@@ -70,11 +70,13 @@ fun ArtExploreScreen(
                     ) {
                         Text("작품 둘러보기", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
                         Spacer(Modifier.weight(1f))
-                        Icon(
-                            painter = painterResource(R.drawable.ic_filter),
-                            contentDescription = null,
-                            modifier = Modifier.clickable { showFilter = true }
-                        )
+                        if(state.mode != SearchMode.RECENT) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_filter),
+                                contentDescription = null,
+                                modifier = Modifier.clickable { showFilter = true }
+                            )
+                        }
                     }
                     Spacer(Modifier.height(8.dp))
                     SearchBar(
@@ -199,15 +201,17 @@ private fun RecentSearchContent(
                 color = YeobaegDarkGray
             )
             Spacer(Modifier.weight(1f))
-            Text(
-                "전체 삭제",
-                fontSize = 13.sp,
-                color = YeobaegDarkGray,
-                modifier = Modifier.clickable { onClearAll() })
+            if(recent.isNotEmpty()){
+                Text(
+                    "전체 삭제",
+                    fontSize = 13.sp,
+                    color = YeobaegDarkGray,
+                    modifier = Modifier.clickable { onClearAll() })
+            }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(12.dp))
         if (recent.isEmpty()) {
-            Text("최근 검색어가 없습니다.", color = YeobaegTextGray)
+            Text("최근 검색어가 없습니다.", fontSize = 14.sp, color = YeobaegTextGray)
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 recent.forEach { keyword ->

@@ -95,7 +95,8 @@ fun ArtworkFilterSheet(
                         onApply(wText.toIntOrNull(), hText.toIntOrNull())
                         onDismiss()
                     },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    fontSize = 14.sp
                 )
             }
             Spacer(Modifier.height(12.dp))
