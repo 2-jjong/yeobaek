@@ -16,17 +16,17 @@ data class ArtSearchResponse(
 @Serializable
 data class Artist(
     val artistName: String,
-    val artworkCount: Int,
+    val artworkCount: Int = 0,
     val introduction: String,
     val profileImageUrl: String,
-    val userId: Int
+    val userId: Long
 )
 
 @Serializable
 data class Artwork(
     val artistName: String,
     val artistProfileImageUrl: String,
-    val artworkId: Int,
+    val artworkId: Long,
     val bookmarkCount: Int,
     val cafeName: String? = null,
     val category: String,
@@ -44,7 +44,7 @@ fun ArtSearchResponse.toDomain() = ArtSearchResult(
     paginationInfo = pagination.toDomain()
 )
 fun Artist.toDomain() = ArtistSummary(
-    artistId = userId.toLong(),
+    artistId = userId,
     artistName = artistName,
     profileImageUrl = profileImageUrl,
     introduction = introduction,
@@ -52,7 +52,7 @@ fun Artist.toDomain() = ArtistSummary(
 )
 
 fun Artwork.toDomain() = ArtworkSummary(
-    artworkId = artworkId.toLong(),
+    artworkId = artworkId,
     title = title,
     thumbnailUrl = thumbnailUrl,
     price = price,

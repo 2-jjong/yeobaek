@@ -13,15 +13,10 @@ data class RegisterCafeRequest(
     val contact: String,
     val dailyVisitors: String,
     val description: String,
-    val images: List<CafeImage>
+    val images: List<Image>
 )
 
-@Serializable
-data class CafeImage(
-    val displayOrder: Int,
-    val imageUrl: String,
-    val isPrimary: Boolean
-)
+
 
 fun RegisterCafe.toDto(): RegisterCafeRequest =
     RegisterCafeRequest(
@@ -34,7 +29,7 @@ fun RegisterCafe.toDto(): RegisterCafeRequest =
         dailyVisitors = dailyVisitors.label,
         description = description.orEmpty(),
         images = images.map {
-            CafeImage(
+            Image(
                 displayOrder = it.displayOrder,
                 imageUrl = it.imageUrl,
                 isPrimary = it.isPrimary

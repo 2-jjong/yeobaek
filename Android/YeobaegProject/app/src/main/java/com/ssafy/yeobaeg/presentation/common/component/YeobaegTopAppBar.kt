@@ -72,7 +72,7 @@ fun YeobaegTopAppBar(
                     Icon(
                         painter = painterResource(actionIcon),
                         contentDescription = "아이콘",
-                        tint= YeobaegBrown
+                        tint= YeobaegBrown,
                    )
                 }
             }
