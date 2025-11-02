@@ -29,8 +29,11 @@ public class CafeData {
     @Schema(description = "연락처", example = "02-1234-5678")
     private String contact;
 
-    @Schema(description = "영업시간", example = "매일 09:00 - 22:00")
-    private String businessHours;
+    @Schema(description = "영업 시작 시간", example = "09:00")
+    private String businessHoursStart;
+
+    @Schema(description = "영업 종료 시간", example = "22:00")
+    private String businessHoursEnd;
 
     @Schema(description = "평가 통계")
     private RatingStatsData ratingStats;
