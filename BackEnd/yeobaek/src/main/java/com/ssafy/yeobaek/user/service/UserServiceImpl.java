@@ -1,6 +1,14 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.common.code.ResponseCode;
+import com.ssafy.yeobaek.common.enums.UserRole;
+import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.user.dto.response.ArtistData;
+import com.ssafy.yeobaek.user.dto.response.CafeData;
+import com.ssafy.yeobaek.user.dto.response.UserData;
+import com.ssafy.yeobaek.user.dto.response.UserProfileData;
 import com.ssafy.yeobaek.user.entity.User;
+import com.ssafy.yeobaek.user.mapper.UserMapper;
 import com.ssafy.yeobaek.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +22,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     /**
      * 이메일 중복 체크
@@ -47,12 +56,41 @@ public class UserServiceImpl implements UserService {
 
     /**
      * 사용자 저장
-     *
      * @param user 저장할 사용자 엔티티
      */
     @Override
     @Transactional
     public void save(User user) {
         userRepository.save(user);
+    }
+
+    /**
+     * 내 프로필 조회
+     * @param userId 사용자 ID
+     * @return 사용자 프로필 데이터
+     */
+    @Override
+    public UserProfileData getMyProfile(Long userId) {
+        // 사용자 조회
+        User user = findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 사용자 기본 정보 변환
+        UserData userData = userMapper.toUserData(user);
+
+        // UserType에 따라 추가 정보 생성
+        ArtistData artistData = user.getUserType() == UserRole.ARTIST
+                ? userMapper.toDummyArtistData()
+                : null;
+
+        CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
+                ? userMapper.toDummyCafeData()
+                : null;
+
+        return UserProfileData.builder()
+                .user(userData)
+                .artist(artistData)
+                .cafe(cafeData)
+                .build();
     }
 }
