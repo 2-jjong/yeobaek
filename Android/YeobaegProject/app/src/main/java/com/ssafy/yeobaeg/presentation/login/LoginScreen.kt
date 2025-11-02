@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.presentation.login
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,7 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,93 +50,122 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Spacer(modifier = Modifier.height(60.dp))
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Spacer(modifier = Modifier.height(60.dp))
 
-        // 로고
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "여백 로고",
-            modifier = Modifier.size(120.dp)
-        )
+            // 로고
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "여백 로고",
+                modifier = Modifier.size(120.dp)
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // 환영 메시지
-        Text(
-            text = "다시 만나서 반가워요!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
+            // 환영 메시지
+            Text(
+                text = "다시 만나서 반가워요!",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
 
-        Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-        // 이메일 입력 필드
-        YeobaegTextField(
-            value = uiState.email,
-            onValueChange = viewModel::updateEmail,
-            label = "이메일",
-            placeholder = "이메일을 입력하세요",
-            modifier = Modifier.fillMaxWidth()
-        )
+            // 이메일 입력 필드
+            YeobaegTextField(
+                value = uiState.email,
+                onValueChange = viewModel::updateEmail,
+                label = "이메일",
+                placeholder = "이메일을 입력하세요",
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // 비밀번호 입력 필드
-        YeobaegTextField(
-            value = uiState.password,
-            onValueChange = viewModel::updatePassword,
-            label = "비밀번호",
-            placeholder = "비밀번호를 입력하세요",
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
+            // 비밀번호 입력 필드
+            YeobaegTextField(
+                value = uiState.password,
+                onValueChange = viewModel::updatePassword,
+                label = "비밀번호",
+                placeholder = "비밀번호를 입력하세요",
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-        // 로그인 버튼
-        YeobaegButton(
-            text = "로그인",
-            onClick = viewModel::login
-        )
+            // 로그인 버튼
+            YeobaegButton(
+                text = "로그인",
+                onClick = viewModel::login,
+                enabled = !uiState.isLoading
+            )
 
-        Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.weight(1f))
 
-        // 회원가입 링크
-        val annotatedString = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = YeobaegTextGray)) {
-                append("계정이 없으신가요? ")
+            // 회원가입 링크
+            val annotatedString = buildAnnotatedString {
+                withStyle(style = SpanStyle(color = YeobaegTextGray)) {
+                    append("계정이 없으신가요? ")
+                }
+                withLink(
+                    LinkAnnotation.Clickable(
+                        tag = "SIGNUP",
+                        styles = TextLinkStyles(
+                            style = SpanStyle(
+                                color = YeobaegDarkBrown,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ),
+                        linkInteractionListener = {
+                            viewModel.navigateSignUp()
+                        }
+                    )
+                ) {
+                    append("회원가입")
+                }
             }
-            withLink(
-                LinkAnnotation.Clickable(
-                    tag = "SIGNUP",
-                    styles = TextLinkStyles(
-                        style = SpanStyle(
-                            color = YeobaegDarkBrown,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ),
-                    linkInteractionListener = {
-                        viewModel.navigateSignUp()
-                    }
-                )
+
+            Text(
+                text = annotatedString,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        }
+
+        // 로딩 인디케이터
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
             ) {
-                append("회원가입")
+                CircularProgressIndicator(color = YeobaegDarkBrown)
             }
         }
 
-        Text(
-            text = annotatedString,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+        // 에러 다이얼로그
+        if (uiState.error != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearError() },
+                title = { Text("오류") },
+                text = { Text(uiState.error ?: "") },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.clearError() }) {
+                        Text("확인")
+                    }
+                }
+            )
+        }
     }
 }
 
