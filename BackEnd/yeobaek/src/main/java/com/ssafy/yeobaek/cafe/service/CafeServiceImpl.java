@@ -40,8 +40,11 @@ public class CafeServiceImpl implements CafeService {
     @Transactional
     public void createCafe(CreateCafeRequest request) {
 
-        // 1. 유효성 검사
-        validateCreateRequest(request);
+        // 1. 대표 이미지 1개 확인
+        long primaryImageCount = request.getImages().stream().filter(CafeImageRequest::getIsPrimary).count();
+        if (primaryImageCount != 1) {
+            throw new CustomException(ResponseCode.CAFE_PRIMARY_IMAGE_ONLY_ONE);
+        }
 
         // 2. 사용자 정보 확인
         Long userId = SecurityUtil.getCurrentUserId();
@@ -97,36 +100,4 @@ public class CafeServiceImpl implements CafeService {
         });
     }
 
-    private void validateCreateRequest(CreateCafeRequest request) {
-        // 매장명 길이 (1~15자)
-        if (request.getCafeName() == null || request.getCafeName().isBlank() || request.getCafeName().isEmpty() || request.getCafeName().length() > 15) {
-            throw new CustomException(ResponseCode.CAFE_INVALID_NAME_LENGTH);
-        }
-
-        // 카페 소개 길이 (최대 500자)
-        if (request.getDescription() != null && request.getDescription().length() > 500) {
-            throw new CustomException(ResponseCode.CAFE_INVALID_DESCRIPTION_LENGTH);
-        }
-
-        List<CafeImageRequest> images = request.getImages();
-        // 이미지 개수 (3~10장)
-        if (images == null || images.size() < 3) {
-            throw new CustomException(ResponseCode.CAFE_MIN_IMAGES);
-        }
-        if (images.size() > 10) {
-            throw new CustomException(ResponseCode.CAFE_MAX_IMAGES);
-        }
-
-        // 대표 이미지 1개
-        long primaryImageCount = images.stream().filter(CafeImageRequest::getIsPrimary).count();
-        if (primaryImageCount != 1) {
-            throw new CustomException(ResponseCode.CAFE_PRIMARY_IMAGE_ONLY_ONE);
-        }
-
-        // 영업시간 형식 (HH:mm)
-        String timeRegex = "^([01]\\d|2[0-3]):([0-5]\\d)$";
-        if (!request.getBusinessHoursStart().matches(timeRegex) || !request.getBusinessHoursEnd().matches(timeRegex)) {
-            throw new CustomException(ResponseCode.CAFE_INVALID_HOURS_FORMAT);
-        }
-    }
 }

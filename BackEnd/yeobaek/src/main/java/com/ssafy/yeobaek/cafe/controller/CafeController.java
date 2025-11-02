@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,8 +54,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "최소 이미지 개수 미달", value = "{\"code\": \"CF4001\", \"message\": \"이미지는 최소 3장 이상 등록해야 합니다\"}"),
-                                    @ExampleObject(name = "최대 이미지 개수 초과", value = "{\"code\": \"CF4002\", \"message\": \"이미지는 최대 10장까지 등록 가능합니다\"}"),
+                                    @ExampleObject(name = "이미지 개수 오류", value = "{\"code\": \"CF4001\", \"message\": \"이미지는 3~10장 등록해야 합니다\"}"),
                                     @ExampleObject(name = "대표 이미지 오류", value = "{\"code\": \"CF4003\", \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
                                     @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"message\": \"매장명은 1~15자 이내여야 합니다\"}"),
                                     @ExampleObject(name = "카페 소개 길이 오류", value = "{\"code\": \"CF4005\", \"message\": \"카페 소개는 최대 500자까지 입력 가능합니다\"}"),
@@ -116,7 +116,7 @@ public class CafeController {
             )
     })
     @PostMapping
-    public ResponseEntity<ResponseDto<Void>> createCafe(@RequestBody CreateCafeRequest request) {
+    public ResponseEntity<ResponseDto<Void>> createCafe(@Valid @RequestBody CreateCafeRequest request) {
         cafeService.createCafe(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
