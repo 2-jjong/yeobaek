@@ -42,7 +42,7 @@ data class CurrentExhibition(
 )
 
 fun ArtworkDetailData.toDomain(): ArtworkDetail = ArtworkDetail(
-    id = artworkId,
+    artworkId = artworkId,
     title = title,
     category = category,
     price = price,

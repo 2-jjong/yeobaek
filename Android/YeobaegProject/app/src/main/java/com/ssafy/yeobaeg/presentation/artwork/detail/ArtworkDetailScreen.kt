@@ -1,29 +1,47 @@
-// presentation/artwork/detail/ArtworkDetailScreen.kt
 package com.ssafy.yeobaeg.presentation.artwork.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
@@ -31,7 +49,15 @@ import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.model.art.ExhibitionSpot
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.ui.theme.*
+import com.ssafy.yeobaeg.presentation.common.util.formatPrice
+import com.ssafy.yeobaeg.presentation.common.util.removeTrailingZero
+import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
+import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkRed
+import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 
 @Composable
 fun ArtworkDetailScreen(
@@ -181,7 +207,8 @@ private fun ArtworkImagePager(images: List<String>) {
             AsyncImage(
                 model = url,
                 contentDescription = null,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
             )
         }
 
@@ -228,7 +255,8 @@ private fun ArtistCard(artist: ArtistSummary) {
                 contentDescription = null,
                 modifier = Modifier
                     .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
             Spacer(Modifier.width(12.dp))
             Column {
@@ -306,9 +334,78 @@ private fun InfoRow(label: String, value: String) {
     }
 }
 
-// --- 간단 유틸 ---
-private fun Int.formatPrice(): String = "%,d원".format(this)
-private fun Double.removeTrailingZero(): String {
-    val s = toString()
-    return if (s.endsWith(".0")) s.dropLast(2) else s
+@Preview(showBackground = true, name = "작품 상세 - 전시중")
+@Composable
+private fun PreviewArtworkDetailScreen_Exhibiting() {
+    MaterialTheme {
+        ArtworkDetailScreen(
+            artwork = ArtworkDetail(
+                artworkId = 1L,
+                title = "푸른 밤의 꿈",
+                category = "현대미술",
+                images = listOf(
+                    "https://imgnews.pstatic.net/image/657/2025/11/02/0000044371_002_20251102115108734.jpg?type=w860",
+                    "https://picsum.photos/seed/art2/600/800",
+                    "https://picsum.photos/seed/art3/600/800"
+                ),
+                artist = ArtistSummary(
+                    artistId = 1L,
+                    artistName = "김예술",
+                    profileImageUrl = "https://imgnews.pstatic.net/image/657/2025/11/02/0000044371_002_20251102115108734.jpg?type=w860",
+                    introduction = "현대미술 작가",
+                    artworkCount = 24
+                ),
+                price = 5000000,
+                widthCm = 120,
+                heightCm = 80,
+                productionYear = 2023,
+                weightKg = 3.5,
+                description = "이 작품은 밤하늘의 신비로움과 꿈의 세계를 표현한 작품입니다. 푸른색 계열의 색채를 통해 몽환적인 분위기를 연출하였습니다.",
+                bookmarkCount = 128,
+                viewCount = 1543,
+                isBookmarked = true,
+                exhibition = ExhibitionSpot(
+                    cafeName = "아트카페 여백",
+                    cafeAddress = "서울시 강남구 신사동 123-45",
+                    cafeImageUrl = "https://picsum.photos/seed/cafe1/200",
+                    cafeId = 1L,
+                    slotName = "",
+                    startDate = "",
+                    endDate = ""
+                )
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "작품 상세 - 전시 안함")
+@Composable
+private fun PreviewArtworkDetailScreen_NotExhibiting() {
+    MaterialTheme {
+        ArtworkDetailScreen(
+            artwork = ArtworkDetail(
+                artworkId = 2L,
+                title = "도시의 리듬",
+                category = "서양화",
+                images = listOf("https://picsum.photos/seed/art4/600/800"),
+                artist = ArtistSummary(
+                    artistId = 2L,
+                    artistName = "박작가",
+                    profileImageUrl = "https://picsum.photos/seed/artist2/200",
+                    introduction = "추상화 전문 작가",
+                    artworkCount = 42
+                ),
+                price = 3500000,
+                widthCm = 90,
+                heightCm = 120,
+                productionYear = 2024,
+                weightKg = 2.8,
+                description = "도시의 역동적인 에너지와 리듬을 추상적으로 표현한 작품입니다.",
+                bookmarkCount = 67,
+                viewCount = 892,
+                isBookmarked = false,
+                exhibition = null
+            )
+        )
+    }
 }

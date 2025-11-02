@@ -1,7 +1,7 @@
 package com.ssafy.yeobaeg.domain.model.art
 
 data class ArtworkDetail(
-    val id: Long,
+    val artworkId: Long,
     val title: String,
     val category: String,
     val price: Int,

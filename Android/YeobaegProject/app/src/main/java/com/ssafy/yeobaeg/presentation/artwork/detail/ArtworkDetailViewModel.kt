@@ -50,7 +50,7 @@ class ArtworkDetailViewModel @Inject constructor(
         val d = _uiState.value.artwork ?: return
         viewModelScope.launch {
             _uiState.update { it.copy(artwork = d.copy(isBookmarked = !d.isBookmarked)) }
-            artRepository.toggleBookmark(d.id).onFailure {
+            artRepository.toggleBookmark(d.artworkId).onFailure {
                 _uiState.update { it.copy(artwork = d.copy(isBookmarked = !d.isBookmarked)) }
             }
         }
