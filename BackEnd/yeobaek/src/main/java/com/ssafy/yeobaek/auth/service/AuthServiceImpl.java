@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.auth.dto.request.LoginRequest;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.auth.dto.response.EmailCheckData;
 import com.ssafy.yeobaek.auth.dto.response.LoginData;
+import com.ssafy.yeobaek.auth.dto.response.TokenData;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
@@ -115,5 +116,42 @@ public class AuthServiceImpl implements AuthService{
 
         // Redis에서 Refresh Token 삭제
         refreshTokenService.deleteRefreshToken(userId);
+    }
+
+    /**
+     * Access Token 재발급
+     * @param refreshToken Refresh Token
+     * @return TokenData (새로운 accessToken, refreshToken)
+     */
+    @Override
+    public TokenData reissue(String refreshToken) {
+        // Refresh Token 유효성 검증
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new CustomException(ResponseCode.INVALID_TOKEN);
+        }
+
+        // Refresh Token에서 userId 추출
+        Long userId = jwtUtil.getUserIdFromToken(refreshToken);
+
+        // Redis에 저장된 Refresh Token과 비교
+        if (!refreshTokenService.validateRefreshToken(userId, refreshToken)) {
+            throw new CustomException(ResponseCode.INVALID_TOKEN);
+        }
+
+        // 사용자 정보 조회
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 새로운 Access Token 생성
+        String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getUserType());
+
+        // 새로운 Refresh Token 생성
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId());
+
+        // Redis에 새로운 Refresh Token 저장
+        refreshTokenService.saveRefreshToken(user.getId(), newRefreshToken);
+
+        // 새 토큰들 반환
+        return new TokenData(newAccessToken, newRefreshToken);
     }
 }

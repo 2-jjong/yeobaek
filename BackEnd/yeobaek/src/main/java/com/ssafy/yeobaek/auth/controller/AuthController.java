@@ -282,7 +282,7 @@ public class AuthController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": {\"accessToken\": \"new.mock.access.token.jwt.string\", \"refreshToken\": \"new.mock.refresh.token.jwt.string\"}, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"data\": {\"accessToken\": \"accessToken\", \"refreshToken\": \"refreshToken\"}, \"message\": \"정상 처리\"}"
                             )
                     )
             ),
@@ -294,11 +294,11 @@ public class AuthController {
                             examples = {
                                     @ExampleObject(
                                             name = "유효하지 않은 토큰",
-                                            value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "만료된 토큰",
-                                            value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
                                     )
                             }
                     )
@@ -309,18 +309,21 @@ public class AuthController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
     })
-    @PostMapping("/refresh")
-    public ResponseEntity<ResponseDto<TokenData>> refresh() {
-        // Mock 데이터: 새로운 토큰 반환
-        TokenData data = new TokenData(
-                "new.mock.access.token.jwt.string",
-                "new.mock.refresh.token.jwt.string"
-        );
+    @PostMapping("/reissue")
+    public ResponseEntity<ResponseDto<TokenData>> reissue(
+            @RequestHeader("Authorization") String authorizationHeader
+    ) {
+        // Bearer 토큰 추출
+        String refreshToken = authorizationHeader.replace("Bearer ", "");
+
+        // 새로운 토큰 발급
+        TokenData data = authService.reissue(refreshToken);
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
