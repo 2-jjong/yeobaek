@@ -52,7 +52,7 @@ public class CreateCafeRequest {
 	private String dailyVisitors;
 
 	@Schema(description = "인테리어 스타일 (다중 선택)", example = "[1, 2]")
-	@NotBlank(message = "MISSING_REQUIRED_FIELD")
+	@NotEmpty(message = "MISSING_REQUIRED_FIELD")
 	private List<Long> categoryIds;
 
 	@Schema(description = "카페 이미지 목록 (최소 3장, 최대 10장)")
