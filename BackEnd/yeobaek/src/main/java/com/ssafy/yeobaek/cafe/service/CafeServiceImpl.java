@@ -4,8 +4,10 @@ import com.ssafy.yeobaek.cafe.dto.request.CafeImageRequest;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.CafeCategory;
+import com.ssafy.yeobaek.cafe.entity.CafeCategoryTag;
 import com.ssafy.yeobaek.cafe.entity.CafeImage;
 import com.ssafy.yeobaek.cafe.repository.CafeCategoryRepository;
+import com.ssafy.yeobaek.cafe.repository.CafeCategoryTagRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeImageRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
@@ -27,6 +29,7 @@ public class CafeServiceImpl implements CafeService {
     private final CafeRepository cafeRepository;
     private final UserRepository userRepository;
     private final CafeCategoryRepository cafeCategoryRepository;
+    private final CafeCategoryTagRepository cafeCategoryTagRepository;
     private final CafeImageRepository cafeImageRepository;
 
     /**
@@ -71,12 +74,15 @@ public class CafeServiceImpl implements CafeService {
         cafeRepository.save(cafe);
 
         // 6. 카페 카테고리 저장
-        request.getCategories().forEach(categoryName -> {
-            CafeCategory cafeCategory = CafeCategory.builder()
+        request.getCategoryIds().forEach(categoryId -> {
+            CafeCategory cafeCategory = cafeCategoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new CustomException(ResponseCode.CAFE_CATEGORY_NOT_FOUND));
+
+            CafeCategoryTag cafeCategoryTag = CafeCategoryTag.builder()
                     .cafe(cafe)
-                    .categoryName(categoryName)
+                    .category(cafeCategory)
                     .build();
-            cafeCategoryRepository.save(cafeCategory);
+            cafeCategoryTagRepository.save(cafeCategoryTag);
         });
 
         // 7. 카페 이미지 저장

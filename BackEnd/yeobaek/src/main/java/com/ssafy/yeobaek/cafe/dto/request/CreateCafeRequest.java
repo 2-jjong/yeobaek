@@ -36,7 +36,7 @@ public class CreateCafeRequest {
     private String dailyVisitors;
 
     @Schema(description = "인테리어 스타일 (다중 선택)", example = "[\"모던\", \"미니멀\"]")
-    private List<String> categories;
+    private List<Long> categoryIds;
 
     @Schema(description = "카페 이미지 목록 (최소 3장, 최대 10장)")
     private List<CafeImageRequest> images;

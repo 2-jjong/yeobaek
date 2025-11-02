@@ -16,10 +16,6 @@ public class CafeCategory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long cateCategoryId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cafe_id", nullable = false)
-    private Cafe cafe;
-
-    @Column(name = "category_name", nullable = false)
+    @Column(name = "category_name", nullable = false, unique = true)
     private String categoryName;
 }
