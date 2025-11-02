@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.auth.dto.request.LoginRequest;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.auth.dto.response.EmailCheckData;
 import com.ssafy.yeobaek.auth.dto.response.LoginData;
+import com.ssafy.yeobaek.auth.dto.response.TokenData;
 
 public interface AuthService {
 
@@ -32,4 +33,11 @@ public interface AuthService {
      * - Redis에서 Refresh Token 삭제
      */
     void logout();
+
+    /**
+     * Access Token 재발급
+     * @param refreshToken Refresh Token
+     * @return TokenData (새로운 accessToken, refreshToken)
+     */
+    TokenData reissue(String refreshToken);
 }

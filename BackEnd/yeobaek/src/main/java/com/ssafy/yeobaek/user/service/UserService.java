@@ -21,6 +21,13 @@ public interface UserService {
     Optional<User> findByEmail(String email);
 
     /**
+     * ID로 사용자 조회
+     * @param id 사용자 ID
+     * @return 사용자 엔티티 (Optional)
+     */
+    Optional<User> findById(Long id);
+
+    /**
      * 사용자 저장
      *
      * @param user 저장할 사용자 엔티티
