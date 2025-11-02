@@ -1,14 +1,10 @@
 package com.ssafy.yeobaek.cafe.service;
 
-import com.ssafy.yeobaek.cafe.dto.request.CafeImageRequest;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.CafeCategory;
 import com.ssafy.yeobaek.cafe.entity.CafeCategoryTag;
-import com.ssafy.yeobaek.cafe.entity.CafeImage;
-import com.ssafy.yeobaek.cafe.repository.CafeCategoryRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeCategoryTagRepository;
-import com.ssafy.yeobaek.cafe.repository.CafeImageRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.UserRole;
@@ -28,9 +24,9 @@ public class CafeServiceImpl implements CafeService {
 
     private final CafeRepository cafeRepository;
     private final UserRepository userRepository;
-    private final CafeCategoryRepository cafeCategoryRepository;
+    private final CafeCategoryService cafeCategoryService;
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
-    private final CafeImageRepository cafeImageRepository;
+    private final CafeImageService cafeImageService;
 
     /**
      * 카페 등록
@@ -41,10 +37,7 @@ public class CafeServiceImpl implements CafeService {
     public void createCafe(CreateCafeRequest request) {
 
         // 1. 대표 이미지 1개 확인
-        long primaryImageCount = request.getImages().stream().filter(CafeImageRequest::getIsPrimary).count();
-        if (primaryImageCount != 1) {
-            throw new CustomException(ResponseCode.CAFE_PRIMARY_IMAGE_ONLY_ONE);
-        }
+        cafeImageService.validatePrimaryImage(request.getImages());
 
         // 2. 사용자 정보 확인
         Long userId = SecurityUtil.getCurrentUserId();
@@ -77,10 +70,8 @@ public class CafeServiceImpl implements CafeService {
         cafeRepository.save(cafe);
 
         // 6. 카페 카테고리 저장
-        request.getCategoryIds().forEach(categoryId -> {
-            CafeCategory cafeCategory = cafeCategoryRepository.findById(categoryId)
-                    .orElseThrow(() -> new CustomException(ResponseCode.CAFE_CATEGORY_NOT_FOUND));
-
+        List<CafeCategory> categories = cafeCategoryService.findCategoriesByIds(request.getCategoryIds());
+        categories.forEach(cafeCategory -> {
             CafeCategoryTag cafeCategoryTag = CafeCategoryTag.builder()
                     .cafe(cafe)
                     .category(cafeCategory)
@@ -89,15 +80,7 @@ public class CafeServiceImpl implements CafeService {
         });
 
         // 7. 카페 이미지 저장
-        request.getImages().forEach(imageRequest -> {
-            CafeImage cafeImage = CafeImage.builder()
-                    .cafe(cafe)
-                    .imageUrl(imageRequest.getImageUrl())
-                    .isPrimary(imageRequest.getIsPrimary())
-                    .displayOrder(imageRequest.getDisplayOrder())
-                    .build();
-            cafeImageRepository.save(cafeImage);
-        });
+        cafeImageService.saveImages(cafe, request.getImages());
     }
 
 }
