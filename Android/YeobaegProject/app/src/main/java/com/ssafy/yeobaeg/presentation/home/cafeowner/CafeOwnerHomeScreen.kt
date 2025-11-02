@@ -203,11 +203,6 @@ fun CafeOwnerHomeActions(isNeedRegister: Boolean = false) {
     }
 }
 
-enum class CafeOwnerTab(val label: String) {
-    PLAN("공간 도면"),
-    STATUS("전시 현황")
-}
-
 @Composable
 fun CafeOwnerHomeContent(
     slots: List<DisplaySlot>,
