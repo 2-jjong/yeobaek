@@ -20,13 +20,14 @@ import coil.compose.AsyncImage
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 
 @Composable
 fun ArtworkGrid(
-    items: List<String>,
+    items: List<ArtworkSummary>,
     modifier: Modifier = Modifier,
     columns: Int = 3,
     contentPadding: PaddingValues = PaddingValues(0.dp)
@@ -39,9 +40,9 @@ fun ArtworkGrid(
         userScrollEnabled = false,
         modifier = modifier
     ) {
-        items(items) { url ->
+        items(items) { item ->
             AsyncImage(
-                model = url,
+                model = item.thumbnailUrl,
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()

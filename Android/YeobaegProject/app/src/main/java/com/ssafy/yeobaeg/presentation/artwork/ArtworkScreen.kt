@@ -1,21 +1,29 @@
 package com.ssafy.yeobaeg.presentation.artwork
 
-import android.util.Log.w
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.*
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,14 +42,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
+import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
+import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.ui.theme.*
+import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkRed
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegYellow
 
-// ArtExploreScreen.kt (상단 필터 아이콘에서 바텀시트 열고, 시트 컴포즈 추가)
 @Composable
 fun ArtExploreScreen(
     viewModel: ArtExploreViewModel = hiltViewModel()
@@ -116,7 +129,7 @@ fun ArtExploreScreen(
                     .padding(inner)
                     .fillMaxSize(),
                 keyword = state.query,
-                artists = state.resultArtist,
+                artists = state.resultArtists,
                 artworks = state.resultArtworks
             )
         }
@@ -164,13 +177,13 @@ private fun BrowseContent(
     categories: List<ArtworkCategory>,
     selected: ArtworkCategory,
     onCategory: (ArtworkCategory) -> Unit,
-    artworks: List<String>
+    artworks: List<ArtworkSummary>
 ) {
     Column(modifier = modifier) {
         Spacer(Modifier.height(8.dp))
         CategoryChips(
             modifier = Modifier.padding(horizontal = 20.dp),
-            categories = categories.map { it.label }, // 화면에는 라벨만 보여줌
+            categories = categories.map { it.label },
             selected = selected.label,
             onClick = { label ->
                 categories.firstOrNull { it.label == label }?.let(onCategory)
@@ -266,13 +279,12 @@ private fun RecentSearchContent(
         Spacer(Modifier.navigationBarsPadding())
     }
 }
-
 @Composable
 fun SearchResultContent(
     modifier: Modifier,
     keyword: String,
-    artists: List<ArtistResult>,
-    artworks: List<String>
+    artists: List<ArtistSummary>,
+    artworks: List<ArtworkSummary>
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
@@ -289,10 +301,10 @@ fun SearchResultContent(
         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(text = "작품", modifier = Modifier.padding(8.dp), color = YeobaegTextGray)
         }
-        items(artworks) { url ->
+        items(artworks) { artwork ->
             AsyncImage(
-                model = url,
-                contentDescription = null,
+                model = artwork.thumbnailUrl,
+                contentDescription = artwork.title,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
@@ -304,7 +316,7 @@ fun SearchResultContent(
 
 @Composable
 fun ArtistResultSection(
-    artists: List<ArtistResult>,
+    artists: List<ArtistSummary>,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.padding(8.dp)) {
@@ -316,8 +328,8 @@ fun ArtistResultSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 AsyncImage(
-                    model = artist.avatarUrl,
-                    contentDescription = null,
+                    model = artist.profileImageUrl,
+                    contentDescription = artist.artistName,
                     modifier = Modifier
                         .height(48.dp)
                         .aspectRatio(1f)
@@ -325,14 +337,15 @@ fun ArtistResultSection(
                 )
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text(artist.name, fontWeight = FontWeight.SemiBold)
+                    Text(artist.artistName, fontWeight = FontWeight.SemiBold)
                     Text(
-                        artist.subtitle,
+                        artist.introduction,
                         color = YeobaegTextGray,
                         fontSize = 14.sp,
-                        maxLines = 1
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    Text("작품 ${artist.worksCount}개", fontSize = 12.sp, color = YeobaegTextGray)
+                    Text("작품 ${artist.artworkCount}개", fontSize = 12.sp, color = YeobaegTextGray)
                 }
             }
         }

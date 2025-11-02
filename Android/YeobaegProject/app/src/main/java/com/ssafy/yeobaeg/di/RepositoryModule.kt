@@ -1,9 +1,11 @@
 package com.ssafy.yeobaeg.di
 
+import com.ssafy.yeobaeg.data.repository.ArtRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.AuthRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.CafeRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.ProfileRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.RecentSearchRepositoryImpl
+import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
@@ -41,5 +43,11 @@ abstract class RepositoryModule {
     abstract fun bindRecentSearchRepository(
         recentSearchRepositoryImpl: RecentSearchRepositoryImpl
     ): RecentSearchRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindArtRepository(
+        artRepositoryImpl: ArtRepositoryImpl
+    ): ArtRepository
 }
 

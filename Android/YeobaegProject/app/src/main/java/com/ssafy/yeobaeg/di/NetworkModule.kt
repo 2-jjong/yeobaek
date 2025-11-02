@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.ssafy.yeobaeg.BuildConfig
+import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import dagger.Module
@@ -68,5 +69,10 @@ object NetworkModule {
     @Singleton
     fun provideCafeApiService(retrofit: Retrofit): CafeApiService =
         retrofit.create(CafeApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideArtApiService(retrofit: Retrofit): ArtworkApiService =
+        retrofit.create(ArtworkApiService::class.java)
 
 }
