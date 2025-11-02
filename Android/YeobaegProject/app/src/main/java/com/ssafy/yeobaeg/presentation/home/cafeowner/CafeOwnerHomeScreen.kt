@@ -265,7 +265,8 @@ fun FloorPlanSection(walls: List<DisplayWall>) {
         initialWalls = walls,
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(400.dp),
+        readOnly = true
     )
 }
 
