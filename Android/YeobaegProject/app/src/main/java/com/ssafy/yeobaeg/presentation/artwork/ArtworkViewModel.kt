@@ -9,7 +9,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-enum class SearchMode { BROWSE, RECENT, RESULT }
+enum class SearchMode(val title: String) {
+    BROWSE("작품 둘러보기"),
+    RECENT("검색"),
+    RESULT("검색 결과")
+}
 
 enum class ArtworkCategory(val label: String) {
     ALL("전체"),
@@ -24,6 +28,7 @@ data class ArtistResult(
     val worksCount: Int,
     val avatarUrl: String
 )
+
 data class ArtExploreState(
     val mode: SearchMode = SearchMode.BROWSE,
     val query: String = "",

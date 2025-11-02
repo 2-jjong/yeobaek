@@ -61,44 +61,21 @@ fun ArtExploreScreen(
 
     Scaffold(
         topBar = {
-            YeobaegTopAppBar(
-                title = "작품 탐색",
-                onBackClick = {
-                    when (state.mode) {
-                        SearchMode.BROWSE -> {}
-                        SearchMode.RECENT -> viewModel.selectTabBrowse()
-                        SearchMode.RESULT -> viewModel.selectTabSearch()
-                    }
-                    focus.clearFocus(true)
-                },
-                showBackButton = state.mode != SearchMode.BROWSE
-            )
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 12.dp)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "작품 둘러보기",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    Spacer(Modifier.weight(1f))
-                    if (state.mode != SearchMode.RECENT) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_filter),
-                            contentDescription = null,
-                            modifier = Modifier.clickable { showFilter = true }
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
+            Column(modifier = Modifier.fillMaxWidth()) {
+                YeobaegTopAppBar(
+                    title = state.mode.title,
+                    onBackClick = {
+                        when (state.mode) {
+                            SearchMode.BROWSE -> {}
+                            SearchMode.RECENT -> viewModel.selectTabBrowse()
+                            SearchMode.RESULT -> viewModel.selectTabSearch()
+                        }
+                        focus.clearFocus(true)
+                    },
+                    showBackButton = state.mode != SearchMode.BROWSE,
+                    actionIcon = if (state.mode != SearchMode.RECENT) R.drawable.ic_filter else null,
+                    onActionClick = { showFilter = true }
+                )
                 SearchBar(
                     value = state.query,
                     onValueChange = viewModel::setQuery,
