@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
 import com.ssafy.yeobaek.user.dto.response.UserProfileData;
 import com.ssafy.yeobaek.user.entity.User;
 
@@ -41,4 +42,11 @@ public interface UserService {
      * @return 사용자 프로필 데이터
      */
     UserProfileData getMyProfile(Long userId);
+
+    /**
+     * 프로필 정보 수정
+     * @param userId 사용자 ID
+     * @param request 수정할 프로필 정보
+     */
+    void updateProfile(Long userId, UpdateProfileRequest request);
 }
