@@ -9,6 +9,7 @@ import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.common.util.JwtUtil;
+import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -101,5 +102,18 @@ public class AuthServiceImpl implements AuthService{
 
         // LoginData 반환
         return new LoginData(accessToken, refreshToken, user.getUserType());
+    }
+
+    /**
+     * 로그아웃
+     * - Redis에서 Refresh Token 삭제
+     */
+    @Override
+    public void logout() {
+        // 현재 인증된 사용자 ID 조회
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        // Redis에서 Refresh Token 삭제
+        refreshTokenService.deleteRefreshToken(userId);
     }
 }
