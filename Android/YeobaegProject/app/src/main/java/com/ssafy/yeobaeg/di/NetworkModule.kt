@@ -44,6 +44,7 @@ annotation class GeneralRetrofit
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    private const val BASE_URL = "http://k13d207.p.ssafy.io:8080/api/v1/"
 
     /**
      * 인증 API 전용 OkHttpClient (Interceptor, Authenticator 없음)
