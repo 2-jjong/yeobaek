@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.artwork
 
+import android.util.Log.w
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,10 +34,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.ui.theme.*
+
 // ArtExploreScreen.kt (상단 필터 아이콘에서 바텀시트 열고, 시트 컴포즈 추가)
 @Composable
 fun ArtExploreScreen(
@@ -56,36 +61,50 @@ fun ArtExploreScreen(
 
     Scaffold(
         topBar = {
-            Surface(shadowElevation = 2.dp, color = YeobaegWhite) {
-                Column(
+            YeobaegTopAppBar(
+                title = "작품 탐색",
+                onBackClick = {
+                    when (state.mode) {
+                        SearchMode.BROWSE -> {}
+                        SearchMode.RECENT -> viewModel.selectTabBrowse()
+                        SearchMode.RESULT -> viewModel.selectTabSearch()
+                    }
+                    focus.clearFocus(true)
+                },
+                showBackButton = state.mode != SearchMode.BROWSE
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp, bottom = 12.dp)
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 8.dp, bottom = 12.dp)
+                        .padding(horizontal = 24.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("작품 둘러보기", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.weight(1f))
-                        if(state.mode != SearchMode.RECENT) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_filter),
-                                contentDescription = null,
-                                modifier = Modifier.clickable { showFilter = true }
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(8.dp))
-                    SearchBar(
-                        value = state.query,
-                        onValueChange = viewModel::setQuery,
-                        onSearch = { viewModel.search() },
-                        onFocus = { viewModel.selectTabSearch() }
+                    Text(
+                        "작품 둘러보기",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
                     )
+                    Spacer(Modifier.weight(1f))
+                    if (state.mode != SearchMode.RECENT) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_filter),
+                            contentDescription = null,
+                            modifier = Modifier.clickable { showFilter = true }
+                        )
+                    }
                 }
+                Spacer(Modifier.height(8.dp))
+                SearchBar(
+                    value = state.query,
+                    onValueChange = viewModel::setQuery,
+                    onSearch = { viewModel.search() },
+                    onFocus = { viewModel.selectTabSearch() }
+                )
             }
         },
         containerColor = Color.White
@@ -100,6 +119,7 @@ fun ArtExploreScreen(
                 onCategory = viewModel::selectCategory,
                 artworks = state.artworks
             )
+
             SearchMode.RECENT -> RecentSearchContent(
                 modifier = Modifier
                     .padding(inner)
@@ -108,10 +128,12 @@ fun ArtExploreScreen(
                 onSearchClick = {
                     viewModel.setQuery(it)
                     viewModel.search()
+                    focus.clearFocus()
                 },
                 onRemoveRecent = viewModel::removeRecent,
                 onClearAll = viewModel::clearRecent
             )
+
             SearchMode.RESULT -> SearchResultContent(
                 modifier = Modifier
                     .padding(inner)
@@ -162,18 +184,20 @@ private fun SearchBar(
 @Composable
 private fun BrowseContent(
     modifier: Modifier,
-    categories: List<String>,
-    selected: String,
-    onCategory: (String) -> Unit,
+    categories: List<ArtworkCategory>,
+    selected: ArtworkCategory,
+    onCategory: (ArtworkCategory) -> Unit,
     artworks: List<String>
 ) {
     Column(modifier = modifier) {
         Spacer(Modifier.height(8.dp))
         CategoryChips(
             modifier = Modifier.padding(horizontal = 20.dp),
-            categories = categories,
-            selected = selected,
-            onClick = onCategory
+            categories = categories.map { it.label }, // 화면에는 라벨만 보여줌
+            selected = selected.label,
+            onClick = { label ->
+                categories.firstOrNull { it.label == label }?.let(onCategory)
+            }
         )
         Spacer(Modifier.height(8.dp))
         ArtworkGrid(
@@ -184,6 +208,7 @@ private fun BrowseContent(
         )
     }
 }
+
 
 @Composable
 private fun RecentSearchContent(
@@ -201,7 +226,7 @@ private fun RecentSearchContent(
                 color = YeobaegDarkGray
             )
             Spacer(Modifier.weight(1f))
-            if(recent.isNotEmpty()){
+            if (recent.isNotEmpty()) {
                 Text(
                     "전체 삭제",
                     fontSize = 13.sp,
@@ -237,10 +262,10 @@ private fun RecentSearchContent(
                         Icon(
                             painter = painterResource(R.drawable.ic_close),
                             contentDescription = null,
+                            tint = YeobaegDarkRed,
                             modifier = Modifier.clickable { onRemoveRecent(keyword) }
                         )
                     }
-                    Divider(color = YeobaegDivider)
                 }
             }
         }

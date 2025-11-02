@@ -39,6 +39,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @NetworkJson
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
         prettyPrint = false
@@ -48,7 +49,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, json: Json): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, @NetworkJson json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
