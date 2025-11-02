@@ -32,7 +32,7 @@ fun RegisterCafe.toDto(): RegisterCafeRequest =
         categories = categories.map { it.label },
         contact = contact,
         dailyVisitors = dailyVisitors.label,
-        description = description.orEmpty(),
+        description = description,
         images = images.map {
             CafeImage(
                 displayOrder = it.displayOrder,
