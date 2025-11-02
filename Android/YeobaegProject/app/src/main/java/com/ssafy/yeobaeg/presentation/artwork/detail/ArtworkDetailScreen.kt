@@ -29,6 +29,7 @@ import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.model.art.ExhibitionSpot
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.ui.theme.*
 
@@ -78,14 +79,13 @@ fun ArtworkDetailScreen(
             )
         },
         bottomBar = {
-            Button(
+            YeobaegButton(
+                text = "문의",
                 onClick = {},
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp, horizontal = 16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = YeobaegDarkBrown),
-                shape = RoundedCornerShape(12.dp)
-            ) { Text("문의") }
+            )
         },
         containerColor = Color.White
     ) { innerPadding ->
