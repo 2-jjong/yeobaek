@@ -23,6 +23,7 @@ import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
 import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
 import com.ssafy.yeobaeg.presentation.arcore.ARMeasureViewModel
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
+import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.register.RegisterCafeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
@@ -88,6 +89,11 @@ fun NavGraph(
 
                     is BottomNavScreen.Home -> NavEntry(key) {
                         CafeOwnerHomeScreen()
+                    }
+
+                    is BottomNavScreen.Artwork -> NavEntry(key) {
+                        // Artwork Screen Composable
+                        ArtExploreScreen()
                     }
 
                     is BottomNavScreen.SpaceScanPreview -> NavEntry(key) {
