@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.user.dto.response.UserProfileData;
 import com.ssafy.yeobaek.user.entity.User;
 
 import java.util.Optional;
@@ -33,4 +34,11 @@ public interface UserService {
      * @param user 저장할 사용자 엔티티
      */
     void save(User user);
+
+    /**
+     * 내 프로필 조회
+     * @param userId 사용자 ID
+     * @return 사용자 프로필 데이터
+     */
+    UserProfileData getMyProfile(Long userId);
 }
