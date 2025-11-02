@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.di
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.ssafy.yeobaeg.BuildConfig
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
+import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import dagger.Module
 import dagger.Provides
@@ -22,6 +23,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
+
 
     @Provides
     @Singleton
@@ -58,6 +60,11 @@ object NetworkModule {
     }
 
     /** 서비스들 */
+    @Provides
+    @Singleton
+    fun provideAuthApiService(retrofit: Retrofit): AuthApiService =
+        retrofit.create(AuthApiService::class.java)
+
     @Provides
     @Singleton
     fun provideProfileApiService(retrofit: Retrofit): ProfileApiService =

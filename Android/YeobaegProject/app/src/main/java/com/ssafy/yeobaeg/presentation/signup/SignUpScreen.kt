@@ -18,9 +18,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -51,63 +54,91 @@ fun SignUpScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        // 프로그래스 바
-        LinearProgressIndicator(
-            progress = { uiState.currentStep.toFloat() / uiState.totalSteps.toFloat() },
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(8.dp),
-            color = YeobaegDarkBrown,
-            trackColor = YeobaegLightGray,
-        )
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            // 프로그래스 바
+            LinearProgressIndicator(
+                progress = { uiState.currentStep.toFloat() / uiState.totalSteps.toFloat() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+                color = YeobaegDarkBrown,
+                trackColor = YeobaegLightGray,
+            )
 
-        when (uiState.currentStep) {
-            1 -> Step1EmailPassword(
-                email = uiState.email,
-                password = uiState.password,
-                passwordConfirm = uiState.passwordConfirm,
-                onEmailChange = viewModel::updateEmail,
-                onPasswordChange = viewModel::updatePassword,
-                onPasswordConfirmChange = viewModel::updatePasswordConfirm,
-                onNextClick = viewModel::nextStep,
-                onBackClick = viewModel::onBack,
-                canProceed = viewModel.canProceedFromEmailPasswordStep()
-            )
-            2 -> Step2RoleSelection(
-                selectedRole = uiState.userRole,
-                onRoleSelect = viewModel::selectUserRole,
-                onNextClick = viewModel::nextStep,
-                onBackClick = viewModel::previousStep,
-                canProceed = viewModel.canProceedFromRoleSelectionStep()
-            )
-            3 -> Step3GenderAndAge(
-                birthDate = uiState.birthDate,
-                selectedGender = uiState.gender,
-                onBirthDateChange = viewModel::updateBirthDate,
-                onGenderSelect = viewModel::selectGender,
-                onNextClick = viewModel::nextStep,
-                onBackClick = viewModel::previousStep,
-                canProceed = viewModel.canProceedFromGenderAndAgeStep()
-            )
-            4 -> Step4Nickname(
-                nickname = uiState.nickname,
-                userRole = uiState.userRole,
-                onNicknameChange = viewModel::updateNickname,
-                onNextClick = viewModel::nextStep,
-                onBackClick = viewModel::previousStep,
-                canProceed = viewModel.canProceedFromNicknameStep()
-            )
-            5 -> Step5ArtType(
-                selectedArtType = uiState.artType,
-                onArtTypeSelect = viewModel::selectArtType,
-                onNextClick = viewModel::nextStep,
-                onBackClick = viewModel::previousStep,
-                canProceed = viewModel.canProceedFromArtTypeStep()
+            when (uiState.currentStep) {
+                1 -> Step1EmailPassword(
+                    email = uiState.email,
+                    password = uiState.password,
+                    passwordConfirm = uiState.passwordConfirm,
+                    onEmailChange = viewModel::updateEmail,
+                    onPasswordChange = viewModel::updatePassword,
+                    onPasswordConfirmChange = viewModel::updatePasswordConfirm,
+                    onNextClick = viewModel::nextStep,
+                    onBackClick = viewModel::onBack,
+                    canProceed = viewModel.canProceedFromEmailPasswordStep()
+                )
+                2 -> Step2RoleSelection(
+                    selectedRole = uiState.userRole,
+                    onRoleSelect = viewModel::selectUserRole,
+                    onNextClick = viewModel::nextStep,
+                    onBackClick = viewModel::previousStep,
+                    canProceed = viewModel.canProceedFromRoleSelectionStep()
+                )
+                3 -> Step3GenderAndAge(
+                    birthDate = uiState.birthDate,
+                    selectedGender = uiState.gender,
+                    onBirthDateChange = viewModel::updateBirthDate,
+                    onGenderSelect = viewModel::selectGender,
+                    onNextClick = viewModel::nextStep,
+                    onBackClick = viewModel::previousStep,
+                    canProceed = viewModel.canProceedFromGenderAndAgeStep()
+                )
+                4 -> Step4Nickname(
+                    nickname = uiState.nickname,
+                    userRole = uiState.userRole,
+                    onNicknameChange = viewModel::updateNickname,
+                    onNextClick = viewModel::nextStep,
+                    onBackClick = viewModel::previousStep,
+                    canProceed = viewModel.canProceedFromNicknameStep()
+                )
+                5 -> Step5ArtType(
+                    selectedArtType = uiState.artType,
+                    onArtTypeSelect = viewModel::selectArtType,
+                    onNextClick = viewModel::nextStep,
+                    onBackClick = viewModel::previousStep,
+                    canProceed = viewModel.canProceedFromArtTypeStep()
+                )
+            }
+        }
+
+        // 로딩 인디케이터
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = YeobaegDarkBrown)
+            }
+        }
+
+        // 에러 다이얼로그
+        if (uiState.error != null) {
+            AlertDialog(
+                onDismissRequest = { viewModel.clearError() },
+                title = { Text("오류") },
+                text = { Text(uiState.error ?: "") },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.clearError() }) {
+                        Text("확인")
+                    }
+                }
             )
         }
     }
