@@ -15,6 +15,9 @@ data class PaginationResponse(
 fun PaginationResponse.toDomain(): Pagination {
     return Pagination(
         currentPage = currentPage,
-        hasNext = hasNext
+        hasNext = hasNext,
+        totalPages = totalPages,
+        totalElements = totalElements,
+        pageSize = pageSize
     )
 }

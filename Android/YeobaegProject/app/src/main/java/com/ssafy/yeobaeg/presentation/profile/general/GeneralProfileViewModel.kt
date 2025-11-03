@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.UserInfo
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +26,7 @@ class GeneralProfileViewModel @Inject constructor(
     private val navigator: Navigator,
     private val profileRepository: ProfileRepository
 
-) : ViewModel() {
+) : ProfileViewModel(navigator) {
     private val _uiState = MutableStateFlow(GeneralProfileUiState())
     val uiState: StateFlow<GeneralProfileUiState> = _uiState.asStateFlow()
 

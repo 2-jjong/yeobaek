@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ProfileViewModel @Inject constructor(
+open class ProfileViewModel @Inject constructor(
     private val navigator: Navigator,
 ) : ViewModel() {
     fun navigateBack() = viewModelScope.launch {

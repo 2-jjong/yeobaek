@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.BookmarkArtwork
 import com.ssafy.yeobaeg.domain.model.BookmarkCafe
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
+import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,8 +23,10 @@ data class BookmarkItemUiState(
 
 @HiltViewModel
 class BookmarkViewModel @Inject constructor(
-    private val repository: ProfileRepository
-) : ViewModel() {
+    private val repository: ProfileRepository,
+    private val navigator: Navigator,
+
+    ): ProfileViewModel(navigator) {
     private val _uiState = MutableStateFlow(BookmarkItemUiState())
     val uiState: StateFlow<BookmarkItemUiState> = _uiState.asStateFlow()
 

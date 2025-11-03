@@ -53,7 +53,6 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 @Composable
 fun CafeOwnerProfileScreen(
     cafeViewModel: CafeOwnerProfileViewModel = hiltViewModel(),
-    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by cafeViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -76,8 +75,8 @@ fun CafeOwnerProfileScreen(
         CafeOwnerProfileContent(
             userInfo = uiState.userInfo,
             cafeInfo = uiState.cafeInfo,
-            onEditClick = profileViewModel::navigateToEditProfile,
-            onBookmarkClick = profileViewModel::navigateToBookmark
+            onEditClick = cafeViewModel::navigateToEditProfile,
+            onBookmarkClick = cafeViewModel::navigateToBookmark
         )
     }
 }

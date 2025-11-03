@@ -10,7 +10,8 @@ import retrofit2.http.Query
 
 interface ProfileApiService {
     @GET("users/me")
-    suspend fun getProfile(): Response<BaseResponse<GetProfileResponseDto>>
+    suspend fun getProfile(
+    ): Response<BaseResponse<GetProfileResponseDto>>
 
     @GET("artworks/bookmarks")
     suspend fun getBookmarkArtworkList(
@@ -23,4 +24,5 @@ interface ProfileApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
     ): Response<BaseResponse<BookmarkCafesResponse>>
+
 }

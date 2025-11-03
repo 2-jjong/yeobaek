@@ -42,7 +42,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.UserInfo
-import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
+import com.ssafy.yeobaeg.presentation.profile.cafe.ErrorContent
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
@@ -51,7 +51,6 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 @Composable
 fun GeneralProfileScreen(
     generalViewModel: GeneralProfileViewModel = hiltViewModel(),
-    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val generalUiState by generalViewModel.uiState.collectAsStateWithLifecycle()
 
@@ -74,8 +73,8 @@ fun GeneralProfileScreen(
             else -> {
                 GeneralProfileContent(
                     userInfo = generalUiState.userInfo,
-                    onEditClick = profileViewModel::navigateToEditProfile,
-                    onBookmarkClick = profileViewModel::navigateToBookmark
+                    onEditClick = generalViewModel::navigateToEditProfile,
+                    onBookmarkClick = generalViewModel::navigateToBookmark
                 )
             }
         }
