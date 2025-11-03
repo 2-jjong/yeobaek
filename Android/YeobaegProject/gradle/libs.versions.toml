@@ -58,13 +58,6 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 # Serialization
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 
-# Coil
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
-
-# Arcore & SceneView
-arsceneview = { module = "io.github.sceneview:arsceneview", version.ref = "arsceneview" }
-core = { module = "com.google.ar:core", version.ref = "core" }
-
 # DataStore
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 

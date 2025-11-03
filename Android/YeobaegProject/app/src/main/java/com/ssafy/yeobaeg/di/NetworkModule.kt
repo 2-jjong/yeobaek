@@ -5,6 +5,8 @@ import com.ssafy.yeobaeg.BuildConfig
 import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
+import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
+import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import com.ssafy.yeobaeg.data.network.AuthAuthenticator
 import com.ssafy.yeobaeg.data.network.AuthTokenInterceptor
@@ -116,6 +118,8 @@ object NetworkModule {
     @Singleton
     @AuthRetrofit
     fun provideAuthRetrofit(@AuthOkHttpClient okHttpClient: OkHttpClient, json: Json): Retrofit {
+    @GeneralRetrofit
+    fun provideRetrofit(@GeneralOkHttpClient okHttpClient: OkHttpClient, json: Json): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
