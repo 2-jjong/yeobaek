@@ -32,11 +32,7 @@ class CafeOwnerProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CafeProfileUiState())
     val uiState: StateFlow<CafeProfileUiState> = _uiState.asStateFlow()
 
-    init {
-        loadCafeProfile()
-    }
-
-    private fun loadCafeProfile() {
+    fun loadCafeProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
