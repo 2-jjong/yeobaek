@@ -24,11 +24,6 @@ class AuthAuthenticator @Inject constructor(
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        // 이미 refresh 요청이 실패한 경우 null 반환 (무한 루프 방지)
-        if (response.request.url.toString().contains("/auth/refresh")) {
-            return null
-        }
-
         // refresh token으로 새 토큰 발급
         return runBlocking {
             try {
