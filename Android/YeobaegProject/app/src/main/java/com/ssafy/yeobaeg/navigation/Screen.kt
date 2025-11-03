@@ -27,6 +27,9 @@ sealed interface FullScreen : Screen {
 
     @Serializable
     data object RegisterCafe: FullScreen
+
+    @Serializable
+    data object BookmarkList: FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {

@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
 
 @Composable
 fun MainBottomBar(
@@ -85,12 +86,12 @@ private fun RowScope.MainBottomBarItem(
             Icon(
                 painter = painterResource(tab.iconResId),
                 contentDescription = tab.contentDescription,
-                tint = if (selected) iconTint else Color.Gray,
+                tint = if (selected) iconTint else YeobaegGray,
             )
             Text(
                 text = tab.label,
                 style = MaterialTheme.typography.labelSmall,
-                color = if (selected) iconTint else Color.Gray
+                color = if (selected) iconTint else YeobaegGray
             )
         }
     }
