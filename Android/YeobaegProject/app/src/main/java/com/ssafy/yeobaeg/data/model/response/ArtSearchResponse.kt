@@ -1,5 +1,7 @@
 package com.ssafy.yeobaeg.data.model.response
 
+import com.ssafy.yeobaeg.data.model.PaginationResponse
+import com.ssafy.yeobaeg.data.model.toDomain
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.domain.model.art.ArtSearchResult
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
@@ -10,7 +12,7 @@ import kotlinx.serialization.Serializable
 data class ArtSearchResponse(
     val artists: List<Artist>,
     val artworks: List<Artwork>,
-    val pagination: Pagination
+    val pagination: PaginationResponse
 )
 
 @Serializable
