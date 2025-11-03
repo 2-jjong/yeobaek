@@ -66,16 +66,6 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * id로 사용자 조회
-     * @param id 조회할 id
-     * @return 사용자 엔티티 (Optional)
-     */
-    @Override
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
-    }
-
-    /**
      * 내 프로필 조회
      * @param userId 사용자 ID
      * @return 사용자 프로필 데이터
