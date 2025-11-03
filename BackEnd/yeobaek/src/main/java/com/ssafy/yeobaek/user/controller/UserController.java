@@ -9,6 +9,7 @@ import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
 import com.ssafy.yeobaek.user.dto.response.*;
 import com.ssafy.yeobaek.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -178,7 +179,7 @@ public class UserController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
                             )
                     )
             ),
@@ -190,11 +191,11 @@ public class UserController {
                             examples = {
                                     @ExampleObject(
                                             name = "닉네임 길이 오류",
-                                            value = "{\"code\": \"US4002\", \"data\": null, \"message\": \"닉네임은 2자 이상 15자 이하이어야 합니다\"}"
+                                            value = "{\"code\": \"US4002\", \"message\": \"닉네임은 2자 이상 15자 이하이어야 합니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "작가 소개 길이 오류",
-                                            value = "{\"code\": \"US4003\", \"data\": null, \"message\": \"작가 소개는 250자 이하이어야 합니다\"}"
+                                            value = "{\"code\": \"US4003\", \"message\": \"작가 소개는 250자 이하이어야 합니다\"}"
                                     )
                             }
                     )
@@ -206,12 +207,16 @@ public class UserController {
                             mediaType = "application/json",
                             examples = {
                                     @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
                                             name = "유효하지 않은 토큰",
-                                            value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "만료된 토큰",
-                                            value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
                                     )
                             }
                     )
@@ -222,7 +227,7 @@ public class UserController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"US4041\", \"data\": null, \"message\": \"존재하지 않는 회원입니다\"}"
+                                    value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"
                             )
                     )
             ),
@@ -232,16 +237,18 @@ public class UserController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
     })
-    @PutMapping("/me")
+    @PatchMapping("/me")
     public ResponseEntity<ResponseDto<Void>> updateProfile(
-            @RequestBody UpdateProfileRequest request
+            @Valid @RequestBody UpdateProfileRequest request
     ) {
-        // Mock 데이터: 성공 응답 반환
+        Long userId = SecurityUtil.getCurrentUserId();
+        userService.updateProfile(userId, request);
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success());
