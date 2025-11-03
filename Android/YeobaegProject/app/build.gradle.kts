@@ -60,7 +60,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-
+    
     // Navigation 3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
@@ -81,7 +81,6 @@ dependencies {
     // Serialization
     implementation(libs.kotlinx.serialization.json)
 
-    // Coil
     implementation(libs.core)
     implementation(libs.arsceneview)
     implementation(libs.sceneview)

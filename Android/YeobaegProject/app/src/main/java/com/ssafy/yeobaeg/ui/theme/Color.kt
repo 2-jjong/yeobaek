@@ -17,9 +17,21 @@ val YeobaegYellow = Color(0xFFFFFBEB)  // 연한 노랑 배경
 
 val YeobaegTextGray = Color(0xFF6B7280)  // 텍스트 회색
 val YeobaegLightGray = Color(0xFFE5E7EB)  // 연한 회색
-val YeobaegDarkGray = Color(0xFF5B5F66)  // 진한 회색
+val YeobaegGray = Color(0xFF5B5F66)  // 회색
+val YeobaegDarkGray = Color(0xFF374151)  // 진한 회색
 
 val YeobaegWhite = Color(0xFFFFFFFF)  // 흰색
 val YeobaegBlack = Color(0xFF000000)  // 검은색
 
 val YeobaegDivider = Color(0xFFE0E0E0)  // 구분선
+
+val YeobaegLightGreen = Color(0xFFDCFCE7)  // 연한 초록
+val YeobaegLightBlue = Color(0xFFDBEAFE)  // 연한 파랑
+val YeobaegLightYellow = Color(0xFFFEF9C3)  // 연한 노랑
+val YeobaegLightRed = Color(0xFFFEE2E2)  // 연한 빨강
+
+val YeobaegDarkGreen = Color(0xFF047857)  // 초록
+val YeobaegDarkBlue = Color(0xFF2563EB)  // 파랑
+val YeobaegDarkYellow = Color(0xFFCA8A04)  // 노랑
+val YeobaegDarkRed = Color(0xFFB91C1C)  // 빨강
+

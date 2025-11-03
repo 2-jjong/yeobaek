@@ -23,9 +23,6 @@ okhttp = "5.0.0-alpha.14"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-arsceneview = { module = "io.github.sceneview:arsceneview", version.ref = "arsceneview" }
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
-core = { module = "com.google.ar:core", version.ref = "core" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -59,6 +56,13 @@ kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 # Serialization
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
+
+# Coil
+coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+
+# Arcore & SceneView
+arsceneview = { module = "io.github.sceneview:arsceneview", version.ref = "arsceneview" }
+core = { module = "com.google.ar:core", version.ref = "core" }
 
 # Retrofit & OkHttp
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

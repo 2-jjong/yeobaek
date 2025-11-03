@@ -24,7 +24,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,7 +44,7 @@ import com.ssafy.yeobaeg.domain.model.CafeInfo
 import com.ssafy.yeobaeg.domain.model.UserInfo
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 
@@ -330,7 +329,7 @@ fun MenuListItem(
             painter = painterResource(id = icon),
             contentDescription = "설정 아이콘",
             modifier = Modifier.size(20.dp),
-            tint = YeobaegDarkGray
+            tint = YeobaegGray
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(

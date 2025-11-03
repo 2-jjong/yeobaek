@@ -53,6 +53,7 @@ import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileViewModel
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 import com.ssafy.yeobaeg.ui.theme.jansilFont
@@ -107,7 +108,7 @@ fun ProfileEditScreen(
             Text(
                 text = "프로필 사진 변경",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = YeobaegGray
             )
 
             Spacer(modifier = Modifier.height(40.dp))

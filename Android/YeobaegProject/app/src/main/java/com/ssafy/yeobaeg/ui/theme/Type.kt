@@ -24,9 +24,16 @@ val jansilFont = FontFamily(
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily =jansilFont,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
+        letterSpacing = 0.5.sp
+    ),
+    titleSmall = TextStyle(
+        fontFamily = jansilFont,
+        fontWeight = FontWeight.Medium,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
         letterSpacing = 0.5.sp
     )
     /* Other default text styles to override
