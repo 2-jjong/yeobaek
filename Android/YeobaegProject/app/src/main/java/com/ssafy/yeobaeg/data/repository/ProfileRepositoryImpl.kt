@@ -77,8 +77,8 @@ class ProfileRepositoryImpl @Inject constructor(
         nickname: String?,
         profileImageUrl: String?,
         introduction: String?
-    ) {
-        runCatching {
+    ):Result<Unit> {
+        return runCatching {
             val response = api.updateProfileNickname(
                 request = UpdateProfileRequest(
                     nickname = nickname,
@@ -86,11 +86,11 @@ class ProfileRepositoryImpl @Inject constructor(
                     introduction = introduction
                 )
             )
+
             if (!response.isSuccessful) {
                 throw Exception("프로필 수정 실패: ${response.code()} ${response.message()}")
             }
-        }.onFailure {
-            throw it
+            Unit
         }
     }
 }

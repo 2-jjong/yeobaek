@@ -13,25 +13,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileEditViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
     private val repository: ProfileRepository,
     private val navigator: Navigator,
-
     )  : ProfileViewModel(navigator){
-
-    val initialNickname: String = savedStateHandle.get<String>("nickname") ?: ""
 
     fun updateProfileNickname(newNickname: String, newImage: String? ,artistDes:String?) = viewModelScope.launch {
         viewModelScope.launch {
-            try {
-                repository.updateProfile(
-                    nickname = newNickname,
-                    profileImageUrl = null, // 이미지 비워서 전달
-                    introduction = null
-                )
-                navigateBack()
-            } catch (e: Exception) {
-                Log.e("ProfileEdit", "프로필 수정 실패", e)
+            repository.updateProfile(
+                nickname = newNickname,
+                profileImageUrl = null,
+                introduction = null
+            ).onSuccess {
+                navigator.navigateBack() // 성공 시 이동
+            }.onFailure { e ->
+                Log.e("ProfileUpdate", "프로필 수정 실패", e)
             }
         }
     }

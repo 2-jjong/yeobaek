@@ -12,6 +12,6 @@ interface ProfileRepository {
         nickname: String?,
         profileImageUrl: String?,
         introduction: String?
-    )
+    ):Result<Unit>
 }
 
