@@ -180,7 +180,7 @@ private fun BrowseContent(
     categories: List<ArtworkCategory>,
     selected: ArtworkCategory,
     onCategory: (ArtworkCategory) -> Unit,
-    onClickArtwork: (Long) -> Unit,
+    onClickArtwork: (Long) -> Unit = {},
     artworks: List<ArtworkSummary>
 ) {
     Column(modifier = modifier) {
@@ -290,7 +290,7 @@ fun SearchResultContent(
     modifier: Modifier,
     artists: List<ArtistSummary>,
     artworks: List<ArtworkSummary>,
-    onClickArtwork : (Long) -> Unit
+    onClickArtwork : (Long) -> Unit = {}
 ) {
     ArtworkGrid(
         items = artworks,
@@ -415,7 +415,6 @@ private fun PreviewSearchResultContent() {
     MaterialTheme {
         SearchResultContent(
             modifier = Modifier.fillMaxSize(),
-            keyword = "김예술",
             artists = listOf(
                 ArtistSummary(
                     artistId = 1L,
