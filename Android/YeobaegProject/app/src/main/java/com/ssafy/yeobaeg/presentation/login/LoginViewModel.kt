@@ -100,5 +100,38 @@ class LoginViewModel @Inject constructor(
             it.copy(error = null)
         }
     }
+    
+    // 테스트용 로그인 함수
+    fun loginWithTestUser(email: String, password: String) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(isLoading = true, error = null)
+            }
+            
+            authRepository.login(email, password)
+                .onSuccess { userRole ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = null)
+                    }
+                    
+                    // UserRole에 따라 다른 홈 화면으로 이동
+                    val homeScreen = when (userRole) {
+                        UserRole.GENERAL -> BottomNavScreen.Home
+                        UserRole.ARTIST -> BottomNavScreen.Home
+                        UserRole.CAFE_OWNER -> BottomNavScreen.Home
+                    }
+                    
+                    navigator.navigateAndClearBackStack(homeScreen)
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.message
+                        )
+                    }
+                }
+        }
+    }
 }
 
