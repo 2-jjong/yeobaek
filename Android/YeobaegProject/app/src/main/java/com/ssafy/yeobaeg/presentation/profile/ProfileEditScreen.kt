@@ -1,4 +1,5 @@
 package com.ssafy.yeobaeg.presentation.profile
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -23,7 +24,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,20 +47,16 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileViewModel
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable
 fun ProfileEditScreen(
     modifier: Modifier = Modifier,
-    viewModel: CafeOwnerProfileViewModel= hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     var nickname by remember { mutableStateOf("") }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -73,14 +68,14 @@ fun ProfileEditScreen(
     ) { uri ->
         uri?.let {
             selectedImageUri = it
-             //TODO: ViewModel에 이미지 저장
+            //TODO: ViewModel에 이미지 저장
         }
     }
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
                 title = "프로필 편집",
-                onBackClick = {viewModel.navigateBack()},
+                onBackClick = { viewModel.navigateBack() },
                 actionIcon = null,
                 onActionClick = {}
             )
@@ -122,7 +117,7 @@ fun ProfileEditScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             // 저장하기 버튼
-            SaveButton(onClick={viewModel.navigateBack()})
+            SaveButton(onClick = { viewModel.navigateBack() })
         }
         // 바텀시트
         if (showBottomSheet) {
@@ -210,6 +205,7 @@ fun BottomSheetMenuItem(
         )
     }
 }
+
 @Composable
 fun ProfileImageSection(
     imageUri: Uri?,
@@ -310,7 +306,7 @@ fun SaveButton(
     onClick: () -> Unit
 ) {
     Button(
-        onClick =  onClick ,
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
