@@ -2,12 +2,12 @@ version: '3.8'
 
 services:
   yeobaek-app:
-    image: ${IMAGE_NAME}:${BUILD_NUMBER}
+    build: .
     container_name: yeobaek-app
     ports:
-      - "8081:8081"
+      - "8080:8080"
     env_file:
-      - ./BackEnd/yeobaek/yeobaek.env
+      - ./yeobaek.env
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - TZ=Asia/Seoul
