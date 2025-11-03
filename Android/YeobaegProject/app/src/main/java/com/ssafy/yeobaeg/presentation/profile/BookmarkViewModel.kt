@@ -18,6 +18,7 @@ data class BookmarkItemUiState(
     val isLoading: Boolean = false,
     val bookmarkArtwork: BookmarkArtwork? = null,
     val bookmarkCafe: BookmarkCafe? = null,
+    val totalBookmarkCnt:Int=0,
     val errorMessage: String? = null
 )
 
