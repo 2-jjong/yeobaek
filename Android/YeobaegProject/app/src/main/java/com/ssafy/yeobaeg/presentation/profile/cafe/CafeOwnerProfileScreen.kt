@@ -46,7 +46,7 @@ import com.ssafy.yeobaeg.domain.model.UserInfo
 import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 
@@ -339,7 +339,7 @@ fun MenuListItem(
             painter = painterResource(id = icon),
             contentDescription = "설정 아이콘",
             modifier = Modifier.size(20.dp),
-            tint = YeobaegDarkGray
+            tint = YeobaegGray
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(

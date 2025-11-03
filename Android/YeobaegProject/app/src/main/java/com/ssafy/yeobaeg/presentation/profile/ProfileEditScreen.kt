@@ -103,7 +103,7 @@ fun ProfileEditScreen(
             Text(
                 text = "프로필 사진 변경",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = YeobaegGray
             )
 
             Spacer(modifier = Modifier.height(40.dp))
