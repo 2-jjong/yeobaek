@@ -23,6 +23,12 @@ sealed interface FullScreen : Screen {
     data object  ProfileEdit: FullScreen
 
     @Serializable
+    data object SpaceScan : FullScreen
+
+    @Serializable
+    data object RegisterCafe: FullScreen
+
+    @Serializable
     data object BookmarkList: FullScreen
 }
 

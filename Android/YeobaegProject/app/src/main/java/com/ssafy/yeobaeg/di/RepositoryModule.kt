@@ -1,8 +1,10 @@
 package com.ssafy.yeobaeg.di
 
 import com.ssafy.yeobaeg.data.repository.AuthRepositoryImpl
+import com.ssafy.yeobaeg.data.repository.CafeRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.ProfileRepositoryImpl
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
+import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import dagger.Binds
 import dagger.Module
@@ -25,5 +27,11 @@ abstract class RepositoryModule {
     abstract fun bindProfileRepository(
         profileRepositoryImpl: ProfileRepositoryImpl
     ): ProfileRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindCafeRepository(
+        cafeRepositoryImpl: CafeRepositoryImpl
+    ): CafeRepository
 }
 

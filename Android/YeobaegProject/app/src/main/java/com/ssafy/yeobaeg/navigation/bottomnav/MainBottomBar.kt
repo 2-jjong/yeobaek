@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +35,7 @@ fun MainBottomBar(
     val iconTint = Color(0xff754106)
 
     Box(modifier = Modifier.background(Color.White)) {
+        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
         Row(
             modifier =
                 Modifier

@@ -1,12 +1,12 @@
 package com.ssafy.yeobaeg.presentation.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -18,9 +18,10 @@ import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
-import com.ssafy.yeobaeg.presentation.arcore.ARMeasureViewModel
+import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
+import com.ssafy.yeobaeg.presentation.home.cafeowner.register.RegisterCafeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
@@ -34,9 +35,6 @@ fun NavGraph(
     navBackStack: NavBackStack,
     onTabSelected: (MainTab) -> Unit = {},
 ) {
-    val context = LocalContext.current
-    val arMeasureViewModel: ARMeasureViewModel = hiltViewModel(context as MainActivity)
-
     Scaffold(
         bottomBar = {
             if (navBackStack.last() is BottomNavScreen)
@@ -52,6 +50,7 @@ fun NavGraph(
             backStack = navBackStack,
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.White)
                 .padding(innerPadding),
             entryDecorators = listOf(
                 rememberSceneSetupNavEntryDecorator(),
@@ -100,6 +99,15 @@ fun NavGraph(
 
                     is FullScreen.ProfileEdit -> NavEntry(key) {
                         ProfileEditScreen()
+                    }
+
+                    is FullScreen.SpaceScan -> NavEntry(key) {
+                        ARMeasureScreen()
+                    }
+
+                    is FullScreen.RegisterCafe -> NavEntry(key) {
+                        // Cafe Registration Screen Composable
+                        RegisterCafeScreen()
                     }
 
                     is FullScreen.BookmarkList -> NavEntry(key) {

@@ -74,7 +74,10 @@ fun CafeOwnerHomeScreen(
             displaySlots = displaySlots,
             displayWalls = displayWalls,
             selectedTab = selectedTab,
-            onTabSelected = { viewModel.selectTab(it) }
+            onRegisterClick = viewModel::navigateToRegister,
+            onTabSelected = { viewModel.selectTab(it) },
+            onScanClick = viewModel::navigateToSpaceScan,
+            onSearchArtistClick = { /* TODO: 작가 찾기 클릭 처리 */ }
         )
     }
 }
@@ -85,7 +88,10 @@ private fun CafeOwnerHomeScreen(
     displaySlots: List<DisplaySlot> = emptyList(),
     displayWalls: List<DisplayWall> = emptyList(),
     selectedTab: CafeOwnerTab = CafeOwnerTab.PLAN,
-    onTabSelected: (CafeOwnerTab) -> Unit = {}
+    onRegisterClick: () -> Unit = {},
+    onTabSelected: (CafeOwnerTab) -> Unit = {},
+    onScanClick: () -> Unit = {},
+    onSearchArtistClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -109,7 +115,7 @@ private fun CafeOwnerHomeScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            CafeOwnerHomeActions(isNeedRegister = true)
+            CafeOwnerHomeActions(onRegisterClick = onRegisterClick)
 
             CafeOwnerHomeEmptyContent()
         } else {
@@ -130,7 +136,10 @@ private fun CafeOwnerHomeScreen(
                 )
                 Spacer(Modifier.height(8.dp))
 
-                CafeOwnerHomeActions()
+                CafeOwnerHomeActions(
+                    onScanClick = onScanClick,
+                    onSearchArtistClick = onSearchArtistClick
+                )
                 Spacer(Modifier.height(8.dp))
 
                 CafeOwnerHomeContent(displaySlots, displayWalls, selectedTab, onTabSelected)
@@ -175,29 +184,36 @@ fun CafeOwnerHomeHeader(
 }
 
 @Composable
-fun CafeOwnerHomeActions(isNeedRegister: Boolean = false) {
+fun CafeOwnerHomeActions(
+    onRegisterClick: (() -> Unit)? = null,
+    onScanClick: () -> Unit = {},
+    onSearchArtistClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp)
     ) {
-        if (isNeedRegister) YeobaegOutlinedButton(
+        if (onRegisterClick != null) YeobaegOutlinedButton(
             modifier = Modifier.weight(1f),
             text = "카페 등록",
-            icon = R.drawable.ic_cafe_add
+            icon = R.drawable.ic_cafe_add,
+            onClick = onRegisterClick
         )
         else {
             YeobaegOutlinedButton(
                 modifier = Modifier.weight(1f),
                 text = "공간 스캔",
-                icon = R.drawable.ic_cafe_add
+                icon = R.drawable.ic_cafe_add,
+                onClick = onScanClick
             )
             Spacer(Modifier.width(16.dp))
 
             YeobaegOutlinedButton(
                 modifier = Modifier.weight(1f),
                 text = "작가 찾기",
-                icon = R.drawable.ic_cafe_add
+                icon = R.drawable.ic_cafe_add,
+                onClick = onSearchArtistClick
             )
         }
     }
