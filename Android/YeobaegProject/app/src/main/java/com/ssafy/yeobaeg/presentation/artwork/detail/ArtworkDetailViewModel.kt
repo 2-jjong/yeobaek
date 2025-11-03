@@ -7,6 +7,7 @@ import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +30,8 @@ class ArtworkDetailViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ArtworkDetailUiState())
     val uiState: StateFlow<ArtworkDetailUiState> = _uiState.asStateFlow()
 
+    private var toggleJob: Job? = null
+
     fun onBackClick() = viewModelScope.launch {
         navigator.navigateBack()
     }
@@ -41,17 +44,28 @@ class ArtworkDetailViewModel @Inject constructor(
                     _uiState.update { it.copy(loading = false, artwork = detail) }
                 }
                 .onFailure { error ->
-                    _uiState.update{ it.copy(loading = false, error = error.message ?: "알 수 없는 오류") }
+                    _uiState.update {
+                        it.copy(
+                            loading = false,
+                            error = error.message ?: "알 수 없는 오류"
+                        )
+                    }
                 }
         }
     }
 
     fun toggleBookmark() {
         val d = _uiState.value.artwork ?: return
-        viewModelScope.launch {
-            _uiState.update { it.copy(artwork = d.copy(isBookmarked = !d.isBookmarked)) }
-            artRepository.toggleBookmark(d.artworkId).onFailure {
-                _uiState.update { it.copy(artwork = d.copy(isBookmarked = !d.isBookmarked)) }
+        val b = d.isBookmarked
+
+        toggleJob?.cancel()
+
+        toggleJob = viewModelScope.launch {
+            _uiState.update { it.copy(artwork = d.copy(isBookmarked = !b)) }
+            artRepository.toggleBookmark(d.artworkId).onSuccess { response ->
+                _uiState.update { it.copy(artwork = d.copy(isBookmarked = response)) }
+            }.onFailure {
+                _uiState.update { it.copy(artwork = d.copy(isBookmarked = b)) }
             }
         }
     }
