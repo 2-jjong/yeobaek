@@ -5,12 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
@@ -109,6 +111,66 @@ fun LoginScreen(
                 onClick = viewModel::login,
                 enabled = !uiState.isLoading
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // 테스트용 구분선
+            Text(
+                text = "━━━━━━ 테스트 로그인 ━━━━━━",
+                color = YeobaegTextGray,
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 테스트 버튼 3개
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // 일반 사용자 버튼
+                YeobaegButton(
+                    text = "일반",
+                    onClick = {
+                        viewModel.loginWithTestUser(
+                            email = "user1@example.com",
+                            password = "Password123!"
+                        )
+                    },
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // 작가 버튼
+                YeobaegButton(
+                    text = "작가",
+                    onClick = {
+                        viewModel.loginWithTestUser(
+                            email = "user2@example.com",
+                            password = "Password123!"
+                        )
+                    },
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // 카페 사장 버튼
+                YeobaegButton(
+                    text = "사장",
+                    onClick = {
+                        viewModel.loginWithTestUser(
+                            email = "user3@example.com",
+                            password = "Password123!"
+                        )
+                    },
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
