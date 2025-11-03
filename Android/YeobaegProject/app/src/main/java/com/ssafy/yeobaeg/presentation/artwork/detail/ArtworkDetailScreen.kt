@@ -100,8 +100,9 @@ fun ArtworkDetailScreen(
             YeobaegTopAppBar(
                 title = "작품 상세",
                 onBackClick = onBackClick,
-                actionIcon = if (artwork.isBookmarked) R.drawable.ic_heart else R.drawable.ic_heart,
-                onActionClick = toggleBookmark
+                actionIcon = if (artwork.isBookmarked) R.drawable.ic_fill_heart else R.drawable.ic_heart,
+                onActionClick = toggleBookmark,
+                iconTint = YeobaegDarkRed
             )
         },
         bottomBar = {
