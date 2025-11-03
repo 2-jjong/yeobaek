@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.ssafy.yeobaeg.BuildConfig
+import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
 import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
@@ -43,6 +44,7 @@ object NetworkModule {
     // 공통: Json 설정
     @Provides
     @Singleton
+    @NetworkJson
     fun provideJson(): Json = Json {
         ignoreUnknownKeys = true
         prettyPrint = false
@@ -94,7 +96,7 @@ object NetworkModule {
     @GeneralRetrofit
     fun provideGeneralRetrofit(
         @GeneralOkHttpClient okHttpClient: OkHttpClient,
-        json: Json
+        @NetworkJson json: Json
     ): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
@@ -110,7 +112,7 @@ object NetworkModule {
     @AuthRetrofit
     fun provideAuthRetrofit(
         @AuthOkHttpClient okHttpClient: OkHttpClient,
-        json: Json
+        @NetworkJson json: Json
     ): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
@@ -137,4 +139,9 @@ object NetworkModule {
     @Singleton
     fun provideCafeApiService(@GeneralRetrofit retrofit: Retrofit): CafeApiService =
         retrofit.create(CafeApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideArtApiService(@GeneralRetrofit retrofit: Retrofit): ArtworkApiService =
+        retrofit.create(ArtworkApiService::class.java)
 }

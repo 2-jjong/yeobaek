@@ -5,6 +5,8 @@ import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.model.BaseResponse
 import com.ssafy.yeobaeg.data.model.auth.LoginRequest
 import com.ssafy.yeobaeg.data.model.auth.SignUpRequest
+import com.ssafy.yeobaeg.di.NetworkJson
+import com.ssafy.yeobaeg.di.StoreJson
 import com.ssafy.yeobaeg.domain.model.AuthEvent
 import com.ssafy.yeobaeg.domain.model.User
 import com.ssafy.yeobaeg.domain.model.UserRole
@@ -22,7 +24,7 @@ import javax.inject.Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val authApiService: AuthApiService,
     private val tokenDataSource: TokenDataSource,
-    private val json: Json
+    @StoreJson private val json: Json
 ) : AuthRepository {
     
     private val currentUserFlow = MutableStateFlow<User?>(null)

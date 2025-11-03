@@ -1,7 +1,8 @@
 package com.ssafy.yeobaeg.presentation.common.component
 
+import android.R.attr.contentDescription
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -12,13 +13,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
@@ -30,7 +29,8 @@ fun YeobaegTopAppBar(
     title: String,
     onBackClick: () -> Unit,
     showBackButton: Boolean = true,
-    actionIcon: ImageVector? = null,
+    @DrawableRes actionIcon: Int? = null,
+    iconTint: Color = YeobaegBrown,
     onActionClick: (() -> Unit)? = null
 ) {
     androidx.compose.foundation.layout.Column {
@@ -58,9 +58,9 @@ fun YeobaegTopAppBar(
                 if (onActionClick != null && actionIcon != null) {
                     IconButton(onClick = onActionClick) {
                         Icon(
-                            imageVector = actionIcon,
+                            painter = painterResource(actionIcon),
                             contentDescription = "아이콘",
-                            tint = YeobaegBrown
+                            tint = iconTint,
                         )
                     }
                 }
