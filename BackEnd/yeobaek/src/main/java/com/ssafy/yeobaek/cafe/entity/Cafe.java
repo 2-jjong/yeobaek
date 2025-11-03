@@ -1,0 +1,52 @@
+package com.ssafy.yeobaek.cafe.entity;
+
+import com.ssafy.yeobaek.user.entity.User;
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.util.List;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@Entity
+@Table(name = "cafe")
+public class Cafe {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long cafeId;
+
+    @OneToOne
+    @JoinColumn(name = "owner_id", nullable = false, unique = true)
+    private User cafeOwner;
+
+    @Column(name = "cafe_name", nullable = false)
+    private String cafeName;
+
+    @Column(name = "address", nullable = false)
+    private String address;
+
+    @Column(name = "description", nullable = false)
+    private String description;
+
+    @Column(name = "contact", nullable = false)
+    private String contact;
+
+    @Column(name = "business_start_time", nullable = false)
+    private String businessStartTime;
+
+    @Column(name = "business_end_time", nullable = false)
+    private String businessEndTime;
+
+    @Column(name = "daily_visitors", nullable = false)
+    private String dailyVisitors;
+
+    @Column(name = "view_count", nullable = false)
+    private Integer viewCount;
+
+    @Column(name = "bookmark_count", nullable = false)
+    private Integer bookmarkCount;
+}

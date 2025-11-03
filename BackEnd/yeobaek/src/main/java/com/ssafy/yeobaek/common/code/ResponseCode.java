@@ -65,10 +65,9 @@ public enum ResponseCode {
     ARTWORK_CANNOT_DELETE_EXHIBITING("AW4092", "전시 중이거나 전시 예정인 작품은 삭제할 수 없습니다", HttpStatus.CONFLICT),
 
     // 카페 관련 에러 (400 Bad Request)
-    CAFE_MIN_IMAGES("CF4001", "이미지는 최소 3장 이상 등록해야 합니다", HttpStatus.BAD_REQUEST),
-    CAFE_MAX_IMAGES("CF4002", "이미지는 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
+    CAFE_INVALID_IMAGES_LENGTH("CF4001", "이미지는 3~10장 등록해야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_PRIMARY_IMAGE_ONLY_ONE("CF4003", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
-    CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 1~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
+    CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_DESCRIPTION_LENGTH("CF4005", "카페 소개는 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_COMMISSION_RATE("CF4006", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_HOURS_FORMAT("CF4007", "영업시간 형식이 올바르지 않습니다 (HH:mm)", HttpStatus.BAD_REQUEST),
@@ -84,6 +83,7 @@ public enum ResponseCode {
     // 카페 관련 에러 (404 Not Found)
     CAFE_NOT_FOUND("CF4041", "존재하지 않는 카페입니다", HttpStatus.NOT_FOUND),
     SLOT_NOT_FOUND("CF4042", "존재하지 않는 슬롯입니다", HttpStatus.NOT_FOUND),
+    CAFE_CATEGORY_NOT_FOUND("CF4043", "존재하지 않는 카테고리입니다", HttpStatus.NOT_FOUND),
 
     // 카페 관련 에러 (409 Conflict)
     CAFE_ALREADY_EXISTS("CF4091", "이미 등록된 카페가 있습니다", HttpStatus.CONFLICT),

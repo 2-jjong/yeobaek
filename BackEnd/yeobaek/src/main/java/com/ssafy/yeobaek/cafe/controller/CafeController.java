@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
 import com.ssafy.yeobaek.artwork.dto.response.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
+import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +28,12 @@ import java.util.stream.IntStream;
 @Tag(name = "카페 관리", description = "카페 관리 API")
 @RestController
 @RequestMapping("/api/v1/cafes")
+@RequiredArgsConstructor
 public class CafeController {
 
     private final int MOCK_CAFE_COUNT = 20;
+
+    private final CafeService cafeService;
 
     @Operation(summary = "카페 정보 등록", description = "카페 사장이 매장 상세 정보, 전시 슬롯, 전시 조건을 등록합니다. 회원가입 후 처음 카페 정보를 등록할 때 사용합니다. 이미지는 최소 3장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
@@ -38,7 +44,7 @@ public class CafeController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
                             )
                     )
             ),
@@ -48,13 +54,12 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "최소 이미지 개수 미달", value = "{\"code\": \"CF4001\", \"data\": null, \"message\": \"이미지는 최소 3장 이상 등록해야 합니다\"}"),
-                                    @ExampleObject(name = "최대 이미지 개수 초과", value = "{\"code\": \"CF4002\", \"data\": null, \"message\": \"이미지는 최대 10장까지 등록 가능합니다\"}"),
-                                    @ExampleObject(name = "대표 이미지 오류", value = "{\"code\": \"CF4003\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
-                                    @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"data\": null, \"message\": \"매장명은 1~15자 이내여야 합니다\"}"),
-                                    @ExampleObject(name = "카페 소개 길이 오류", value = "{\"code\": \"CF4005\", \"data\": null, \"message\": \"카페 소개는 최대 500자까지 입력 가능합니다\"}"),
-                                    @ExampleObject(name = "영업시간 형식 오류", value = "{\"code\": \"CF4007\", \"data\": null, \"message\": \"영업시간 형식이 올바르지 않습니다 (HH:mm)\"}"),
-                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}")
+                                    @ExampleObject(name = "이미지 개수 오류", value = "{\"code\": \"CF4001\", \"message\": \"이미지는 3~10장 등록해야 합니다\"}"),
+                                    @ExampleObject(name = "대표 이미지 오류", value = "{\"code\": \"CF4003\", \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
+                                    @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"message\": \"매장명은 2~15자 이내여야 합니다\"}"),
+                                    @ExampleObject(name = "카페 소개 길이 오류", value = "{\"code\": \"CF4005\", \"message\": \"카페 소개는 최대 500자까지 입력 가능합니다\"}"),
+                                    @ExampleObject(name = "영업시간 형식 오류", value = "{\"code\": \"CF4007\", \"message\": \"영업시간 형식이 올바르지 않습니다 (HH:mm)\"}"),
+                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}")
                             }
                     )
             ),
@@ -64,8 +69,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -75,7 +80,17 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4031\", \"data\": null, \"message\": \"카페 사장만 등록할 수 있습니다\"}"
+                                    value = "{\"code\": \"CF4031\", \"message\": \"카페 사장만 등록할 수 있습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"CF4043\", \"message\": \"존재하지 않는 카테고리입니다\"}"
                             )
                     )
             ),
@@ -85,7 +100,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4091\", \"data\": null, \"message\": \"이미 등록된 카페가 있습니다\"}"
+                                    value = "{\"code\": \"CF4091\", \"message\": \"이미 등록된 카페가 있습니다\"}"
                             )
                     )
             ),
@@ -95,13 +110,14 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
     })
     @PostMapping
-    public ResponseEntity<ResponseDto<Void>> createCafe(@RequestBody CreateCafeRequest request) {
+    public ResponseEntity<ResponseDto<Void>> createCafe(@Valid @RequestBody CreateCafeRequest request) {
+        cafeService.createCafe(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ResponseDto.created());
