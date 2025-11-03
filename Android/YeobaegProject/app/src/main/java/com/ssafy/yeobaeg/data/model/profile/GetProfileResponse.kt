@@ -38,7 +38,8 @@ fun CafeProfileResponse.toDomain(): CafeInfo = CafeInfo(
     address = address,
     description = description,
     contact = contact,
-    businessHours = businessHours,
+    businessHoursStart=businessHoursStart,
+    businessHoursEnd=businessHoursEnd,
     ratingStats = ratingStats.toDomain()
 )
 
