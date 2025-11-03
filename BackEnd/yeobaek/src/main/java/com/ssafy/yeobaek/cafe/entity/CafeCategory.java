@@ -14,7 +14,7 @@ public class CafeCategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cateCategoryId;
+    private Long categoryId;
 
     @Column(name = "category_name", nullable = false, unique = true)
     private String categoryName;
