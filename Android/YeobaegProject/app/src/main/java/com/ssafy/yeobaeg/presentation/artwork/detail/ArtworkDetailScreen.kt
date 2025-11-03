@@ -219,7 +219,8 @@ private fun ArtworkImagePager(images: List<String>) {
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 repeat(images.size) { idx ->
                     val active = idx == pagerState.currentPage
@@ -227,7 +228,7 @@ private fun ArtworkImagePager(images: List<String>) {
                         modifier = Modifier
                             .size(if (active) 8.dp else 6.dp)
                             .clip(CircleShape)
-                            .background(if (active) YeobaegDarkBrown else Color(0x66FFFFFF))
+                            .background(if (active) YeobaegDarkBrown else YeobaegLightGray)
                     )
                 }
             }
