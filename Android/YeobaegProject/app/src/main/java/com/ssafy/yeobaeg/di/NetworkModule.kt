@@ -2,11 +2,8 @@ package com.ssafy.yeobaeg.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.ssafy.yeobaeg.BuildConfig
-import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
+import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
-import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
-import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
-import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import com.ssafy.yeobaeg.data.network.AuthAuthenticator
 import com.ssafy.yeobaeg.data.network.AuthTokenInterceptor
@@ -39,57 +36,11 @@ annotation class AuthRetrofit
 @Retention(AnnotationRetention.BINARY)
 annotation class GeneralRetrofit
 
-/**
- * 네트워크 관련 의존성을 제공하는 Hilt 모듈
- */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://k13d207.p.ssafy.io:8080/api/v1/"
-
-    /**
-     * 인증 API 전용 OkHttpClient (Interceptor, Authenticator 없음)
-     * Refresh 토큰 갱신 시 순환 참조 방지를 위해 사용
-     */
-    @Provides
-    @Singleton
-    @AuthOkHttpClient
-    fun provideAuthOkHttpClient(): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        return OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
-
-    /**
-     * 일반 API용 OkHttpClient (Interceptor, Authenticator 포함)
-     */
-    @Provides
-    @Singleton
-    @GeneralOkHttpClient
-    fun provideGeneralOkHttpClient(
-        authTokenInterceptor: AuthTokenInterceptor,
-        authAuthenticator: AuthAuthenticator
-    ): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
-        return OkHttpClient.Builder()
-            .addInterceptor(logging)
-            .addInterceptor(authTokenInterceptor)
-            .authenticator(authAuthenticator)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .build()
-    }
-
+    // 공통: Json 설정
     @Provides
     @Singleton
     fun provideJson(): Json = Json {
@@ -99,27 +50,52 @@ object NetworkModule {
         encodeDefaults = true
     }
 
-    @Provides
-    @Singleton
-    @GeneralRetrofit
-    fun provideRetrofit(@GeneralOkHttpClient okHttpClient: OkHttpClient, json: Json): Retrofit {
-        val contentType = "application/json".toMediaType()
-        return Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(okHttpClient)
-            .addConverterFactory(json.asConverterFactory(contentType))
-            .build()
-    }
+    // 공통: 로깅 인터셉터
+    private fun loggingInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor().apply {
+            level = if (BuildConfig.DEBUG)
+                HttpLoggingInterceptor.Level.BODY
+            else
+                HttpLoggingInterceptor.Level.NONE
+        }
 
-    /**
-     * 인증 API 전용 Retrofit (순환 참조 방지용)
-     */
+    // 인증 전용 OkHttp (인터셉터/인증자 없음) - 순환참조 방지용
     @Provides
     @Singleton
-    @AuthRetrofit
-    fun provideAuthRetrofit(@AuthOkHttpClient okHttpClient: OkHttpClient, json: Json): Retrofit {
+    @AuthOkHttpClient
+    fun provideAuthOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor())
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+    // 일반 OkHttp (토큰 인터셉터 + 인증자 포함)
+    @Provides
+    @Singleton
+    @GeneralOkHttpClient
+    fun provideGeneralOkHttpClient(
+        authTokenInterceptor: AuthTokenInterceptor,
+        authAuthenticator: AuthAuthenticator
+    ): OkHttpClient =
+        OkHttpClient.Builder()
+            .addInterceptor(loggingInterceptor())
+            .addInterceptor(authTokenInterceptor)
+            .authenticator(authAuthenticator)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+    // 일반 Retrofit
+    @Provides
+    @Singleton
     @GeneralRetrofit
-    fun provideRetrofit(@GeneralOkHttpClient okHttpClient: OkHttpClient, json: Json): Retrofit {
+    fun provideGeneralRetrofit(
+        @GeneralOkHttpClient okHttpClient: OkHttpClient,
+        json: Json
+    ): Retrofit {
         val contentType = "application/json".toMediaType()
         return Retrofit.Builder()
             .baseUrl(BuildConfig.BASE_URL)
@@ -128,12 +104,30 @@ object NetworkModule {
             .build()
     }
 
-    /** 서비스들 */
+    // 인증 전용 Retrofit
+    @Provides
+    @Singleton
+    @AuthRetrofit
+    fun provideAuthRetrofit(
+        @AuthOkHttpClient okHttpClient: OkHttpClient,
+        json: Json
+    ): Retrofit {
+        val contentType = "application/json".toMediaType()
+        return Retrofit.Builder()
+            .baseUrl(BuildConfig.BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory(contentType))
+            .build()
+    }
+
+    // === 서비스 바인딩 ===
+    // 토큰 재발급 등 인증 전용 API → AuthRetrofit
     @Provides
     @Singleton
     fun provideAuthApiService(@AuthRetrofit retrofit: Retrofit): AuthApiService =
         retrofit.create(AuthApiService::class.java)
 
+    // 일반 API → GeneralRetrofit
     @Provides
     @Singleton
     fun provideProfileApiService(@GeneralRetrofit retrofit: Retrofit): ProfileApiService =
@@ -141,7 +135,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideCafeApiService(retrofit: Retrofit): CafeApiService =
+    fun provideCafeApiService(@GeneralRetrofit retrofit: Retrofit): CafeApiService =
         retrofit.create(CafeApiService::class.java)
-
 }
