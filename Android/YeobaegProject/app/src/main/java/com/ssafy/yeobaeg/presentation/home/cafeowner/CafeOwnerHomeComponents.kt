@@ -50,7 +50,7 @@ fun CafeDisplayStatus(displaySpace: String, display: String, collaboratingArtist
             Text(
                 text = "전시 공간",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = YeobaegGray
             )
         }
 
@@ -65,7 +65,7 @@ fun CafeDisplayStatus(displaySpace: String, display: String, collaboratingArtist
             Text(
                 text = "전시 중",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = YeobaegGray
             )
         }
 
@@ -80,7 +80,7 @@ fun CafeDisplayStatus(displaySpace: String, display: String, collaboratingArtist
             Text(
                 text = "협업 작가",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = YeobaegGray
             )
         }
     }

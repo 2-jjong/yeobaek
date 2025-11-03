@@ -1,6 +1,6 @@
 package com.ssafy.yeobaeg.presentation.artwork
 
-import com.ssafy.yeobaeg.domain.model.PaginationInfo
+import com.ssafy.yeobaeg.domain.model.Pagination
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 
@@ -27,7 +27,7 @@ data class ArtExploreState(
     val artworks: List<ArtworkSummary> = emptyList(),
     val resultArtists: List<ArtistSummary> = emptyList(),
     val resultArtworks: List<ArtworkSummary> = emptyList(),
-    val paginationInfo: PaginationInfo? = null,
+    val paginationInfo: Pagination? = null,
     val maxWidthCm: Int? = null,
     val maxHeightCm: Int? = null,
 )

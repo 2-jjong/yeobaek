@@ -1,10 +1,11 @@
 package com.ssafy.yeobaeg.presentation.login
 
 import android.util.Log
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.User
-import com.ssafy.yeobaeg.domain.usecase.LoginUseCase
+import com.ssafy.yeobaeg.domain.model.UserRole
+import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -20,13 +21,12 @@ data class LoginUiState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
-    val user: User? = null,
     val error: String? = null
 )
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val loginUseCase: LoginUseCase,
+    private val authRepository: AuthRepository,
     private val navigator: Navigator
 ) : ViewModel() {
     
@@ -44,21 +44,41 @@ class LoginViewModel @Inject constructor(
     fun login() {
         val email = _uiState.value.email
         val password = _uiState.value.password
+        
         viewModelScope.launch {
+            // 입력 검증
+            if (email.isBlank() || password.isBlank()) {
+                _uiState.update {
+                    it.copy(error = "이메일과 비밀번호를 입력해주세요")
+                }
+                return@launch
+            }
+            
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                _uiState.update {
+                    it.copy(error = "올바른 이메일 형식이 아닙니다")
+                }
+                return@launch
+            }
+            
             _uiState.update {
                 it.copy(isLoading = true, error = null)
             }
             
-            loginUseCase(email, password)
-                .onSuccess { user ->
+            authRepository.login(email, password)
+                .onSuccess { userRole ->
                     _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            user = user,
-                            error = null
-                        )
+                        it.copy(isLoading = false, error = null)
                     }
-                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+                    
+                    // UserRole에 따라 다른 홈 화면으로 이동
+                    val homeScreen = when (userRole) {
+                        UserRole.GENERAL -> BottomNavScreen.Home
+                        UserRole.ARTIST -> BottomNavScreen.Home  // 작가는 Home
+                        UserRole.CAFE_OWNER -> BottomNavScreen.Home  // 카페 사장도 Home
+                    }
+                    
+                    navigator.navigateAndClearBackStack(homeScreen)
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -75,9 +95,42 @@ class LoginViewModel @Inject constructor(
         navigator.navigate(FullScreen.SignUp)
     }
     
-    fun clearUser() {
+    fun clearError() {
         _uiState.update {
-            it.copy(user = null)
+            it.copy(error = null)
+        }
+    }
+    
+    // 테스트용 로그인 함수
+    fun loginWithTestUser(email: String, password: String) {
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(isLoading = true, error = null)
+            }
+            
+            authRepository.login(email, password)
+                .onSuccess { userRole ->
+                    _uiState.update {
+                        it.copy(isLoading = false, error = null)
+                    }
+                    
+                    // UserRole에 따라 다른 홈 화면으로 이동
+                    val homeScreen = when (userRole) {
+                        UserRole.GENERAL -> BottomNavScreen.Home
+                        UserRole.ARTIST -> BottomNavScreen.Home
+                        UserRole.CAFE_OWNER -> BottomNavScreen.Home
+                    }
+                    
+                    navigator.navigateAndClearBackStack(homeScreen)
+                }
+                .onFailure { error ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = error.message
+                        )
+                    }
+                }
         }
     }
 }

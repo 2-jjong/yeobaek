@@ -45,6 +45,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -370,4 +371,116 @@ private fun Step2Attributes(
             }
         }
     }
+}
+
+@Preview(showBackground = true, name = "Step 1 - 기본 정보 입력")
+@Composable
+private fun PreviewRegisterCafeScreen_Step1() {
+    RegisterCafeScreen()
+}
+
+@Preview(showBackground = true, name = "Step 1 - 정보 입력 중")
+@Composable
+private fun PreviewStep1BasicInfo_Filled() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(20.dp)
+        ) {
+            Step1BasicInfo(
+                state = RegisterCafeState(
+                    step = 1,
+                    name = "아트카페 여백",
+                    address = "서울시 강남구 신사동 123-45",
+                    description = "예술과 커피가 만나는 특별한 공간입니다. 현대 미술 작품과 함께 여유로운 시간을 보내세요.",
+                    phone = "02-1234-5678",
+                    openTime = "09:00",
+                    closeTime = "22:00",
+                    images = setOf("image1", "image2")
+                ),
+                onName = {},
+                onAddress = {},
+                onDesc = {},
+                onPhone = {},
+                onOpen = {},
+                onClose = {},
+                onAddImage = {},
+                onRemoveImage = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Step 2 - 매장 특성")
+@Composable
+private fun PreviewStep2Attributes_Empty() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(20.dp)
+        ) {
+            Step2Attributes(
+                state = RegisterCafeState(
+                    step = 2,
+                    selectedStyles = emptySet(),
+                    visitorsBand = null
+                ),
+                onToggleStyle = {},
+                onVisitors = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Step 2 - 선택 완료")
+@Composable
+private fun PreviewStep2Attributes_Filled() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(20.dp)
+        ) {
+            Step2Attributes(
+                state = RegisterCafeState(
+                    step = 2,
+                    selectedStyles = setOf(
+                        CafeInteriorStyle.MODERN,
+                        CafeInteriorStyle.MINIMAL,
+                        CafeInteriorStyle.INDUSTRIAL
+                    ),
+                    visitorsBand = VisitorsBand.OVER_500
+                ),
+                onToggleStyle = {},
+                onVisitors = {}
+            )
+        }
+    }
+}
+
+@Preview(showBackground = true, name = "Bottom Bar - Step 1")
+@Composable
+private fun PreviewBottomBarScaffold_Step1() {
+    BottomBarScaffold(
+        step = 1,
+        enabled = true,
+        onPrev = {},
+        onNext = {}
+    )
+}
+
+@Preview(showBackground = true, name = "Bottom Bar - Step 2")
+@Composable
+private fun PreviewBottomBarScaffold_Step2() {
+    BottomBarScaffold(
+        step = 2,
+        enabled = true,
+        onPrev = {},
+        onNext = {}
+    )
 }

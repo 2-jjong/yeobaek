@@ -12,7 +12,7 @@ data class UserProfileResponse(
     val email: String,
     val nickname: String,
     val userType: String,
-    val profileImageUrl: String?,
+    val profileImageUrl: String?=null,
     val birthDate: String?,
     val gender: Gender
 )

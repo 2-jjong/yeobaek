@@ -1,34 +1,16 @@
 package com.ssafy.yeobaeg.presentation.login
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.material3.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.LinkAnnotation
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextLinkStyles
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.withLink
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,203 +19,196 @@ import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 
+/**
+ * Hilt ViewModel 버전
+ * ViewModel을 DI 받아서 State를 UI 버전에 넘겨주는 역할
+ */
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Spacer(modifier = Modifier.height(60.dp))
+    LoginScreen(
+        ui = uiState,
+        onEmailChange = viewModel::updateEmail,
+        onPasswordChange = viewModel::updatePassword,
+        onLoginClick = viewModel::login,
+        onLoginTestUser1 = { viewModel.loginWithTestUser("user1@example.com", "Password123!") },
+        onLoginTestUser2 = { viewModel.loginWithTestUser("user2@example.com", "Password123!") },
+        onLoginTestUser3 = { viewModel.loginWithTestUser("user3@example.com", "Password123!") },
+        onNavigateSignUp = viewModel::navigateSignUp
+    )
+}
 
-        // 로고
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "여백 로고",
-            modifier = Modifier.size(120.dp)
-        )
+/**
+ * 순수 UI 버전 (오버로딩)
+ * 프리뷰나 테스트 시 ViewModel 없이 사용할 수 있음
+ */
+@Composable
+fun LoginScreen(
+    ui: LoginUiState,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+    onLoginClick: () -> Unit,
+    onLoginTestUser1: () -> Unit,
+    onLoginTestUser2: () -> Unit,
+    onLoginTestUser3: () -> Unit,
+    onNavigateSignUp: () -> Unit,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
+        ) {
+            Spacer(modifier = Modifier.height(60.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Image(
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                contentDescription = "여백 로고",
+                modifier = Modifier.size(120.dp)
+            )
 
-        // 환영 메시지
-        Text(
-            text = "다시 만나서 반가워요!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(48.dp))
+            Text(
+                text = "다시 만나서 반가워요!",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
 
-        // 이메일 입력 필드
-        YeobaegTextField(
-            value = uiState.email,
-            onValueChange = viewModel::updateEmail,
-            label = "이메일",
-            placeholder = "이메일을 입력하세요",
-            modifier = Modifier.fillMaxWidth()
-        )
+            Spacer(modifier = Modifier.height(48.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
+            YeobaegTextField(
+                value = ui.email,
+                onValueChange = onEmailChange,
+                label = "이메일",
+                placeholder = "이메일을 입력하세요",
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        // 비밀번호 입력 필드
-        YeobaegTextField(
-            value = uiState.password,
-            onValueChange = viewModel::updatePassword,
-            label = "비밀번호",
-            placeholder = "비밀번호를 입력하세요",
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
+            YeobaegTextField(
+                value = ui.password,
+                onValueChange = onPasswordChange,
+                label = "비밀번호",
+                placeholder = "비밀번호를 입력하세요",
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        // 로그인 버튼
-        YeobaegButton(
-            text = "로그인",
-            onClick = viewModel::login
-        )
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Spacer(modifier = Modifier.weight(1f))
+            YeobaegButton(
+                text = "로그인",
+                onClick = onLoginClick,
+                enabled = !ui.isLoading
+            )
 
-        // 회원가입 링크
-        val annotatedString = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = YeobaegTextGray)) {
-                append("계정이 없으신가요? ")
-            }
-            withLink(
-                LinkAnnotation.Clickable(
-                    tag = "SIGNUP",
-                    styles = TextLinkStyles(
-                        style = SpanStyle(
-                            color = YeobaegDarkBrown,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ),
-                    linkInteractionListener = {
-                        viewModel.navigateSignUp()
-                    }
-                )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "━━━━━━ 테스트 로그인 ━━━━━━",
+                color = YeobaegTextGray,
+                fontSize = 14.sp
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                append("회원가입")
+                YeobaegButton(
+                    text = "일반",
+                    onClick = onLoginTestUser1,
+                    enabled = !ui.isLoading,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                YeobaegButton(
+                    text = "작가",
+                    onClick = onLoginTestUser2,
+                    enabled = !ui.isLoading,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                YeobaegButton(
+                    text = "사장",
+                    onClick = onLoginTestUser3,
+                    enabled = !ui.isLoading,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            val annotatedString = buildAnnotatedString {
+                withStyle(style = SpanStyle(color = YeobaegTextGray)) {
+                    append("계정이 없으신가요? ")
+                }
+                withLink(
+                    LinkAnnotation.Clickable(
+                        tag = "SIGNUP",
+                        styles = TextLinkStyles(
+                            style = SpanStyle(color = YeobaegDarkBrown, fontWeight = FontWeight.Bold)
+                        ),
+                        linkInteractionListener = { onNavigateSignUp() }
+                    )
+                ) {
+                    append("회원가입")
+                }
+            }
+
+            Text(
+                text = annotatedString,
+                modifier = Modifier.padding(bottom = 24.dp)
+            )
+        }
+
+        if (ui.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = YeobaegDarkBrown)
             }
         }
 
-        Text(
-            text = annotatedString,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
+        ui.error?.let {
+            AlertDialog(
+                onDismissRequest = { },
+                title = { Text("오류") },
+                text = { Text(it) },
+                confirmButton = {
+                    TextButton(onClick = { }) { Text("확인") }
+                }
+            )
+        }
     }
 }
 
-@Preview(showBackground = true)
+@Preview
 @Composable
 fun LoginScreenPreview() {
-    YeobaegProjectTheme {
-        LoginScreenContent()
-    }
+    LoginScreen(
+        ui = LoginUiState(email = "test@example.com", password = "", isLoading = false),
+        onEmailChange = {},
+        onPasswordChange = {},
+        onLoginClick = {},
+        onLoginTestUser1 = {},
+        onLoginTestUser2 = {},
+        onLoginTestUser3 = {},
+        onNavigateSignUp = {}
+    )
 }
-
-@Composable
-private fun LoginScreenContent() {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
-    ) {
-        Spacer(modifier = Modifier.height(60.dp))
-
-        // 로고
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_foreground),
-            contentDescription = "여백 로고",
-            modifier = Modifier.size(120.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 환영 메시지
-        Text(
-            text = "다시 만나서 반가워요!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        // 이메일 입력 필드
-        YeobaegTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = "이메일",
-            placeholder = "이메일을 입력하세요",
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // 비밀번호 입력 필드
-        YeobaegTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = "비밀번호",
-            placeholder = "비밀번호를 입력하세요",
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // 로그인 버튼
-        YeobaegButton(
-            text = "로그인",
-            onClick = { }
-        )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // 회원가입 링크
-        val annotatedString = buildAnnotatedString {
-            withStyle(style = SpanStyle(color = YeobaegTextGray)) {
-                append("계정이 없으신가요? ")
-            }
-            withLink(
-                LinkAnnotation.Clickable(
-                    tag = "SIGNUP",
-                    styles = TextLinkStyles(
-                        style = SpanStyle(
-                            color = YeobaegDarkBrown,
-                            fontWeight = FontWeight.Bold
-                        )
-                    ),
-                    linkInteractionListener = { }
-                )
-            ) {
-                append("회원가입")
-            }
-        }
-
-        Text(
-            text = annotatedString,
-            modifier = Modifier.padding(bottom = 24.dp)
-        )
-    }
-}
-

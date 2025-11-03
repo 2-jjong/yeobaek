@@ -26,7 +26,9 @@ import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.register.RegisterCafeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
+import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
+import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
 
@@ -37,7 +39,7 @@ fun NavGraph(
 ) {
     Scaffold(
         bottomBar = {
-            if(navBackStack.last() is BottomNavScreen)
+            if (navBackStack.last() is BottomNavScreen)
                 MainBottomBar(
                     tabs = MainTab.entries.toList(),
                     currentTab = mapTab(navBackStack.lastOrNull()),
@@ -48,7 +50,10 @@ fun NavGraph(
 
         NavDisplay(
             backStack = navBackStack,
-            modifier = Modifier.fillMaxSize().background(Color.White).padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(innerPadding),
             entryDecorators = listOf(
                 rememberSceneSetupNavEntryDecorator(),
                 rememberSavedStateNavEntryDecorator(),
@@ -95,8 +100,8 @@ fun NavGraph(
                         FloorPlanPreview(key.displayWalls)
                     }
 
-                    is BottomNavScreen.Profile-> NavEntry(key){
-//                        GeneralProfileScreen()
+                    is BottomNavScreen.Profile -> NavEntry(key) {
+                        GeneralProfileScreen()
                     }
 
                     is FullScreen.ProfileEdit -> NavEntry(key) {
@@ -114,6 +119,10 @@ fun NavGraph(
 
                     is FullScreen.ArtworkDetail -> NavEntry(key) {
                         ArtworkDetailScreen(artworkId = key.artworkId)
+                    }
+
+                    is FullScreen.BookmarkList -> NavEntry(key) {
+                        BookmarkScreen()
                     }
 
                     else -> throw IllegalArgumentException("Unknown route: $key")

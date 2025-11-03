@@ -60,7 +60,7 @@ class RegisterCafeViewModel @Inject constructor(
         val cafe = RegisterCafe(
             cafeName = s.name,
             address = s.address,
-            description = s.description.ifBlank { null },
+            description = s.description,
             contact = s.phone,
             businessHoursStart = s.openTime,
             businessHoursEnd = s.closeTime,

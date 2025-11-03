@@ -38,12 +38,14 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
@@ -339,5 +341,121 @@ fun ArtistResultSection(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "둘러보기 모드")
+@Composable
+private fun PreviewArtExploreScreen_Browse() {
+    MaterialTheme {
+        BrowseContent(
+            modifier = Modifier.fillMaxSize(),
+            categories = ArtworkCategory.entries,
+            selected = ArtworkCategory.ALL,
+            onCategory = {},
+            artworks = listOf(
+                ArtworkSummary(
+                    artworkId = 1L,
+                    title = "푸른 밤의 꿈",
+                    thumbnailUrl = "https://picsum.photos/seed/art1/600",
+                    price = 5000000,
+                    category = "현대미술",
+                    widthCm = 120,
+                    heightCm = 80,
+                    status = SlotStatus.AVAILABLE,
+                    bookmarkCount = 128
+                ),
+                ArtworkSummary(
+                    artworkId = 2L,
+                    title = "도시의 리듬",
+                    thumbnailUrl = "https://picsum.photos/seed/art2/600",
+                    price = 3500000,
+                    category = "서양화",
+                    widthCm = 90,
+                    heightCm = 120,
+                    status = SlotStatus.AVAILABLE,
+                    bookmarkCount = 67
+                )
+            )
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "최근 검색어 - 있음")
+@Composable
+private fun PreviewRecentSearchContent_WithData() {
+    MaterialTheme {
+        RecentSearchContent(
+            modifier = Modifier.fillMaxSize(),
+            recent = listOf("김예술", "현대미술", "서양화", "추상화"),
+            onSearchClick = {},
+            onRemoveRecent = {},
+            onClearAll = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "최근 검색어 - 없음")
+@Composable
+private fun PreviewRecentSearchContent_Empty() {
+    MaterialTheme {
+        RecentSearchContent(
+            modifier = Modifier.fillMaxSize(),
+            recent = emptyList(),
+            onSearchClick = {},
+            onRemoveRecent = {},
+            onClearAll = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "검색 결과")
+@Composable
+private fun PreviewSearchResultContent() {
+    MaterialTheme {
+        SearchResultContent(
+            modifier = Modifier.fillMaxSize(),
+            keyword = "김예술",
+            artists = listOf(
+                ArtistSummary(
+                    artistId = 1L,
+                    artistName = "김예술",
+                    profileImageUrl = "https://picsum.photos/seed/artist1/200",
+                    introduction = "현대미술과 전통의 조화를 추구하는 작가",
+                    artworkCount = 24
+                ),
+                ArtistSummary(
+                    artistId = 2L,
+                    artistName = "김작가",
+                    profileImageUrl = "https://picsum.photos/seed/artist2/200",
+                    introduction = "추상화 전문 작가",
+                    artworkCount = 18
+                )
+            ),
+            artworks = listOf(
+                ArtworkSummary(
+                    artworkId = 1L,
+                    title = "푸른 밤의 꿈",
+                    thumbnailUrl = "https://picsum.photos/seed/art1/600",
+                    price = 5000000,
+                    category = "현대미술",
+                    widthCm = 120,
+                    heightCm = 80,
+                    status = SlotStatus.AVAILABLE,
+                    bookmarkCount = 128
+                ),
+                ArtworkSummary(
+                    artworkId = 2L,
+                    title = "도시의 리듬",
+                    thumbnailUrl = "https://picsum.photos/seed/art2/600",
+                    price = 3500000,
+                    category = "서양화",
+                    widthCm = 90,
+                    heightCm = 120,
+                    status = SlotStatus.AVAILABLE,
+                    bookmarkCount = 67
+                )
+            )
+        )
     }
 }
