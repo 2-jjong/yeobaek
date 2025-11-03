@@ -21,8 +21,7 @@ public class CafeCategoryServiceImpl implements CafeCategoryService {
     @Override
     public List<CafeCategory> findCategoriesByIds(List<Long> categoryIds) {
         return categoryIds.stream()
-                .map(categoryId -> cafeCategoryRepository.findById(categoryId)
-                        .orElseThrow(() -> new CustomException(ResponseCode.CAFE_CATEGORY_NOT_FOUND)))
+                .map(cafeCategoryRepository::getReferenceById)
                 .collect(Collectors.toList());
     }
 }

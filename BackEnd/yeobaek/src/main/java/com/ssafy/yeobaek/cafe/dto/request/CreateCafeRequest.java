@@ -2,6 +2,7 @@ package com.ssafy.yeobaek.cafe.dto.request;
 
 import java.util.List;
 
+import com.ssafy.yeobaek.common.validation.ValidCategoryIds;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -53,6 +54,7 @@ public class CreateCafeRequest {
 
 	@Schema(description = "인테리어 스타일 (다중 선택)", example = "[1, 2]")
 	@NotEmpty(message = "MISSING_REQUIRED_FIELD")
+	@ValidCategoryIds
 	private List<Long> categoryIds;
 
 	@Schema(description = "카페 이미지 목록 (최소 3장, 최대 10장)")
