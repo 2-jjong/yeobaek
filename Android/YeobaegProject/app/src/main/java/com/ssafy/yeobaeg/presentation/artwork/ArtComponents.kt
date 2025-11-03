@@ -1,6 +1,7 @@
 // ArtComponents.kt
 package com.ssafy.yeobaeg.presentation.artwork
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyRow
@@ -18,7 +19,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import coil.compose.AsyncImage
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
@@ -28,26 +32,34 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 @Composable
 fun ArtworkGrid(
     items: List<ArtworkSummary>,
+    onClickArtwork: (Long) -> Unit,
     modifier: Modifier = Modifier,
     columns: Int = 3,
-    contentPadding: PaddingValues = PaddingValues(0.dp)
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    topContent: @Composable () -> Unit = {}
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = contentPadding,
-        userScrollEnabled = false,
         modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp)
     ) {
-        items(items) { item ->
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            topContent()
+        }
+
+        items(items) { artwork ->
             AsyncImage(
-                model = item.thumbnailUrl,
-                contentDescription = null,
+                model = artwork.thumbnailUrl,
+                contentDescription = artwork.title,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(4.dp))
+                    .clickable { onClickArtwork(artwork.artworkId) }
             )
         }
     }

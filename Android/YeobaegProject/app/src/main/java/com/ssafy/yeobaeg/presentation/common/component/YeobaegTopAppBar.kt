@@ -43,6 +43,7 @@ fun YeobaegTopAppBar(
     onBackClick: () -> Unit,
     showBackButton: Boolean = true,
     @DrawableRes actionIcon: Int?=null,
+    iconTint: Color = YeobaegBrown,
     onActionClick:(()->Unit)?=null
 ) {
     TopAppBar(
@@ -72,7 +73,7 @@ fun YeobaegTopAppBar(
                     Icon(
                         painter = painterResource(actionIcon),
                         contentDescription = "아이콘",
-                        tint= YeobaegBrown
+                        tint= iconTint,
                    )
                 }
             }

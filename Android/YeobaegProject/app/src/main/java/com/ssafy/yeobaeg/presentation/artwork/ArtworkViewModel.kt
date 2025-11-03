@@ -9,6 +9,8 @@ import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.domain.repository.RecentSearchRepository
+import com.ssafy.yeobaeg.navigation.FullScreen
+import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,7 +23,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ArtExploreViewModel @Inject constructor(
     private val recentSearchRepository: RecentSearchRepository,
-    private val artRepository: ArtRepository
+    private val artRepository: ArtRepository,
+    private val navigator: Navigator
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ArtExploreState())
     val uiState: StateFlow<ArtExploreState> = _uiState.asStateFlow()
@@ -103,6 +106,9 @@ class ArtExploreViewModel @Inject constructor(
     fun clearRecent() = viewModelScope.launch { recentSearchRepository.clear() }
     fun removeRecent(item: String) = viewModelScope.launch { recentSearchRepository.remove(item) }
 
+    fun navigateToDetail(artWorkId: Long) = viewModelScope.launch {
+        navigator.navigate(FullScreen.ArtworkDetail(artWorkId))
+    }
     private inline fun update(block: ArtExploreState.() -> ArtExploreState) {
         _uiState.update(block)
     }
