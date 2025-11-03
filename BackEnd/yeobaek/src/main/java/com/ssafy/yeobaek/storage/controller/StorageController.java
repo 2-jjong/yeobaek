@@ -47,7 +47,7 @@ public class StorageController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": [{\"presignedUrl\": \"https://yeobaek-bucket.s3.ap-northeast-2.amazonaws.com/artwork/uuid1.jpg?X-Amz-Algorithm=...\", \"fileKey\": \"artwork/uuid1\", \"expiresIn\": 600}, {\"presignedUrl\": \"https://yeobaek-bucket.s3.ap-northeast-2.amazonaws.com/artwork/uuid2.jpg?X-Amz-Algorithm=...\", \"fileKey\": \"artwork/uuid2\", \"expiresIn\": 600}], \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"data\": [{\"presignedUrl\": \"https://yeobaek-bucket.s3.ap-northeast-2.amazonaws.com/artwork/uuid1.jpg?X-Amz-Algorithm=...\", \"fileKey\": \"artwork/uuid1\"}, {\"presignedUrl\": \"https://yeobaek-bucket.s3.ap-northeast-2.amazonaws.com/artwork/uuid2.jpg?X-Amz-Algorithm=...\", \"fileKey\": \"artwork/uuid2\"}], \"message\": \"정상 처리\"}"
                             )
                     )
             ),
@@ -133,7 +133,7 @@ public class StorageController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": {\"presignedUrl\": \"https://yeobaek-bucket.s3.ap-northeast-2.amazonaws.com/artwork/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...\", \"fileKey\": \"artwork/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5\", \"expiresIn\": 600}, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"data\": {\"presignedUrl\": \"https://yeobaek-bucket.s3.ap-northeast-2.amazonaws.com/artwork/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...\", \"fileKey\": \"artwork/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5\"}, \"message\": \"정상 처리\"}"
                             )
                     )
             ),
