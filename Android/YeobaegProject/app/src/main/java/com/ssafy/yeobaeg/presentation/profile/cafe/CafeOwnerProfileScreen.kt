@@ -211,7 +211,7 @@ fun StoreInfoSection(cafeInfo: CafeInfo) {
 
         StoreDetailItem(
             title = "운영시간",
-            subtitle = cafeInfo.businessHours,
+            subtitle = "${cafeInfo.businessHoursStart} - ${cafeInfo.businessHoursEnd}",
             icon = R.drawable.ic_time
         )
 
