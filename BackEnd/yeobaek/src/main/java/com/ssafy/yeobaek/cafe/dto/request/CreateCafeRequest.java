@@ -21,7 +21,7 @@ public class CreateCafeRequest {
 
 	@Schema(description = "매장명", example = "카페 여백")
 	@NotBlank(message = "MISSING_REQUIRED_FIELD")
-	@Size(min = 1, max = 15, message = "CAFE_INVALID_NAME_LENGTH")
+	@Size(min = 2, max = 15, message = "CAFE_INVALID_NAME_LENGTH")
 	private String cafeName;
 
 	@Schema(description = "카페 주소", example = "서울시 강남구 테헤란로 123")

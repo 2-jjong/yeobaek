@@ -67,7 +67,7 @@ public enum ResponseCode {
     // 카페 관련 에러 (400 Bad Request)
     CAFE_INVALID_IMAGES_LENGTH("CF4001", "이미지는 3~10장 등록해야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_PRIMARY_IMAGE_ONLY_ONE("CF4003", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
-    CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 1~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
+    CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_DESCRIPTION_LENGTH("CF4005", "카페 소개는 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_COMMISSION_RATE("CF4006", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_HOURS_FORMAT("CF4007", "영업시간 형식이 올바르지 않습니다 (HH:mm)", HttpStatus.BAD_REQUEST),

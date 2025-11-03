@@ -56,7 +56,7 @@ public class CafeController {
                             examples = {
                                     @ExampleObject(name = "이미지 개수 오류", value = "{\"code\": \"CF4001\", \"message\": \"이미지는 3~10장 등록해야 합니다\"}"),
                                     @ExampleObject(name = "대표 이미지 오류", value = "{\"code\": \"CF4003\", \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
-                                    @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"message\": \"매장명은 1~15자 이내여야 합니다\"}"),
+                                    @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"message\": \"매장명은 2~15자 이내여야 합니다\"}"),
                                     @ExampleObject(name = "카페 소개 길이 오류", value = "{\"code\": \"CF4005\", \"message\": \"카페 소개는 최대 500자까지 입력 가능합니다\"}"),
                                     @ExampleObject(name = "영업시간 형식 오류", value = "{\"code\": \"CF4007\", \"message\": \"영업시간 형식이 올바르지 않습니다 (HH:mm)\"}"),
                                     @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}")
