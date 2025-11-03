@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -16,14 +18,13 @@ import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
-import com.ssafy.yeobaeg.navigation.navigator.Navigator
-import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
+import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
+import com.ssafy.yeobaeg.presentation.arcore.ARMeasureViewModel
+import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
-import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileScreen
-import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
 
@@ -32,12 +33,15 @@ fun NavGraph(
     navBackStack: NavBackStack,
     onTabSelected: (MainTab) -> Unit = {},
 ) {
+    val context = LocalContext.current
+    val arMeasureViewModel: ARMeasureViewModel = hiltViewModel(context as MainActivity)
+
     Scaffold(
         bottomBar = {
             if (navBackStack.last() is BottomNavScreen)
                 MainBottomBar(
                     tabs = MainTab.entries.toList(),
-                    currentTab = mapTab(navBackStack.lastOrNull(), navBackStack),
+                    currentTab = mapTab(navBackStack.lastOrNull()),
                     onTabSelected = onTabSelected,
                 )
         }
@@ -82,7 +86,11 @@ fun NavGraph(
                     }
 
                     is BottomNavScreen.Home -> NavEntry(key) {
-                        GeneralHomeScreen()
+                        ARMeasureScreen(arMeasureViewModel)
+                    }
+
+                    is BottomNavScreen.SpaceScanPreview -> NavEntry(key) {
+                        FloorPlanPreview(key.displayWalls)
                     }
 
                     is BottomNavScreen.Profile -> NavEntry(key) {
@@ -105,9 +113,7 @@ fun NavGraph(
 }
 
 private fun mapTab(
-    currentRoute: NavKey?,
-    navBackStack: NavBackStack,
-    depth: Int = 1
+    currentRoute: NavKey?
 ): MainTab = when (currentRoute) {
     is BottomNavScreen.Home -> MainTab.HOME
     is BottomNavScreen.Cafe -> MainTab.CAFE

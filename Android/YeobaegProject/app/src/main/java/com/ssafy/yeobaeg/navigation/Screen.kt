@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.navigation
 
 import androidx.navigation3.runtime.NavKey
+import com.ssafy.yeobaeg.domain.model.DisplayWall
 import kotlinx.serialization.Serializable
 
 sealed interface Screen : NavKey
@@ -41,4 +42,7 @@ sealed interface BottomNavScreen : Screen {
 
     @Serializable
     data object Profile : BottomNavScreen
+
+    @Serializable
+    data class SpaceScanPreview(val displayWalls: List<DisplayWall>) : BottomNavScreen
 }

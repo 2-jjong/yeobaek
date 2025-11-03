@@ -81,8 +81,13 @@ dependencies {
     // Serialization
     implementation(libs.kotlinx.serialization.json)
 
+    // Coil
+    implementation(libs.core)
+    implementation(libs.arsceneview)
+    implementation(libs.sceneview)
+
     //Coil
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation(libs.coil.compose)
 
     // Network
     implementation(libs.retrofit)
