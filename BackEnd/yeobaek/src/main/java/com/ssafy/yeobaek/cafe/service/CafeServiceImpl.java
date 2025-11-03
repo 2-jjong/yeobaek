@@ -11,7 +11,7 @@ import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.entity.User;
-import com.ssafy.yeobaek.user.repository.UserRepository;
+import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,7 @@ import java.util.List;
 public class CafeServiceImpl implements CafeService {
 
     private final CafeRepository cafeRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CafeCategoryService cafeCategoryService;
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
     private final CafeImageService cafeImageService;
@@ -41,7 +41,7 @@ public class CafeServiceImpl implements CafeService {
 
         // 2. 사용자 정보 확인
         Long userId = SecurityUtil.getCurrentUserId();
-        User user = userRepository.findById(userId)
+        User user = userService.findById(userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
         // 3. 권한 확인 (카페 사장)

@@ -26,4 +26,11 @@ public interface UserService {
      * @param user 저장할 사용자 엔티티
      */
     void save(User user);
+
+    /**
+     * id로 사용자 조회
+     * @param id 조회할 id
+     * @return 사용자 엔티티 (Optional)
+     */
+    Optional<User> findById(Long id);
 }
