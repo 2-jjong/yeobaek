@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.data.repository
 
 import android.util.Log
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
+import com.ssafy.yeobaeg.data.model.profile.UpdateProfileRequest
 import com.ssafy.yeobaeg.data.model.profile.toDomain
 import com.ssafy.yeobaeg.domain.model.BookmarkArtwork
 import com.ssafy.yeobaeg.domain.model.BookmarkCafe
@@ -69,6 +70,27 @@ class ProfileRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Result.failure(e)
+        }
+    }
+
+    override suspend fun updateProfile(
+        nickname: String?,
+        profileImageUrl: String?,
+        introduction: String?
+    ) {
+        runCatching {
+            val response = api.updateProfileNickname(
+                request = UpdateProfileRequest(
+                    nickname = nickname,
+                    profileImageUrl = profileImageUrl,
+                    introduction = introduction
+                )
+            )
+            if (!response.isSuccessful) {
+                throw Exception("프로필 수정 실패: ${response.code()} ${response.message()}")
+            }
+        }.onFailure {
+            throw it
         }
     }
 }

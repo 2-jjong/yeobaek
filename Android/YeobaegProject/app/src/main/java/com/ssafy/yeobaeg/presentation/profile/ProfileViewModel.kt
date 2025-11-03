@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.domain.model.UserInfo
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +21,7 @@ open class ProfileViewModel @Inject constructor(
         navigator.navigate(FullScreen.BookmarkList)
     }
 
-    fun navigateToEditProfile() = viewModelScope.launch {
-        navigator.navigate(FullScreen.ProfileEdit)
+    fun navigateToEditProfile(userInfo: UserInfo) = viewModelScope.launch {
+        navigator.navigate(FullScreen.ProfileEdit(userInfo))
     }
 }

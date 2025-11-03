@@ -8,6 +8,10 @@ interface ProfileRepository {
     suspend fun getProfile(): Result<Profile>
     suspend fun getBookmarkArtworkList(page: Int, size: Int): Result<BookmarkArtwork>
     suspend fun getBookmarkCafeList(page: Int, size: Int): Result<BookmarkCafe>
-
+    suspend fun updateProfile(
+        nickname: String?,
+        profileImageUrl: String?,
+        introduction: String?
+    )
 }
 

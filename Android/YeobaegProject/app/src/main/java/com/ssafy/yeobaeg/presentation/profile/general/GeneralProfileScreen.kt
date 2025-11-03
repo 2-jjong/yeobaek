@@ -73,7 +73,7 @@ fun GeneralProfileScreen(
             else -> {
                 GeneralProfileContent(
                     userInfo = generalUiState.userInfo,
-                    onEditClick = generalViewModel::navigateToEditProfile,
+                    onEditClick = {generalViewModel.navigateToEditProfile(generalUiState.userInfo)},
                     onBookmarkClick = generalViewModel::navigateToBookmark
                 )
             }

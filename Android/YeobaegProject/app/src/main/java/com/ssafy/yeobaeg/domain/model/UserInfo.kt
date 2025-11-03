@@ -1,5 +1,8 @@
 package com.ssafy.yeobaeg.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class UserInfo (
     val userId: Long = 0L,
     val email: String = "",
