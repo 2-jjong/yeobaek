@@ -4,13 +4,15 @@ import com.ssafy.yeobaek.auth.dto.request.LoginRequest;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.auth.dto.response.EmailCheckData;
 import com.ssafy.yeobaek.auth.dto.response.LoginData;
+import com.ssafy.yeobaek.auth.dto.response.TokenData;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.common.util.JwtUtil;
+import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.entity.User;
-import com.ssafy.yeobaek.user.service.UserServiceImpl;
+import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,9 +25,10 @@ import java.time.LocalDate;
 @Transactional(readOnly = true)
 public class AuthServiceImpl implements AuthService{
 
-    private final UserServiceImpl userServiceImpl;
+    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokenService;
 
     /**
      * 이메일 중복 체크
@@ -34,7 +37,7 @@ public class AuthServiceImpl implements AuthService{
      */
     @Override
     public EmailCheckData checkEmailDuplicate(String email) {
-        boolean exists = userServiceImpl.isEmailExists(email);
+        boolean exists = userService.isEmailExists(email);
         boolean available = !exists; // exists의 반대 (존재하면 사용 불가)
         return new EmailCheckData(email, available);
     }
@@ -47,7 +50,7 @@ public class AuthServiceImpl implements AuthService{
     @Transactional
     public void signup(SignupRequest request) {
         // 이메일 중복 검증
-        if (userServiceImpl.isEmailExists(request.getEmail())) {
+        if (userService.isEmailExists(request.getEmail())) {
             throw new CustomException(ResponseCode.EMAIL_ALREADY_EXISTS);
         }
 
@@ -70,7 +73,7 @@ public class AuthServiceImpl implements AuthService{
                 .build();
 
         // DB 저장
-        userServiceImpl.save(user);
+        userService.save(user);
     }
 
     /**
@@ -81,7 +84,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public LoginData login(LoginRequest request) {
         // 이메일로 사용자 조회
-        User user = userServiceImpl.findByEmail(request.getEmail())
+        User user = userService.findByEmail(request.getEmail())
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
         // 비밀번호 검증
@@ -95,7 +98,60 @@ public class AuthServiceImpl implements AuthService{
         // JWT Refresh Token 생성 (userId만 포함)
         String refreshToken = jwtUtil.generateRefreshToken(user.getId());
 
+        // Refresh Token을 Redis에 저장
+        refreshTokenService.saveRefreshToken(user.getId(), refreshToken);
+
         // LoginData 반환
         return new LoginData(accessToken, refreshToken, user.getUserType());
+    }
+
+    /**
+     * 로그아웃
+     * - Redis에서 Refresh Token 삭제
+     */
+    @Override
+    public void logout() {
+        // 현재 인증된 사용자 ID 조회
+        Long userId = SecurityUtil.getCurrentUserId();
+
+        // Redis에서 Refresh Token 삭제
+        refreshTokenService.deleteRefreshToken(userId);
+    }
+
+    /**
+     * Access Token 재발급
+     * @param refreshToken Refresh Token
+     * @return TokenData (새로운 accessToken, refreshToken)
+     */
+    @Override
+    public TokenData reissue(String refreshToken) {
+        // Refresh Token 유효성 검증
+        if (!jwtUtil.validateToken(refreshToken)) {
+            throw new CustomException(ResponseCode.INVALID_TOKEN);
+        }
+
+        // Refresh Token에서 userId 추출
+        Long userId = jwtUtil.getUserIdFromToken(refreshToken);
+
+        // Redis에 저장된 Refresh Token과 비교
+        if (!refreshTokenService.validateRefreshToken(userId, refreshToken)) {
+            throw new CustomException(ResponseCode.INVALID_TOKEN);
+        }
+
+        // 사용자 정보 조회
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 새로운 Access Token 생성
+        String newAccessToken = jwtUtil.generateAccessToken(user.getId(), user.getUserType());
+
+        // 새로운 Refresh Token 생성
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getId());
+
+        // Redis에 새로운 Refresh Token 저장
+        refreshTokenService.saveRefreshToken(user.getId(), newRefreshToken);
+
+        // 새 토큰들 반환
+        return new TokenData(newAccessToken, newRefreshToken);
     }
 }

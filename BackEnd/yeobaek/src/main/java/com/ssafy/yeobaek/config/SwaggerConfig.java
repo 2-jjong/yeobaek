@@ -23,6 +23,9 @@ public class SwaggerConfig {
                         .version("v1.0.0"))
                 .servers(List.of(
                         new Server()
+                                .url("https://k13d207.p.ssafy.io")
+                                .description("배포 서버"),
+                        new Server()
                                 .url("http://localhost:8080")
                                 .description("로컬 개발 서버")
                 ))
