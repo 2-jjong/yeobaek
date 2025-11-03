@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 
 @Composable
@@ -35,7 +36,7 @@ fun ArtistHomeScreen() {
         Text(
             text = "작품을 전시하고 카페에 전시하세요",
             fontSize = 16.sp,
-            color = Color.Gray,
+            color = YeobaegGray,
             modifier = Modifier.padding(top = 16.dp)
         )
     }
