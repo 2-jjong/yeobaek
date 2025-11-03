@@ -7,8 +7,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -21,14 +19,15 @@ import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
 import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
-import com.ssafy.yeobaeg.presentation.arcore.ARMeasureViewModel
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.register.RegisterCafeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
+import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
+import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
 
@@ -37,12 +36,9 @@ fun NavGraph(
     navBackStack: NavBackStack,
     onTabSelected: (MainTab) -> Unit = {},
 ) {
-    val context = LocalContext.current
-    val arMeasureViewModel: ARMeasureViewModel = hiltViewModel(context as MainActivity)
-
     Scaffold(
         bottomBar = {
-            if(navBackStack.last() is BottomNavScreen)
+            if (navBackStack.last() is BottomNavScreen)
                 MainBottomBar(
                     tabs = MainTab.entries.toList(),
                     currentTab = mapTab(navBackStack.lastOrNull()),
@@ -53,7 +49,10 @@ fun NavGraph(
 
         NavDisplay(
             backStack = navBackStack,
-            modifier = Modifier.fillMaxSize().background(Color.White).padding(innerPadding),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+                .padding(innerPadding),
             entryDecorators = listOf(
                 rememberSceneSetupNavEntryDecorator(),
                 rememberSavedStateNavEntryDecorator(),
@@ -100,8 +99,8 @@ fun NavGraph(
                         FloorPlanPreview(key.displayWalls)
                     }
 
-                    is BottomNavScreen.Profile-> NavEntry(key){
-//                        GeneralProfileScreen()
+                    is BottomNavScreen.Profile -> NavEntry(key) {
+                        GeneralProfileScreen()
                     }
 
                     is FullScreen.ProfileEdit -> NavEntry(key) {
@@ -115,6 +114,10 @@ fun NavGraph(
                     is FullScreen.RegisterCafe -> NavEntry(key) {
                         // Cafe Registration Screen Composable
                         RegisterCafeScreen()
+                    }
+
+                    is FullScreen.BookmarkList -> NavEntry(key) {
+                        BookmarkScreen()
                     }
 
                     else -> throw IllegalArgumentException("Unknown route: $key")

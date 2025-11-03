@@ -247,7 +247,6 @@ fun ARMeasureScreen(
                         // VM 빌드 & 네비
                         viewModel.buildAndNavigate()
 
-                        disposeSceneNodes(nodes, segments, liveLine)
                         liveLine = null
                         lastPoint = null
                         liveDistance = null

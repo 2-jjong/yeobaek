@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.CafeInfo
 import com.ssafy.yeobaeg.domain.model.UserInfo
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
-import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,10 +15,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
 data class CafeProfileUiState(
     val isLoading: Boolean = false,
     val userInfo: UserInfo = UserInfo(),
-    val cafeInfo: CafeInfo= CafeInfo(),
+    val cafeInfo: CafeInfo = CafeInfo(),
     val errorMessage: String? = null
 )
 
@@ -27,7 +28,7 @@ class CafeOwnerProfileViewModel @Inject constructor(
     private val navigator: Navigator,
     private val profileRepository: ProfileRepository
 
-) : ViewModel(){
+) : ProfileViewModel(navigator) {
     private val _uiState = MutableStateFlow(CafeProfileUiState())
     val uiState: StateFlow<CafeProfileUiState> = _uiState.asStateFlow()
 
@@ -72,11 +73,4 @@ class CafeOwnerProfileViewModel @Inject constructor(
     fun refresh() {
         loadCafeProfile()
     }
-    fun navigateToEditProfile() = viewModelScope.launch {
-        navigator.navigate(FullScreen.ProfileEdit)
-    }
-    fun navigateBack() = viewModelScope.launch {
-        navigator.navigateBack()
-    }
-
 }
