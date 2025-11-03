@@ -141,36 +141,6 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
     
-    override suspend fun refresh(): Result<Unit> {
-        return try {
-            val refreshToken = tokenDataSource.getRefreshToken()
-            if (refreshToken == null) {
-                return Result.failure(Exception("Refresh token이 없습니다"))
-            }
-            
-            val response = authApiService.refresh("Bearer $refreshToken")
-            
-            if (response.isSuccessful) {
-                val body = response.body()
-                val tokenResponse = body?.data
-                
-                if (tokenResponse != null) {
-                    tokenDataSource.saveTokens(
-                        accessToken = tokenResponse.accessToken,
-                        refreshToken = tokenResponse.refreshToken
-                    )
-                    Result.success(Unit)
-                } else {
-                    Result.failure(Exception("토큰 갱신 응답 데이터가 없습니다"))
-                }
-            } else {
-                Result.failure(Exception("토큰 갱신에 실패했습니다"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-    
     override fun getCurrentUser(): Flow<User?> {
         return currentUserFlow
     }
@@ -179,10 +149,7 @@ class AuthRepositoryImpl @Inject constructor(
         val token = tokenDataSource.getAccessToken()
         return token != null
     }
-    
-    override suspend fun getAccessToken(): String? {
-        return tokenDataSource.getAccessToken()
-    }
+
     
     override suspend fun emitTokenExpired() {
         _authEvents.emit(AuthEvent.TokenExpired)

@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.data.network
 
+import android.util.Log
 import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
@@ -17,14 +18,6 @@ class AuthTokenInterceptor @Inject constructor(
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
-        
-        // 로그인, 회원가입, refresh 요청은 토큰을 추가하지 않음
-        val url = originalRequest.url.toString()
-        if (url.contains("/auth/login") || 
-            url.contains("/auth/signup") || 
-            url.contains("/auth/refresh")) {
-            return chain.proceed(originalRequest)
-        }
 
         // DataStore에서 토큰 가져오기 (코루틴 블로킹)
         val accessToken = runBlocking {
@@ -33,6 +26,7 @@ class AuthTokenInterceptor @Inject constructor(
 
         // 토큰이 있으면 헤더에 추가
         val requestWithToken = if (accessToken != null) {
+            Log.d("AuthTokenInterceptor", "Adding Authorization header with token: $accessToken")
             originalRequest.newBuilder()
                 .header("Authorization", "Bearer $accessToken")
                 .build()

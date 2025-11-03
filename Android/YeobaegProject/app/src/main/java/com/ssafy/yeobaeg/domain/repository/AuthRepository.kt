@@ -19,10 +19,8 @@ interface AuthRepository {
     
     suspend fun login(email: String, password: String): Result<UserRole>
     suspend fun logout(): Result<Unit>
-    suspend fun refresh(): Result<Unit>
     fun getCurrentUser(): Flow<User?>
     suspend fun isLoggedIn(): Boolean
-    suspend fun getAccessToken(): String?
     
     /**
      * 인증 관련 이벤트를 구독
