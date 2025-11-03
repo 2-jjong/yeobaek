@@ -1,4 +1,4 @@
-package com.ssafy.yeobaeg.data.model.profile
+package com.ssafy.yeobaeg.data.model
 
 import com.ssafy.yeobaeg.domain.model.Pagination
 import kotlinx.serialization.Serializable

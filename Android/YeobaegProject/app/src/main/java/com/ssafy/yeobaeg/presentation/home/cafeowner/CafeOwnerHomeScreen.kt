@@ -50,6 +50,7 @@ import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.DisplayWall
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegGray
@@ -101,7 +102,13 @@ private fun CafeOwnerHomeScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        YBTopBar(title = "카페 관리", iconResId = R.drawable.ic_setting)
+        YeobaegTopAppBar(
+            title = "카페 관리",
+            onBackClick = {},
+            showBackButton = false,
+            actionIcon = R.drawable.ic_setting,
+            onActionClick = {},
+        )
         Spacer(Modifier.height(4.dp))
 
         if (cafeOwnerInfo == null) {
@@ -329,57 +336,6 @@ fun CafeOwnerHomeEmptyContent() {
             style = MaterialTheme.typography.bodyLarge
         )
     }
-}
-
-
-@Composable
-fun YBTopBar(
-    title: String,
-    iconResId: Int,
-    useSpace: Boolean = true,
-    onBackPressed: (() -> Unit)? = null
-) {
-    Column {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (onBackPressed != null) {
-                IconButton(
-                    onClick = { onBackPressed() }
-                ) {
-                    Icon(painter = painterResource(R.drawable.ic_back), contentDescription = null)
-                }
-                Spacer(Modifier.width(4.dp))
-            }
-            Spacer(Modifier.width(8.dp))
-
-            Text(
-                text = title,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(Modifier.weight(1f))
-
-            IconButton(
-                onClick = {}
-            ) {
-                Icon(painter = painterResource(iconResId), contentDescription = null)
-            }
-        }
-        HorizontalDivider(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.LightGray,
-            thickness = 1.dp
-        )
-
-        if (useSpace) Spacer(Modifier.height(16.dp))
-    }
-
-
 }
 
 @Preview(showBackground = true)

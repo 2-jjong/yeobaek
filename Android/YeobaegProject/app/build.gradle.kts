@@ -86,7 +86,6 @@ dependencies {
     implementation(libs.androidx.datastore.preferences.core)
     implementation(libs.androidx.datastore.preferences)
 
-
     implementation(libs.core)
     implementation(libs.arsceneview)
     implementation(libs.sceneview)

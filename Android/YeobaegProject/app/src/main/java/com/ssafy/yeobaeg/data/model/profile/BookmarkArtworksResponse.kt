@@ -1,5 +1,7 @@
 package com.ssafy.yeobaeg.data.model.profile
 
+import com.ssafy.yeobaeg.data.model.PaginationResponse
+import com.ssafy.yeobaeg.data.model.toDomain
 import com.ssafy.yeobaeg.domain.model.BookmarkArtworkSummary
 import com.ssafy.yeobaeg.domain.model.BookmarkArtwork
 import kotlinx.serialization.Serializable

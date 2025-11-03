@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -18,9 +21,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 
 /**
  * 여백 앱 공통 TextField 컴포넌트 (라벨 포함)
@@ -37,6 +42,8 @@ fun YeobaegTextField(
     singleLine: Boolean = true,
     minLine:Int = 1,
     maxLine:Int = if (singleLine) 1 else Int.MAX_VALUE,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Column(modifier = modifier) {
         // 라벨
@@ -73,7 +80,9 @@ fun YeobaegTextField(
             visualTransformation = visualTransformation,
             singleLine = singleLine,
             minLines = minLine,
-            maxLines = maxLine
+            maxLines = maxLine,
+            trailingIcon = trailingIcon,
+            keyboardOptions = keyboardOptions
         )
     }
 }
