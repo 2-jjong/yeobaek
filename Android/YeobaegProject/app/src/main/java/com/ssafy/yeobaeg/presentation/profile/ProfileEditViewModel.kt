@@ -1,8 +1,6 @@
 package com.ssafy.yeobaeg.presentation.profile
 
-import android.media.Image
 import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
@@ -15,19 +13,24 @@ import javax.inject.Inject
 class ProfileEditViewModel @Inject constructor(
     private val repository: ProfileRepository,
     private val navigator: Navigator,
-    )  : ProfileViewModel(navigator){
+) : ViewModel() {
 
-    fun updateProfileNickname(newNickname: String, newImage: String? ,artistDes:String?) = viewModelScope.launch {
+    fun updateProfileNickname(newNickname: String, newImage: String?, artistDes: String?) =
         viewModelScope.launch {
-            repository.updateProfile(
-                nickname = newNickname,
-                profileImageUrl = null,
-                introduction = null
-            ).onSuccess {
-                navigator.navigateBack() // 성공 시 이동
-            }.onFailure { e ->
-                Log.e("ProfileUpdate", "프로필 수정 실패", e)
+            viewModelScope.launch {
+                repository.updateProfile(
+                    nickname = newNickname,
+                    profileImageUrl = null,
+                    introduction = null
+                ).onSuccess {
+                    navigator.navigateBack() // 성공 시 이동
+                }.onFailure { e ->
+                    Log.e("ProfileUpdate", "프로필 수정 실패", e)
+                }
             }
         }
+
+    fun navigateBack() = viewModelScope.launch {
+        navigator.navigateBack()
     }
 }

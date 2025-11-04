@@ -38,7 +38,7 @@ fun ProfileEditScreen(
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     var nickname by rememberSaveable { mutableStateOf(userInfo.nickname) }
-    var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) } // ✅ 선언 추가
+    var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // 갤러리에서 이미지 선택
     val photoPickerLauncher = rememberLauncherForActivityResult(
