@@ -37,7 +37,6 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 @Composable
 fun BookmarkScreen(
     bookmarkViewModel: BookmarkViewModel = hiltViewModel(),
-    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by bookmarkViewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf(0) }
@@ -49,7 +48,7 @@ fun BookmarkScreen(
         topBar = {
             YeobaegTopAppBar(
                 title = "저장 목록",
-                onBackClick = profileViewModel::navigateBack,
+                onBackClick = bookmarkViewModel::navigateBack,
                 actionIcon = null,
                 onActionClick = {}
             )
