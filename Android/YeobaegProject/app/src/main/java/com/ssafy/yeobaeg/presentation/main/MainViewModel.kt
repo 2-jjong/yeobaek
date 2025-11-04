@@ -19,6 +19,8 @@ internal class MainViewModel @Inject constructor(
     private val authSessionManager: AuthSessionManager,
 ) : ViewModel() {
 
+    val userRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
+
     init {
         // 토큰 만료 이벤트 구독
         viewModelScope.launch {
