@@ -1,6 +1,8 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.common.code.ResponseCode;
+import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
@@ -8,13 +10,16 @@ import com.ssafy.yeobaek.user.dto.response.ArtistData;
 import com.ssafy.yeobaek.user.dto.response.CafeData;
 import com.ssafy.yeobaek.user.dto.response.UserData;
 import com.ssafy.yeobaek.user.dto.response.UserProfileData;
+import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.mapper.UserMapper;
+import com.ssafy.yeobaek.user.repository.ArtistRepository;
 import com.ssafy.yeobaek.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -23,6 +28,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final ArtistRepository artistRepository;
     private final UserMapper userMapper;
 
     /**
@@ -53,16 +59,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<User> findById(Long id) {
         return userRepository.findById(id);
-    }
-
-    /**
-     * 사용자 저장
-     * @param user 저장할 사용자 엔티티
-     */
-    @Override
-    @Transactional
-    public void save(User user) {
-        userRepository.save(user);
     }
 
     /**
@@ -117,14 +113,57 @@ public class UserServiceImpl implements UserService {
             user.setProfileImageUrl(request.getProfileImageUrl());
         }
 
-        // TODO: Artist 엔티티 및 Repository 구현 후 작가 소개(introduction) 수정 기능 추가
-        // if (user.getUserType() == UserRole.ARTIST && request.getIntroduction() != null) {
-        //     Artist artist = artistRepository.findByUserId(userId)
-        //             .orElseThrow(() -> new CustomException(ResponseCode.ARTIST_NOT_FOUND));
-        //     artist.setIntroduction(request.getIntroduction());
-        // }
+        // 작가 소개(introduction) 수정
+        if (user.getUserType() == UserRole.ARTIST && request.getIntroduction() != null) {
+            Artist artist = artistRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+            artist.setIntroduction(request.getIntroduction());
+            artistRepository.save(artist);
+        }
 
         // 변경 사항 저장
         userRepository.save(user);
+    }
+
+    /**
+     * Artist 프록시 객체 조회
+     * @param artistId 작가 ID
+     * @return Artist 프록시 객체
+     */
+    @Override
+    public Artist getArtistReference(Long artistId) {
+        return artistRepository.getReferenceById(artistId);
+    }
+
+    /**
+     * 회원가입 - 사용자 생성 및 저장
+     * @param request         회원가입 요청 정보
+     * @param encodedPassword 암호화된 비밀번호
+     */
+    @Override
+    @Transactional
+    public void createUser(SignupRequest request, String encodedPassword) {
+        // User 엔티티 생성
+        User user = User.builder()
+                .userType(UserRole.valueOf(request.getUserType()))
+                .email(request.getEmail())
+                .password(encodedPassword)
+                .nickname(request.getNickname())
+                .birthDate(LocalDate.parse(request.getBirthDate()))
+                .gender(Gender.valueOf(request.getGender()))
+                .build();
+
+        // User 저장
+        userRepository.save(user);
+
+        // ARTIST 타입인 경우 Artist 엔티티 자동 생성
+        if (user.getUserType() == UserRole.ARTIST) {
+            Artist artist = Artist.builder()
+                    .user(user)
+                    .introduction(null)  // 초기값 null
+                    .build();
+            artistRepository.save(artist);
+        }
+
     }
 }
