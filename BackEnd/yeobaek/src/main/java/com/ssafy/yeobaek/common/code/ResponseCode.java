@@ -1,7 +1,11 @@
 package com.ssafy.yeobaek.common.code;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+@Getter
+@RequiredArgsConstructor
 public enum ResponseCode {
     // 성공
     SUCCESS("S0000", "정상 처리", HttpStatus.OK),
@@ -48,16 +52,13 @@ public enum ResponseCode {
     PROFILE_USER_NOT_FOUND("US4041", "존재하지 않는 회원입니다", HttpStatus.NOT_FOUND),
 
     // 작품 관리 관련 에러 (400 Bad Request)
-    ARTWORK_MIN_IMAGES("AW4001", "이미지는 최소 1장 이상 등록해야 합니다", HttpStatus.BAD_REQUEST),
-    ARTWORK_MAX_IMAGES("AW4002", "이미지는 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
+    ARTWORK_INVALID_IMAGES_LENGTH("AW4001", "작품 이미지는 최소 1장 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
     ARTWORK_INVALID_TITLE_LENGTH("AW4003", "작품명은 1~100자 이내여야 합니다", HttpStatus.BAD_REQUEST),
-    ARTWORK_INVALID_DESCRIPTION_LENGTH("AW4004", "작품 설명은 최대 1000자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
+    ARTWORK_INVALID_DESCRIPTION_LENGTH("AW4004", "작품 설명은 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
     ARTWORK_INVALID_CATEGORY("AW4006", "유효하지 않은 카테고리입니다", HttpStatus.BAD_REQUEST),
     ARTWORK_SIZE_FILTER_FORBIDDEN("AW4007", "작품 규격 필터는 카페 사장만 사용할 수 있습니다", HttpStatus.BAD_REQUEST),
-    ARTWORK_PRIMARY_IMAGE_ONLY_ONE("AW4008", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
 
     // 작품 관리 관련 에러 (403 Forbidden)
-    ARTWORK_FORBIDDEN_CREATE("AW4031", "작가만 작품을 등록할 수 있습니다", HttpStatus.FORBIDDEN),
     ARTWORK_FORBIDDEN("AW4032", "본인의 작품만 수정/삭제할 수 있습니다", HttpStatus.FORBIDDEN),
 
     // 작품 관리 관련 에러 (404 Not Found)
@@ -68,7 +69,7 @@ public enum ResponseCode {
     ARTWORK_CANNOT_DELETE_EXHIBITING("AW4092", "전시 중이거나 전시 예정인 작품은 삭제할 수 없습니다", HttpStatus.CONFLICT),
 
     // 카페 관련 에러 (400 Bad Request)
-    CAFE_INVALID_IMAGES_LENGTH("CF4001", "이미지는 3~10장 등록해야 합니다", HttpStatus.BAD_REQUEST),
+    CAFE_INVALID_IMAGES_LENGTH("CF4001", "카페 이미지는 최소 3장 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
     CAFE_PRIMARY_IMAGE_ONLY_ONE("CF4003", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_DESCRIPTION_LENGTH("CF4005", "카페 소개는 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
@@ -99,22 +100,4 @@ public enum ResponseCode {
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;
-
-    ResponseCode(String code, String message, HttpStatus httpStatus) {
-        this.code = code;
-        this.message = message;
-        this.httpStatus = httpStatus;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
 }
