@@ -110,19 +110,13 @@ class LoginViewModel @Inject constructor(
                 .onSuccess { userRole ->
                     // AuthSessionManager에 유저 롤 저장
                     authSessionManager.updateUserRole(userRole)
+
                     
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
                     }
                     
-                    // UserRole에 따라 다른 홈 화면으로 이동
-                    val homeScreen = when (userRole) {
-                        UserRole.GENERAL -> BottomNavScreen.Home
-                        UserRole.ARTIST -> BottomNavScreen.Home
-                        UserRole.CAFE_OWNER -> BottomNavScreen.Home
-                    }
-                    
-                    navigator.navigateAndClearBackStack(homeScreen)
+                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
                 }
                 .onFailure { error ->
                     _uiState.update {

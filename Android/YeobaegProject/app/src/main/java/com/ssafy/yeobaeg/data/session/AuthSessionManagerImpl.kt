@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.data.session
 
+import android.util.Log
 import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.domain.model.AuthEvent
@@ -35,6 +36,7 @@ class AuthSessionManagerImpl @Inject constructor(
     
     override suspend fun updateUserRole(role: UserRole?) {
         _currentUserRole.value = role
+        Log.d("AuthSessionManager", "User role updated to: $role")
     }
     
     override suspend fun clearUserState() {
