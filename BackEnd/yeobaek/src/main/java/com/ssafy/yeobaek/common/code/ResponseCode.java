@@ -14,6 +14,9 @@ public enum ResponseCode {
     UNAUTHORIZED("S4011", "인증이 필요합니다", HttpStatus.UNAUTHORIZED),
     TOKEN_MISSING("S4012", "토큰이 누락되었습니다", HttpStatus.UNAUTHORIZED),
 
+    // 공통 에러 (403 Forbidden)
+    FORBIDDEN("S4031", "해당 요청에 대한 권한이 없습니다", HttpStatus.FORBIDDEN),
+
     // 회원 관련 에러 (400 Bad Request)
     EMAIL_ALREADY_EXISTS("AU4001", "이미 사용 중인 이메일입니다", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD_FORMAT("AU4002", "비밀번호는 8자 이상, 영문+숫자+특수문자 조합이어야 합니다", HttpStatus.BAD_REQUEST),
