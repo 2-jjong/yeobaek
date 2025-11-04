@@ -1,23 +1,36 @@
 package com.ssafy.yeobaek.storage.service;
 
 import com.ssafy.yeobaek.storage.dto.request.PresignedUrlRequest;
-import com.ssafy.yeobaek.storage.dto.response.PresignedUrlResponse;
-
-import java.util.List;
+import com.ssafy.yeobaek.storage.dto.response.PresignedUrl;
+import com.ssafy.yeobaek.storage.dto.response.PresignedUrlListData;
 
 public interface S3Service {
 
     /**
-     * 업로드용 Presigned URL 생성
+     * 다중 Presigned URL 쌍 생성 (업로드용 + 조회용)
      * @param request Presigned URL 생성 요청 정보 (저장 폴더, 개수)
-     * @return Presigned URL 응답 리스트 (URL, 파일 키)
+     * @return Presigned URL 리스트 응답 (fileKey, uploadUrl, downloadUrl)
      */
-    List<PresignedUrlResponse> generatePresignedUrlForUpload(PresignedUrlRequest request);
+    PresignedUrlListData generatePresignedUrlsForUpload(PresignedUrlRequest request);
 
     /**
-     * 다운로드/조회용 Presigned URL 생성
+     * 단일 Presigned URL 쌍 생성 (업로드용 + 조회용)
      * @param fileKey S3 파일 키
-     * @return Presigned URL 문자열
+     * @return Presigned URL 쌍 (fileKey, uploadUrl, downloadUrl)
+     */
+    PresignedUrl generatePresignedUrlPair(String fileKey);
+
+    /**
+     * 업로드용 Presigned URL 생성
+     * @param fileKey S3 파일 키
+     * @return 업로드용 Presigned URL 문자열
+     */
+    String generatePresignedUrlForUpload(String fileKey);
+
+    /**
+     * 조회용 Presigned URL 생성
+     * @param fileKey S3 파일 키
+     * @return 조회용 Presigned URL 문자열
      */
     String generatePresignedUrlForDownload(String fileKey);
 

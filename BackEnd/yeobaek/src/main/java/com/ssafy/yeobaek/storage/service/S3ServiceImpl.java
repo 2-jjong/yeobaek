@@ -1,7 +1,8 @@
 package com.ssafy.yeobaek.storage.service;
 
 import com.ssafy.yeobaek.storage.dto.request.PresignedUrlRequest;
-import com.ssafy.yeobaek.storage.dto.response.PresignedUrlResponse;
+import com.ssafy.yeobaek.storage.dto.response.PresignedUrl;
+import com.ssafy.yeobaek.storage.dto.response.PresignedUrlListData;
 import com.ssafy.yeobaek.common.enums.StorageFolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,39 +33,57 @@ public class S3ServiceImpl implements S3Service {
     private static final Long PRESIGNED_URL_EXPIRATION_MINUTES = 10L;
 
     /**
-     * 업로드용 Presigned URL 생성
+     * 다중 Presigned URL 쌍 생성 (업로드용 + 조회용)
      * @param request Presigned URL 생성 요청 정보 (저장 폴더, 개수)
-     * @return Presigned URL 응답 리스트 (URL, 파일 키, 만료 시간)
+     * @return Presigned URL 리스트 응답 (fileKey, uploadUrl, downloadUrl)
      */
     @Override
-    public List<PresignedUrlResponse> generatePresignedUrlForUpload(PresignedUrlRequest request) {
-        List<PresignedUrlResponse> responses = new ArrayList<>();
+    public PresignedUrlListData generatePresignedUrlsForUpload(PresignedUrlRequest request) {
+        List<PresignedUrl> presignedUrls = new ArrayList<>();
+        StorageFolder folder = StorageFolder.valueOf(request.getFolder());
 
         for (int i = 0; i < request.getCount(); i++) {
-            String fileKey = generateFileKey(StorageFolder.valueOf(request.getFolder()));
-
-            PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(fileKey)
-                    .build();
-
-            PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                    .signatureDuration(Duration.ofMinutes(PRESIGNED_URL_EXPIRATION_MINUTES))
-                    .putObjectRequest(putObjectRequest)
-                    .build();
-
-            String presignedUrl = s3Presigner.presignPutObject(presignRequest).url().toString();
-
-            log.info("Generated presigned URL for upload: {}", fileKey);
-
-            responses.add(PresignedUrlResponse.of(presignedUrl, fileKey));
+            String fileKey = generateFileKey(folder);
+            presignedUrls.add(generatePresignedUrlPair(fileKey));
         }
 
-        return responses;
+        return new PresignedUrlListData(presignedUrls);
     }
 
     /**
-     * 다운로드/조회용 Presigned URL 생성
+     * 단일 Presigned URL 쌍 생성 (업로드용 + 조회용)
+     * @param fileKey S3 파일 키
+     * @return Presigned URL 쌍 (fileKey, uploadUrl, downloadUrl)
+     */
+    @Override
+    public PresignedUrl generatePresignedUrlPair(String fileKey) {
+        String uploadUrl = generatePresignedUrlForUpload(fileKey);
+        String downloadUrl = generatePresignedUrlForDownload(fileKey);
+        return PresignedUrl.of(fileKey, uploadUrl, downloadUrl);
+    }
+
+    /**
+     * 업로드용 Presigned URL 생성
+     * @param fileKey S3 파일 키
+     * @return 업로드용 Presigned URL 문자열
+     */
+    @Override
+    public String generatePresignedUrlForUpload(String fileKey) {
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(fileKey)
+                .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(PRESIGNED_URL_EXPIRATION_MINUTES))
+                .putObjectRequest(putObjectRequest)
+                .build();
+
+        return s3Presigner.presignPutObject(presignRequest).url().toString();
+    }
+
+    /**
+     * 조회용 Presigned URL 생성
      * @param fileKey S3 파일 키
      * @return Presigned URL 문자열
      */
@@ -80,11 +99,7 @@ public class S3ServiceImpl implements S3Service {
                 .getObjectRequest(getObjectRequest)
                 .build();
 
-        String presignedUrl = s3Presigner.presignGetObject(presignRequest).url().toString();
-
-        log.info("Generated presigned URL for download: {}", fileKey);
-
-        return presignedUrl;
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
     }
 
     /**
@@ -99,8 +114,6 @@ public class S3ServiceImpl implements S3Service {
                 .build();
 
         s3Client.deleteObject(deleteObjectRequest);
-
-        log.info("Deleted file from S3: {}", fileKey);
     }
 
     /**
