@@ -53,6 +53,7 @@ import com.ssafy.yeobaeg.domain.model.profile.CafeInfo
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
+import com.ssafy.yeobaeg.presentation.profile.general.LogoutButton
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegGray
@@ -109,7 +110,8 @@ fun CafeOwnerProfileScreen(
                         cafeInfo = uiState.cafeInfo,
                         onEditClick = { cafeViewModel.navigateToEditProfile(uiState.userInfo) },
                         onBookmarkClick = cafeViewModel::navigateToBookmark,
-                        onReviewClick= cafeViewModel::navigateToReviewManagement
+                        onReviewClick= cafeViewModel::navigateToReviewManagement,
+                        onLogoutClick = cafeViewModel::logout
                     )
                 }
             }
@@ -123,7 +125,8 @@ fun CafeOwnerProfileContent(
     cafeInfo: CafeInfo,
     onEditClick: () -> Unit,
     onReviewClick:()-> Unit,
-    onBookmarkClick: () -> Unit
+    onBookmarkClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -151,7 +154,7 @@ fun CafeOwnerProfileContent(
         MenuListSection(onEditClick = onBookmarkClick,onReviewClick=onReviewClick, cafeInfo = cafeInfo)
         Spacer(modifier = Modifier.height(32.dp))
         // 로그아웃 버튼
-        LogoutButton()
+        LogoutButton(onClick=onLogoutClick)
     }
 }
 

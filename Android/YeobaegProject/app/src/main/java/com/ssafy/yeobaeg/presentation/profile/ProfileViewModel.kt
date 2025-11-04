@@ -29,4 +29,9 @@ open class ProfileViewModel @Inject constructor(
     fun navigateToReviewManagement() = viewModelScope.launch {
         navigator.navigate(FullScreen.ReviewManagementScreen)
     }
+
+    fun logout() = viewModelScope.launch {
+        authSessionManager.logout()
+        navigator.navigateAndClearBackStack(FullScreen.Login)
+    }
 }
