@@ -41,7 +41,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.profile.cafe.ErrorContent
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray

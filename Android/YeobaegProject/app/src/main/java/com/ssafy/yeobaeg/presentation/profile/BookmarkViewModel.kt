@@ -1,9 +1,8 @@
 package com.ssafy.yeobaeg.presentation.profile
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.BookmarkArtwork
-import com.ssafy.yeobaeg.domain.model.BookmarkCafe
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtwork
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafe
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
