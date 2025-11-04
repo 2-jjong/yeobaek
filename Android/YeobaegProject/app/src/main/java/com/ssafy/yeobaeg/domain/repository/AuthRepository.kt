@@ -1,10 +1,6 @@
 package com.ssafy.yeobaeg.domain.repository
 
-import com.ssafy.yeobaeg.domain.model.AuthEvent
-import com.ssafy.yeobaeg.domain.model.User
 import com.ssafy.yeobaeg.domain.model.UserRole
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 
 interface AuthRepository {
     suspend fun signUp(
@@ -19,18 +15,5 @@ interface AuthRepository {
     
     suspend fun login(email: String, password: String): Result<UserRole>
     suspend fun logout(): Result<Unit>
-    fun getCurrentUser(): Flow<User?>
-    suspend fun isLoggedIn(): Boolean
-    
-    /**
-     * 인증 관련 이벤트를 구독
-     * (예: 토큰 만료로 인한 자동 로그아웃)
-     */
-    val authEvents: SharedFlow<AuthEvent>
-    
-    /**
-     * 토큰 만료 이벤트 발행 (내부용)
-     */
-    suspend fun emitTokenExpired()
 }
 

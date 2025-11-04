@@ -5,17 +5,9 @@ import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.model.BaseResponse
 import com.ssafy.yeobaeg.data.model.auth.LoginRequest
 import com.ssafy.yeobaeg.data.model.auth.SignUpRequest
-import com.ssafy.yeobaeg.di.NetworkJson
 import com.ssafy.yeobaeg.di.StoreJson
-import com.ssafy.yeobaeg.domain.model.AuthEvent
-import com.ssafy.yeobaeg.domain.model.User
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,11 +18,6 @@ class AuthRepositoryImpl @Inject constructor(
     private val tokenDataSource: TokenDataSource,
     @StoreJson private val json: Json
 ) : AuthRepository {
-    
-    private val currentUserFlow = MutableStateFlow<User?>(null)
-    
-    private val _authEvents = MutableSharedFlow<AuthEvent>(extraBufferCapacity = 1)
-    override val authEvents: SharedFlow<AuthEvent> = _authEvents.asSharedFlow()
     
     override suspend fun signUp(
         userType: String,
@@ -136,25 +123,10 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             // 토큰 삭제
             tokenDataSource.clearTokens()
-            currentUserFlow.value = null
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
         }
-    }
-    
-    override fun getCurrentUser(): Flow<User?> {
-        return currentUserFlow
-    }
-    
-    override suspend fun isLoggedIn(): Boolean {
-        val token = tokenDataSource.getAccessToken()
-        return token != null
-    }
-
-    
-    override suspend fun emitTokenExpired() {
-        _authEvents.emit(AuthEvent.TokenExpired)
     }
 }
 

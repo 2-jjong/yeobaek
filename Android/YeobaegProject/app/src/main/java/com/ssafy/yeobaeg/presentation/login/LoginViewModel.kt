@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -27,6 +28,7 @@ data class LoginUiState(
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val authSessionManager: AuthSessionManager,
     private val navigator: Navigator
 ) : ViewModel() {
     
@@ -67,18 +69,14 @@ class LoginViewModel @Inject constructor(
             
             authRepository.login(email, password)
                 .onSuccess { userRole ->
+                    // AuthSessionManager에 유저 롤 저장
+                    authSessionManager.updateUserRole(userRole)
+                    
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
                     }
-                    
-                    // UserRole에 따라 다른 홈 화면으로 이동
-                    val homeScreen = when (userRole) {
-                        UserRole.GENERAL -> BottomNavScreen.Home
-                        UserRole.ARTIST -> BottomNavScreen.Home  // 작가는 Home
-                        UserRole.CAFE_OWNER -> BottomNavScreen.Home  // 카페 사장도 Home
-                    }
-                    
-                    navigator.navigateAndClearBackStack(homeScreen)
+                  
+                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -110,6 +108,9 @@ class LoginViewModel @Inject constructor(
             
             authRepository.login(email, password)
                 .onSuccess { userRole ->
+                    // AuthSessionManager에 유저 롤 저장
+                    authSessionManager.updateUserRole(userRole)
+                    
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
                     }
