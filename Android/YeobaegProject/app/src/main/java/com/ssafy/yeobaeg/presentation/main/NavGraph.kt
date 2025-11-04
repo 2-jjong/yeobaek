@@ -25,6 +25,7 @@ import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
+import com.ssafy.yeobaeg.presentation.cafe.CafeMapScreen
 import com.ssafy.yeobaeg.presentation.home.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
@@ -101,6 +102,10 @@ fun NavGraph(
                             UserRole.ARTIST-> ArtistHomeScreen()
                             UserRole.GENERAL, null -> GeneralHomeScreen()
                         }
+                    }
+
+                    is BottomNavScreen.Cafe -> NavEntry(key) {
+                        CafeMapScreen()
                     }
 
                     is BottomNavScreen.Artwork -> NavEntry(key) {

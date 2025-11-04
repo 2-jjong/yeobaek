@@ -1,9 +1,12 @@
 package com.ssafy.yeobaeg.data.datasource.remote
 
 import com.ssafy.yeobaeg.data.model.BaseResponse
+import com.ssafy.yeobaeg.data.model.cafe.CafeListResponse
 import com.ssafy.yeobaeg.data.model.request.RegisterCafeRequest
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface CafeApiService {
 
@@ -11,4 +14,34 @@ interface CafeApiService {
     suspend fun registerCafe(
         @Body request: RegisterCafeRequest
     ) : BaseResponse<String>
+    
+    /**
+     * 카페 목록 조회
+     * 
+     * @param keyword 카페명 검색 키워드
+     * @param latitude 위도 (필수)
+     * @param longitude 경도 (필수)
+     * @param minWidth 슬롯 최소 폭 (cm) - 작가만
+     * @param maxWidth 슬롯 최대 폭 (cm) - 작가만
+     * @param minHeight 슬롯 최소 높이 (cm) - 작가만
+     * @param maxHeight 슬롯 최대 높이 (cm) - 작가만
+     * @param minCommission 최소 수수료율 (%) - 작가만
+     * @param maxCommission 최대 수수료율 (%) - 작가만
+     * @param page 페이지 번호 (0부터 시작, 기본값: 0)
+     * @param size 페이지 크기 (기본값: 20, 최대: 50)
+     */
+    @GET("cafes")
+    suspend fun getCafes(
+        @Query("keyword") keyword: String? = null,
+        @Query("latitude") latitude: Double,
+        @Query("longitude") longitude: Double,
+        @Query("minWidth") minWidth: Int? = null,
+        @Query("maxWidth") maxWidth: Int? = null,
+        @Query("minHeight") minHeight: Int? = null,
+        @Query("maxHeight") maxHeight: Int? = null,
+        @Query("minCommission") minCommission: Double? = null,
+        @Query("maxCommission") maxCommission: Double? = null,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): BaseResponse<CafeListResponse>
 }
