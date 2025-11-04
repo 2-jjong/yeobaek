@@ -102,6 +102,9 @@ dependencies {
     implementation(libs.retrofit.serialization.converter)
     implementation(libs.kotlinx.serialization.json)
 
+    // Google Maps
+    implementation(libs.play.services.maps)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
