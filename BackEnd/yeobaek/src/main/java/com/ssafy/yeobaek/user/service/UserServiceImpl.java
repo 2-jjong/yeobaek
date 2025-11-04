@@ -96,6 +96,36 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 특정 사용자 공개 프로필 조회
+     * @param userId 조회할 사용자 ID
+     * @return 공개 프로필 데이터
+     */
+    @Override
+    public UserProfileData getUserProfile(Long userId) {
+        // 사용자 조회
+        User user = findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 공개 프로필용 사용자 기본 정보 변환 (userId, nickname, userType, profileImageUrl만 공개)
+        UserData userData = userMapper.toPublicUserData(user);
+
+        // UserType에 따라 추가 정보 생성 (artist와 cafe 정보는 전부 공개)
+        ArtistData artistData = user.getUserType() == UserRole.ARTIST
+                ? userMapper.toDummyArtistData()
+                : null;
+
+        CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
+                ? userMapper.toDummyCafeData()
+                : null;
+
+        return UserProfileData.builder()
+                .user(userData)
+                .artist(artistData)
+                .cafe(cafeData)
+                .build();
+    }
+
+    /**
      * 프로필 정보 수정
      * @param userId 사용자 ID
      * @param request 수정할 프로필 정보

@@ -27,6 +27,26 @@ public class UserMapper {
                 .profileImageUrl(user.getProfileImageUrl())
                 .birthDate(user.getBirthDate().toString())
                 .gender(user.getGender())
+                .bookmarkCount(37) // TODO: 실제 북마크 수로 변경
+                .build();
+    }
+
+    /**
+     * User 엔티티를 공개 프로필용 UserData DTO로 변환
+     * 공개되는 정보: userId, nickname, userType, profileImageUrl만 포함
+     * @param user User 엔티티
+     * @return 공개 프로필용 UserData DTO
+     */
+    public UserData toPublicUserData(User user) {
+        return UserData.builder()
+                .userId(user.getId())
+                .email(null)
+                .nickname(user.getNickname())
+                .userType(user.getUserType())
+                .profileImageUrl(user.getProfileImageUrl())
+                .birthDate(null)
+                .gender(null)
+                .bookmarkCount(null)
                 .build();
     }
 
