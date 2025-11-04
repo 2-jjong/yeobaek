@@ -28,13 +28,7 @@ interface AuthSessionManager {
      * 로그인 상태 확인
      */
     suspend fun isLoggedIn(): Boolean
-    
-    /**
-     * 현재 사용자의 Role 가져오기
-     * 로그인 상태가 아니면 null 반환
-     */
-    suspend fun getCurrentUserRole(): UserRole?
-    
+
     /**
      * 사용자 Role 업데이트
      */

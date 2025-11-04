@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,7 +23,7 @@ class AuthSessionManagerImpl @Inject constructor(
     private val _currentUserRole = MutableStateFlow<UserRole?>(null)
     override val currentUserRole: StateFlow<UserRole?> = _currentUserRole.asStateFlow()
     
-    private val _authEvents = MutableSharedFlow<AuthEvent>(extraBufferCapacity = 1)
+    private val _authEvents = MutableSharedFlow<AuthEvent>()
     override val authEvents: SharedFlow<AuthEvent> = _authEvents.asSharedFlow()
     
     override suspend fun isLoggedIn(): Boolean {
@@ -30,12 +31,10 @@ class AuthSessionManagerImpl @Inject constructor(
         return token != null
     }
     
-    override suspend fun getCurrentUserRole(): UserRole? {
-        return _currentUserRole.value
-    }
-    
     override suspend fun updateUserRole(role: UserRole?) {
-        _currentUserRole.value = role
+        _currentUserRole.update {
+            role
+        }
         Log.d("AuthSessionManager", "User role updated to: $role")
     }
     
