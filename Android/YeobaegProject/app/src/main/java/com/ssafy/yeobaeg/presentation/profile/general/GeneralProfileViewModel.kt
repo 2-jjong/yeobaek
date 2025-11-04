@@ -3,7 +3,7 @@ package com.ssafy.yeobaeg.presentation.profile.general
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel

@@ -33,6 +33,7 @@ import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
+import com.ssafy.yeobaeg.presentation.profile.ReviewManagementScreen
 import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileScreen
 import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
@@ -141,6 +142,10 @@ fun NavGraph(
 
                     is FullScreen.BookmarkList -> NavEntry(key) {
                         BookmarkScreen()
+                    }
+
+                    is FullScreen.ReviewManagementScreen-> NavEntry(key){
+                        ReviewManagementScreen()
                     }
 
                     else -> throw IllegalArgumentException("Unknown route: $key")

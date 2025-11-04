@@ -49,8 +49,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.CafeInfo
-import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.domain.model.profile.CafeInfo
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
@@ -108,7 +108,8 @@ fun CafeOwnerProfileScreen(
                         userInfo = uiState.userInfo,
                         cafeInfo = uiState.cafeInfo,
                         onEditClick = { cafeViewModel.navigateToEditProfile(uiState.userInfo) },
-                        onBookmarkClick = cafeViewModel::navigateToBookmark
+                        onBookmarkClick = cafeViewModel::navigateToBookmark,
+                        onReviewClick= cafeViewModel::navigateToReviewManagement
                     )
                 }
             }
@@ -121,6 +122,7 @@ fun CafeOwnerProfileContent(
     userInfo: UserInfo,
     cafeInfo: CafeInfo,
     onEditClick: () -> Unit,
+    onReviewClick:()-> Unit,
     onBookmarkClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
@@ -146,7 +148,7 @@ fun CafeOwnerProfileContent(
         Spacer(modifier = Modifier.height(32.dp))
 
         // 설정 메뉴 부분
-        MenuListSection(onClick = onBookmarkClick, cafeInfo = cafeInfo)
+        MenuListSection(onEditClick = onBookmarkClick,onReviewClick=onReviewClick, cafeInfo = cafeInfo)
         Spacer(modifier = Modifier.height(32.dp))
         // 로그아웃 버튼
         LogoutButton()
@@ -265,7 +267,8 @@ fun StoreInfoSection(cafeInfo: CafeInfo) {
 
 @Composable
 fun MenuListSection(
-    onClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onReviewClick: () -> Unit,
     cafeInfo: CafeInfo
 ) {
     Column {
@@ -273,7 +276,7 @@ fun MenuListSection(
             title = "좋아요 한 목록",
             badge = null,
             icon = R.drawable.ic_heart,
-            onClick = onClick
+            onClick = onEditClick
         )
 
         HorizontalDivider(
@@ -296,7 +299,8 @@ fun MenuListSection(
         MenuListItem(
             title = "리뷰 관리",
             badge = cafeInfo.ratingStats.totalReviews,
-            icon = R.drawable.ic_star
+            icon = R.drawable.ic_star,
+            onClick=onReviewClick
         )
 
         HorizontalDivider(
