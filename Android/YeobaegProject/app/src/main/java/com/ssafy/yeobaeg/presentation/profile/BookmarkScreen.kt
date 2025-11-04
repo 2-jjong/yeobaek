@@ -22,8 +22,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.BookmarkArtworkSummary
-import com.ssafy.yeobaeg.domain.model.BookmarkCafeSummary
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafeSummary
 import com.ssafy.yeobaeg.presentation.common.component.PaginatedList
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
@@ -69,7 +69,7 @@ fun BookmarkScreen(
                 contentColor = YeobaegBlack,
                 divider = {},
                 indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
+                    TabRowDefaults.SecondaryIndicator(
                         Modifier
                             .tabIndicatorOffset(tabPositions[selectedTab])
                             .height(3.dp)
@@ -222,8 +222,3 @@ fun SavedCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun SavedListScreenPreview() {
-    BookmarkScreen()
-}
