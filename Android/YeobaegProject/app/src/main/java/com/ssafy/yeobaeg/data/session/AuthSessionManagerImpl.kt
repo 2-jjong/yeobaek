@@ -42,6 +42,14 @@ class AuthSessionManagerImpl @Inject constructor(
         _currentUserRole.value = null
     }
     
+    override suspend fun logout() {
+        // 유저 롤 초기화
+        _currentUserRole.value = null
+        // 토큰 삭제
+        tokenDataSource.clearTokens()
+        Log.d("AuthSessionManager", "User logged out - role and tokens cleared")
+    }
+    
     override suspend fun emitTokenExpired() {
         _authEvents.emit(AuthEvent.TokenExpired)
     }
