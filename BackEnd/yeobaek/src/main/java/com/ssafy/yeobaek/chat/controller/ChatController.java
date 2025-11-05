@@ -1,5 +1,7 @@
 package com.ssafy.yeobaek.chat.controller;
 
+import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoom;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +68,7 @@ public class ChatController {
             )
     })
     @PostMapping()
-    public ResponseEntity<ResponseDto<Void>> createChatRoom() {
+    public ResponseEntity<ResponseDto<ChatRoom>> createChatRoom(@Valid @RequestBody CreateCafeRequest request) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ResponseDto.created());
