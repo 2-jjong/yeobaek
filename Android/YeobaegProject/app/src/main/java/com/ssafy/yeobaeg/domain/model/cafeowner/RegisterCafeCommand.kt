@@ -13,11 +13,5 @@ data class RegisterCafe(
     val businessHoursEnd: String,
     val categories: List<CafeInteriorStyle>,
     val dailyVisitors: VisitorsBand,
-    val images: List<RegisterCafeImage>
-)
-
-data class RegisterCafeImage(
-    val imageUrl: String,
-    val isPrimary: Boolean,
-    val displayOrder: Int
+    val images: List<String>
 )

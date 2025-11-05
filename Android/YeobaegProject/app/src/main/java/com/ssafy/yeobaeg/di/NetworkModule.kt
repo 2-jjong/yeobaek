@@ -6,6 +6,7 @@ import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
 import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
+import com.ssafy.yeobaeg.data.datasource.remote.StorageApiService
 import com.ssafy.yeobaeg.data.network.AuthAuthenticator
 import com.ssafy.yeobaeg.data.network.AuthTokenInterceptor
 import dagger.Module
@@ -144,4 +145,9 @@ object NetworkModule {
     @Singleton
     fun provideArtApiService(@GeneralRetrofit retrofit: Retrofit): ArtworkApiService =
         retrofit.create(ArtworkApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideStorageApiService(@GeneralRetrofit retrofit: Retrofit): StorageApiService =
+        retrofit.create(StorageApiService::class.java)
 }

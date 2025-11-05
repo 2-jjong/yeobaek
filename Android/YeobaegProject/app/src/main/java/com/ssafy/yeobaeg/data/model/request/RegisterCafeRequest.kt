@@ -13,10 +13,8 @@ data class RegisterCafeRequest(
     val contact: String,
     val dailyVisitors: String,
     val description: String,
-    val images: List<Image>
+    val images: List<String>
 )
-
-
 
 fun RegisterCafe.toDto(): RegisterCafeRequest =
     RegisterCafeRequest(
@@ -28,11 +26,5 @@ fun RegisterCafe.toDto(): RegisterCafeRequest =
         contact = contact,
         dailyVisitors = dailyVisitors.label,
         description = description,
-        images = images.map {
-            Image(
-                displayOrder = it.displayOrder,
-                imageUrl = it.imageUrl,
-                isPrimary = it.isPrimary
-            )
-        }
+        images = images
     )
