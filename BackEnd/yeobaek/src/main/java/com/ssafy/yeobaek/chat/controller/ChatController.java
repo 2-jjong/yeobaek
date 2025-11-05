@@ -1,8 +1,10 @@
 package com.ssafy.yeobaek.chat.controller;
 
-import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
+import com.ssafy.yeobaek.chat.dto.request.CreateChatRoomRequest;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoom;
+import com.ssafy.yeobaek.chat.service.ChatService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import com.ssafy.yeobaek.common.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -21,6 +23,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/chats")
 @RequiredArgsConstructor
 public class ChatController {
+
+    private final ChatService chatService;
 
     @Operation(summary = "채팅방 생성", description = "채팅방을 생성합니다.")
     @ApiResponses(value = {
@@ -57,6 +61,14 @@ public class ChatController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"code\": \"AU4041\", \"message\": \"존재하지 않는 회원입니다\"}")
+                            )
+            ),
+            @ApiResponse(
                     responseCode = "500",
                     description = "서버 내부 오류",
                     content = @Content(
@@ -68,9 +80,11 @@ public class ChatController {
             )
     })
     @PostMapping()
-    public ResponseEntity<ResponseDto<ChatRoom>> createChatRoom(@Valid @RequestBody CreateCafeRequest request) {
+    public ResponseEntity<ResponseDto<ChatRoom>> createChatRoom(@Valid @RequestBody CreateChatRoomRequest request) {
+        Long senderId = SecurityUtil.getCurrentUserId();
+        ChatRoom chatRoom = chatService.createChatRoom(senderId, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ResponseDto.created());
+                .body(ResponseDto.created(chatRoom));
     }
 }

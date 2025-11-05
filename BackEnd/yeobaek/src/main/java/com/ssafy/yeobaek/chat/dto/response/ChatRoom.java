@@ -1,7 +1,15 @@
 package com.ssafy.yeobaek.chat.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.*;
 
+@Schema(description = "채팅방 기본 정보")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChatRoom {
     @Schema(description = "채팅방 ID", example = "1")
     private Long chatRoomId;
