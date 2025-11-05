@@ -84,7 +84,7 @@ fun ArtistProfileScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .background(YeobaegWhite)
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
         ) {
             ProfileHeader(
                 userInfo = uiState.userInfo,
@@ -98,7 +98,7 @@ fun ArtistProfileScreen(
                         imageUrls = uiState.images,
                         isLoading = uiState.isLoading,
                         hasNext = uiState.pagination.hasNext,
-                        onLoadMore = { artistViewModel.loadNextArtworks() }
+                        onLoadMore = { artistViewModel.loadNextArtworks() },
                     )
                 }
 
@@ -123,7 +123,9 @@ fun ProfileHeader(
             .background(YeobaegWhite)
             .padding(horizontal = 16.dp, vertical = 20.dp),
     ) {
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             // 프로필 이미지
             AsyncImage(
                 model = "",
@@ -139,8 +141,11 @@ fun ProfileHeader(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
+                //닉네임, 프로필 편집 버튼
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -164,7 +169,7 @@ fun ProfileHeader(
                         )
                     }
                 }
-                Spacer(Modifier.height(15.dp))
+                Spacer(Modifier.height(17.dp))
                 ProfileStatsRow(
                     artworkCount = artistInfo?.artworkCount ?: 0,
                     exhibitingCount = artistInfo?.exhibitingCount
@@ -195,13 +200,11 @@ fun ProfileStatsRow(
     exhibitingCount: Int
 ) {
     Row(
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         ProfileStatItem(artworkCount, "작품 수")
-        Spacer(Modifier.width(45.dp))
         ProfileStatItem(exhibitingCount, "전시 중")
-        Spacer(Modifier.width(45.dp))
         ProfileStatItem(exhibitingCount, "전시 횟수")
     }
 }

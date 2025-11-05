@@ -12,6 +12,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.shape.RoundedCornerShape
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -22,7 +23,6 @@ fun YeobaegGrid(
     isLoading: Boolean,
     hasNext: Boolean,
     onLoadMore: () -> Unit,
-    modifier: Modifier = Modifier,
     columns: Int = 3,
     cornerRadius: Int = 3
 ) {
@@ -50,9 +50,9 @@ fun YeobaegGrid(
     LazyVerticalGrid(
         state = gridState,
         columns = GridCells.Fixed(columns),
-        modifier = modifier
-            .fillMaxSize()
-            .padding(6.dp),
+        contentPadding = PaddingValues(0.dp),
+        modifier = Modifier
+            .fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
@@ -76,7 +76,7 @@ fun YeobaegGrid(
                         .padding(vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(color = YeobaegBrown)
                 }
             }
         }
