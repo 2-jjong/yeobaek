@@ -2,7 +2,13 @@ package com.ssafy.yeobaeg.data.datasource.remote
 
 import com.ssafy.yeobaeg.data.model.BaseResponse
 import com.ssafy.yeobaeg.data.model.response.ArtSearchResponse
+import com.ssafy.yeobaeg.data.model.response.ArtworkDetailData
+import com.ssafy.yeobaeg.data.model.response.ArtworkDetailResponse
+import com.ssafy.yeobaeg.data.model.response.ToggleBookmarkResponse
+import kotlinx.serialization.Serializable
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ArtworkApiService {
@@ -21,4 +27,14 @@ interface ArtworkApiService {
     ): BaseResponse<ArtSearchResponse>
 
 
+    @GET("artworks/{artworkId}")
+    suspend fun getArtworkDetail(
+        @Path("artworkId") artworkId: Long
+    ): BaseResponse<ArtworkDetailResponse>
+
+    @POST("artworks/{artworkId}/bookmarks")
+    suspend fun toggleBookmark(
+        @Path("artworkId") artworkId: Long
+    ): BaseResponse<ToggleBookmarkResponse>
 }
+

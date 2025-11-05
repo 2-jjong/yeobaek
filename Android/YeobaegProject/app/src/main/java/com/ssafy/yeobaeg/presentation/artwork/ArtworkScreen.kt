@@ -109,6 +109,7 @@ fun ArtExploreScreen(
                 categories = state.categories,
                 selected = state.selectedCategory,
                 onCategory = viewModel::selectCategory,
+                onClickArtwork = viewModel::navigateToDetail,
                 artworks = state.artworks
             )
 
@@ -130,9 +131,9 @@ fun ArtExploreScreen(
                 modifier = Modifier
                     .padding(inner)
                     .fillMaxSize(),
-                keyword = state.query,
                 artists = state.resultArtists,
-                artworks = state.resultArtworks
+                artworks = state.resultArtworks,
+                onClickArtwork = viewModel::navigateToDetail
             )
         }
     }
@@ -179,6 +180,7 @@ private fun BrowseContent(
     categories: List<ArtworkCategory>,
     selected: ArtworkCategory,
     onCategory: (ArtworkCategory) -> Unit,
+    onClickArtwork: (Long) -> Unit = {},
     artworks: List<ArtworkSummary>
 ) {
     Column(modifier = modifier) {
@@ -194,6 +196,7 @@ private fun BrowseContent(
         Spacer(Modifier.height(8.dp))
         ArtworkGrid(
             items = artworks,
+            onClickArtwork = onClickArtwork,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 8.dp),
@@ -281,37 +284,24 @@ private fun RecentSearchContent(
         Spacer(Modifier.navigationBarsPadding())
     }
 }
+
 @Composable
 fun SearchResultContent(
     modifier: Modifier,
-    keyword: String,
     artists: List<ArtistSummary>,
-    artworks: List<ArtworkSummary>
+    artworks: List<ArtworkSummary>,
+    onClickArtwork : (Long) -> Unit = {}
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ArtworkGrid(
+        items = artworks,
+        onClickArtwork = onClickArtwork,
         modifier = modifier
             .fillMaxSize()
-            .padding(8.dp)
+            .padding(horizontal = 8.dp),
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             ArtistResultSection(artists = artists)
-        }
-
-        item(span = { GridItemSpan(maxLineSpan) }) {
             Text(text = "작품", modifier = Modifier.padding(8.dp), color = YeobaegTextGray)
-        }
-        items(artworks) { artwork ->
-            AsyncImage(
-                model = artwork.thumbnailUrl,
-                contentDescription = artwork.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(4.dp))
-            )
         }
     }
 }
@@ -425,7 +415,6 @@ private fun PreviewSearchResultContent() {
     MaterialTheme {
         SearchResultContent(
             modifier = Modifier.fillMaxSize(),
-            keyword = "김예술",
             artists = listOf(
                 ArtistSummary(
                     artistId = 1L,

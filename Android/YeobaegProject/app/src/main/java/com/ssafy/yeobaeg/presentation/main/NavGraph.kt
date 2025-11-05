@@ -1,10 +1,12 @@
 package com.ssafy.yeobaeg.presentation.main
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -14,6 +16,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
@@ -21,15 +24,22 @@ import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
 import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
+import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
+import com.ssafy.yeobaeg.presentation.home.ArtistHomeScreen
+import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.register.RegisterCafeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
+import com.ssafy.yeobaeg.presentation.profile.ReviewManagementScreen
+import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileScreen
 import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
+
+val LocalUserRole = compositionLocalOf<UserRole?> { null }
 
 @Composable
 fun NavGraph(
@@ -87,7 +97,11 @@ fun NavGraph(
                     }
 
                     is BottomNavScreen.Home -> NavEntry(key) {
-                        CafeOwnerHomeScreen()
+                        when (LocalUserRole.current) {
+                            UserRole.CAFE_OWNER -> CafeOwnerHomeScreen()
+                            UserRole.ARTIST-> ArtistHomeScreen()
+                            UserRole.GENERAL, null -> GeneralHomeScreen()
+                        }
                     }
 
                     is BottomNavScreen.Artwork -> NavEntry(key) {
@@ -100,11 +114,17 @@ fun NavGraph(
                     }
 
                     is BottomNavScreen.Profile -> NavEntry(key) {
-                        GeneralProfileScreen()
+                        Log.d("NavGraph", "Current UserRole: ${LocalUserRole.current?.displayName}")
+                        when (LocalUserRole.current) {
+                            UserRole.CAFE_OWNER -> CafeOwnerProfileScreen()
+                            UserRole.ARTIST-> GeneralProfileScreen()
+                            UserRole.GENERAL, null -> GeneralProfileScreen()
+                        }
+
                     }
 
                     is FullScreen.ProfileEdit -> NavEntry(key) {
-                        ProfileEditScreen()
+                        ProfileEditScreen(key.userInfo)
                     }
 
                     is FullScreen.SpaceScan -> NavEntry(key) {
@@ -116,8 +136,16 @@ fun NavGraph(
                         RegisterCafeScreen()
                     }
 
+                    is FullScreen.ArtworkDetail -> NavEntry(key) {
+                        ArtworkDetailScreen(artworkId = key.artworkId)
+                    }
+
                     is FullScreen.BookmarkList -> NavEntry(key) {
                         BookmarkScreen()
+                    }
+
+                    is FullScreen.ReviewManagementScreen-> NavEntry(key){
+                        ReviewManagementScreen()
                     }
 
                     else -> throw IllegalArgumentException("Unknown route: $key")

@@ -2,8 +2,8 @@ package com.ssafy.yeobaeg.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.BookmarkArtwork
-import com.ssafy.yeobaeg.domain.model.BookmarkCafe
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtwork
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafe
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,10 +14,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 data class BookmarkItemUiState(
     val isLoading: Boolean = false,
     val bookmarkArtwork: BookmarkArtwork? = null,
     val bookmarkCafe: BookmarkCafe? = null,
+    val totalBookmarkCnt: Int = 0,
     val errorMessage: String? = null
 )
 
@@ -26,7 +28,7 @@ class BookmarkViewModel @Inject constructor(
     private val repository: ProfileRepository,
     private val navigator: Navigator,
 
-    ): ProfileViewModel(navigator) {
+    ) : ViewModel() {
     private val _uiState = MutableStateFlow(BookmarkItemUiState())
     val uiState: StateFlow<BookmarkItemUiState> = _uiState.asStateFlow()
 
@@ -120,4 +122,9 @@ class BookmarkViewModel @Inject constructor(
             loadBookmarkCafes(page = nextPage, append = true)
         }
     }
+
+    fun navigateBack() = viewModelScope.launch {
+        navigator.navigateBack()
+    }
 }
+

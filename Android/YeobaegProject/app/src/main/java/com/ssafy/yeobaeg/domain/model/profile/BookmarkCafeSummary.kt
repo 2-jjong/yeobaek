@@ -1,4 +1,4 @@
-package com.ssafy.yeobaeg.domain.model
+package com.ssafy.yeobaeg.domain.model.profile
 
 import kotlinx.serialization.Serializable
 

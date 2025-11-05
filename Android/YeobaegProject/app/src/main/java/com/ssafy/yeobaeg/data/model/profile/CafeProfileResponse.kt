@@ -12,6 +12,7 @@ data class CafeProfileResponse(
     val address: String,
     val description: String,
     val contact: String,
-    val businessHours: String,
+    val businessHoursStart:String,
+    val businessHoursEnd: String,
     val ratingStats: RatingStatsResponse
 )

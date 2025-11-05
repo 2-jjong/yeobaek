@@ -3,8 +3,9 @@ package com.ssafy.yeobaeg.presentation.profile.general
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,9 +25,9 @@ data class GeneralProfileUiState(
 @HiltViewModel
 class GeneralProfileViewModel @Inject constructor(
     private val navigator: Navigator,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository, authSessionManager: AuthSessionManager
 
-) : ProfileViewModel(navigator) {
+) : ProfileViewModel(navigator, authSessionManager) {
     private val _uiState = MutableStateFlow(GeneralProfileUiState())
     val uiState: StateFlow<GeneralProfileUiState> = _uiState.asStateFlow()
 

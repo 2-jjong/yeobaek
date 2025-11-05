@@ -4,7 +4,7 @@ import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.model.BaseResponse
 import com.ssafy.yeobaeg.data.model.auth.TokenResponse
-import com.ssafy.yeobaeg.domain.repository.AuthRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import kotlinx.coroutines.runBlocking
 import okhttp3.Authenticator
 import okhttp3.Request
@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class AuthAuthenticator @Inject constructor(
     private val tokenDataSource: TokenDataSource,
     private val authApiService: AuthApiService,
-    private val authRepository: AuthRepository
+    private val authSessionManager: AuthSessionManager
 ) : Authenticator {
 
     override fun authenticate(route: Route?, response: Response): Request? {
@@ -57,19 +57,19 @@ class AuthAuthenticator @Inject constructor(
                     } else {
                         // 응답이 비어있으면 로그아웃 + 로그인 화면 이동 이벤트 발행
                         tokenDataSource.clearTokens()
-                        authRepository.emitTokenExpired()
+                        authSessionManager.emitTokenExpired()
                         null
                     }
                 } else {
                     // refresh 실패 시 로그아웃 처리 + 로그인 화면 이동 이벤트 발행
                     tokenDataSource.clearTokens()
-                    authRepository.emitTokenExpired()
+                    authSessionManager.emitTokenExpired()
                     null
                 }
             } catch (e: Exception) {
                 // 예외 발생 시 로그아웃 처리 + 로그인 화면 이동 이벤트 발행
                 tokenDataSource.clearTokens()
-                authRepository.emitTokenExpired()
+                authSessionManager.emitTokenExpired()
                 null
             }
         }

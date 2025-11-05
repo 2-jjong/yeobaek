@@ -8,32 +8,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,36 +27,31 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
-import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
-import com.ssafy.yeobaeg.ui.theme.jansilFont
+import com.ssafy.yeobaeg.ui.theme.*
 
 @Composable
 fun ProfileEditScreen(
-    modifier: Modifier = Modifier,
-    viewModel: ProfileViewModel = hiltViewModel()
+    userInfo: UserInfo,
+    viewModel: ProfileEditViewModel = hiltViewModel(),
 ) {
-    var nickname by remember { mutableStateOf("") }
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
+    var nickname by rememberSaveable { mutableStateOf(userInfo.nickname) }
+    var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // 갤러리에서 이미지 선택
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        uri?.let {
-            selectedImageUri = it
-            //TODO: ViewModel에 이미지 저장
-        }
+        uri?.let { selectedImageUri = it }
     }
+
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
                 title = "프로필 편집",
-                onBackClick = { viewModel.navigateBack() },
+                onBackClick = viewModel::navigateBack,
                 actionIcon = null,
                 onActionClick = {}
             )
@@ -84,15 +59,13 @@ fun ProfileEditScreen(
         containerColor = YeobaegWhite
     ) { paddingValues ->
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White)
                 .padding(paddingValues)
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-
             // 프로필 이미지 섹션
             ProfileImageSection(
                 imageUri = selectedImageUri,
@@ -118,20 +91,27 @@ fun ProfileEditScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             // 저장하기 버튼
-            SaveButton(onClick = { viewModel.navigateBack() })
+            SaveButton(
+                onClick = {
+                    viewModel.updateProfileNickname(
+                        newNickname = nickname,
+                        newImage = null,
+                        artistDes = null
+                    )
+                }
+            )
         }
-        // 바텀시트
+
+        // 바텀시트 (사진 선택용)
         if (showBottomSheet) {
             ImagePickerBottomSheet(
                 onDismiss = { showBottomSheet = false },
                 onGalleryClick = {
                     showBottomSheet = false
                     photoPickerLauncher.launch(
-                        PickVisualMediaRequest(
-                            ActivityResultContracts.PickVisualMedia.ImageOnly
-                        )
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                     )
-                },
+                }
             )
         }
     }
@@ -163,7 +143,6 @@ fun ImagePickerBottomSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 갤러리에서 선택
             BottomSheetMenuItem(
                 icon = R.drawable.ic_upload,
                 text = "기기에서 사진 선택",
@@ -216,13 +195,7 @@ fun ProfileImageSection(
         contentAlignment = Alignment.BottomEnd,
         modifier = Modifier.clickable(onClick = onImageClick)
     ) {
-        // 프로필 이미지
-        Image(
-            painter = painterResource(id = R.drawable.profile),
-            contentDescription = "프로필 이미지",
-            modifier = Modifier.size(100.dp)
-        )
-        // 프로필 이미지
+        // 이미지 미리보기
         if (imageUri != null) {
             AsyncImage(
                 model = imageUri,
@@ -236,10 +209,11 @@ fun ProfileImageSection(
         } else {
             Image(
                 painter = painterResource(id = R.drawable.profile),
-                contentDescription = "프로필 이미지",
+                contentDescription = "기본 프로필 이미지",
                 modifier = Modifier.size(100.dp)
             )
         }
+
         // 카메라 아이콘 버튼
         Box(
             modifier = Modifier
@@ -259,15 +233,12 @@ fun ProfileImageSection(
     }
 }
 
-
 @Composable
 fun NicknameInputSection(
     nickname: String,
     onNicknameChange: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "닉네임",
             fontFamily = jansilFont,
@@ -284,8 +255,8 @@ fun NicknameInputSection(
             modifier = Modifier.fillMaxWidth(),
             placeholder = {
                 Text(
-                    text = "권민지",
-                    color = YeobaegBlack,
+                    text = "닉네임을 입력하세요.",
+                    color = YeobaegTextGray,
                     fontFamily = jansilFont,
                     fontWeight = FontWeight.Normal
                 )
@@ -303,18 +274,14 @@ fun NicknameInputSection(
 }
 
 @Composable
-fun SaveButton(
-    onClick: () -> Unit
-) {
+fun SaveButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF6D4C13)
-        )
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6D4C13))
     ) {
         Text(
             text = "저장하기",
@@ -326,8 +293,8 @@ fun SaveButton(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun ProfileEditScreenPreview() {
-    ProfileEditScreen()
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun ProfileEditScreenPreview() {
+//    ProfileEditScreen()
+//}

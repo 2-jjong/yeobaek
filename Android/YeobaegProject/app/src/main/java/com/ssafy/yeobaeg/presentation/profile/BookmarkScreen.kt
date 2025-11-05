@@ -22,8 +22,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.BookmarkArtworkSummary
-import com.ssafy.yeobaeg.domain.model.BookmarkCafeSummary
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafeSummary
 import com.ssafy.yeobaeg.presentation.common.component.PaginatedList
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
@@ -37,7 +37,6 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 @Composable
 fun BookmarkScreen(
     bookmarkViewModel: BookmarkViewModel = hiltViewModel(),
-    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
     val uiState by bookmarkViewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf(0) }
@@ -49,7 +48,7 @@ fun BookmarkScreen(
         topBar = {
             YeobaegTopAppBar(
                 title = "저장 목록",
-                onBackClick = profileViewModel::navigateBack,
+                onBackClick = bookmarkViewModel::navigateBack,
                 actionIcon = null,
                 onActionClick = {}
             )
@@ -69,7 +68,7 @@ fun BookmarkScreen(
                 contentColor = YeobaegBlack,
                 divider = {},
                 indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
+                    TabRowDefaults.SecondaryIndicator(
                         Modifier
                             .tabIndicatorOffset(tabPositions[selectedTab])
                             .height(3.dp)
@@ -222,8 +221,3 @@ fun SavedCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun SavedListScreenPreview() {
-    BookmarkScreen()
-}

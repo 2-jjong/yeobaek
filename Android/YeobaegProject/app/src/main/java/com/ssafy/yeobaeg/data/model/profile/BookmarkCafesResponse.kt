@@ -2,8 +2,8 @@ package com.ssafy.yeobaeg.data.model.profile
 
 import com.ssafy.yeobaeg.data.model.PaginationResponse
 import com.ssafy.yeobaeg.data.model.toDomain
-import com.ssafy.yeobaeg.domain.model.BookmarkCafe
-import com.ssafy.yeobaeg.domain.model.BookmarkCafeSummary
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafe
+import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafeSummary
 import kotlinx.serialization.Serializable
 
 @Serializable

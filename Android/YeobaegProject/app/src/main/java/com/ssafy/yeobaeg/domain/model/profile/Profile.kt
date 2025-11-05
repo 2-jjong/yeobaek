@@ -1,4 +1,6 @@
-package com.ssafy.yeobaeg.domain.model
+package com.ssafy.yeobaeg.domain.model.profile
+
+import com.ssafy.yeobaeg.domain.model.profile.CafeInfo
 
 data class Profile (
     val userInfo: UserInfo,
