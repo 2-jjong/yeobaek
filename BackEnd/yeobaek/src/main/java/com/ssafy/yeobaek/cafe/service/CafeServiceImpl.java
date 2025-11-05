@@ -5,6 +5,7 @@ import com.ssafy.yeobaek.cafe.dto.response.Coordinates;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.CafeCategory;
 import com.ssafy.yeobaek.cafe.entity.CafeCategoryTag;
+import com.ssafy.yeobaek.cafe.mapper.CafeMapper;
 import com.ssafy.yeobaek.cafe.repository.CafeCategoryTagRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
@@ -26,6 +27,7 @@ public class CafeServiceImpl implements CafeService {
     private final CafeCategoryService cafeCategoryService;
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
     private final GeocoderService geocoderService;
+    private final CafeMapper cafeMapper;
 
     /**
      * 카페 등록
@@ -49,19 +51,7 @@ public class CafeServiceImpl implements CafeService {
         Coordinates coordinates = geocoderService.getCoordinates(request.getAddress());
 
         // 4. 카페 엔티티 생성 및 저장
-        Cafe cafe = Cafe.builder()
-                .cafeOwner(user)
-                .cafeName(request.getCafeName())
-                .address(request.getAddress())
-                .latitude(coordinates.getLatitude())
-                .longitude(coordinates.getLongitude())
-                .description(request.getDescription())
-                .contact(request.getContact())
-                .businessStartTime(request.getBusinessHoursStart())
-                .businessEndTime(request.getBusinessHoursEnd())
-                .dailyVisitors(request.getDailyVisitors())
-                .images(request.getImages())
-                .build();
+        Cafe cafe = cafeMapper.toEntity(request, user, coordinates);
         cafeRepository.save(cafe);
 
         // 5. 카페 카테고리 저장
