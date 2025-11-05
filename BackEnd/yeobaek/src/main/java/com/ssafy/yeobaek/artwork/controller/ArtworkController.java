@@ -89,11 +89,11 @@ public class ArtworkController {
                                     ),
                                     @ExampleObject(
                                             name = "유효하지 않은 토큰",
-                                            value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
                                     ),
                                     @ExampleObject(
                                             name = "만료된 토큰",
-                                            value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}"
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
                                     )
                             }
                     )
@@ -114,7 +114,7 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
