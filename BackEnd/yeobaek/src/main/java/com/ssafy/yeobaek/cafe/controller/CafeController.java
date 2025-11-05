@@ -7,6 +7,7 @@ import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
+import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -117,7 +118,8 @@ public class CafeController {
     })
     @PostMapping
     public ResponseEntity<ResponseDto<Void>> createCafe(@Valid @RequestBody CreateCafeRequest request) {
-        cafeService.createCafe(request);
+        Long userId = SecurityUtil.getCurrentUserId();
+        cafeService.createCafe(userId, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ResponseDto.created());

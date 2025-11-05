@@ -33,10 +33,9 @@ public class CafeServiceImpl implements CafeService {
      */
     @Override
     @Transactional
-    public void createCafe(CreateCafeRequest request) {
+    public void createCafe(Long userId, CreateCafeRequest request) {
 
         // 2. 사용자 정보 확인
-        Long userId = SecurityUtil.getCurrentUserId();
         User user = userService.findById(userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
