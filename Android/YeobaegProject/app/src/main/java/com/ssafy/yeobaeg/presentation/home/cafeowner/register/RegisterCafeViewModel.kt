@@ -80,15 +80,17 @@ class RegisterCafeViewModel @Inject constructor(
             storageRepository.createPresignedUrl(folder = "CAFE", count = addImageFiles.size)
                 .onSuccess { data ->
                     data.forEachIndexed { index, presignedUrl ->
-                        storageRepository.uploadWithPresignedPut(
-                            file = addImageFiles[index],
-                            presignedUrl = presignedUrl.uploadUrl
-                        ).onSuccess {
-                            _uiState.update {
-                                it.copy(
-                                    uploadedImages = _uiState.value.uploadedImages + presignedUrl,
-                                    isLoading = false
-                                )
+                        launch {
+                            storageRepository.uploadWithPresignedPut(
+                                file = addImageFiles[index],
+                                presignedUrl = presignedUrl.uploadUrl
+                            ).onSuccess {
+                                _uiState.update {
+                                    it.copy(
+                                        uploadedImages = _uiState.value.uploadedImages + presignedUrl,
+                                        isLoading = false
+                                    )
+                                }
                             }
                         }
                     }
