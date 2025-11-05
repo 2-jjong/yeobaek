@@ -2,7 +2,6 @@ package com.ssafy.yeobaeg.data.repository
 
 import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
 import com.ssafy.yeobaeg.data.model.response.toDomain
-import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import javax.inject.Inject
 
@@ -52,5 +51,11 @@ class ArtRepositoryImpl @Inject constructor(
         runCatching {
             val response = artworkApiService.toggleBookmark(artWorkId)
             response.data?.isBookmarked ?: throw Exception(response.message)
+        }
+
+    override suspend fun getPopularArtworks(size: Int) =
+        runCatching {
+            val response = artworkApiService.getPopularArtworks(size)
+            response.data?.artworks?.map { it.toDomain() } ?: emptyList()
         }
 }
