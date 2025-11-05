@@ -40,6 +40,9 @@ dependencies {
     // AWS S3
     implementation 'io.awspring.cloud:spring-cloud-aws-starter-s3:3.1.1'
 
+    //
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.mysql:mysql-connector-j'
