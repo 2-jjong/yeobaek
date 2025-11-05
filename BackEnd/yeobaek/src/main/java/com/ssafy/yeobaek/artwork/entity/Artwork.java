@@ -22,7 +22,7 @@ public class Artwork {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long artworkId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
@@ -75,4 +75,11 @@ public class Artwork {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    /**
+     * 조회수 증가
+     */
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
 }

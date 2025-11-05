@@ -1,9 +1,13 @@
 package com.ssafy.yeobaek.artwork.service;
 
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
+import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailData;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
+import com.ssafy.yeobaek.artwork.mapper.ArtworkMapper;
 import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
+import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
+import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +19,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArtworkServiceImpl implements ArtworkService {
 
     private final ArtworkRepository artworkRepository;
+    private final ArtworkBookmarkService artworkBookmarkService;
     private final UserService userService;
+    private final ArtworkMapper artworkMapper;
 
     /**
      * 작품 등록
@@ -46,5 +52,28 @@ public class ArtworkServiceImpl implements ArtworkService {
                 .build();
 
         artworkRepository.save(artwork);
+    }
+
+    /**
+     * 작품 상세 조회
+     * @param artworkId 작품 ID
+     * @param userId 현재 사용자 ID (북마크 여부 확인용)
+     * @return 작품 상세 정보
+     */
+    @Override
+    @Transactional
+    public ArtworkDetailData getArtworkDetail(Long artworkId, Long userId) {
+        // 작품 조회 (없으면 예외 발생)
+        Artwork artwork = artworkRepository.findById(artworkId)
+                .orElseThrow(() -> new CustomException(ResponseCode.ARTWORK_NOT_FOUND));
+
+        // 조회수 증가
+        artwork.incrementViewCount();
+
+        // 북마크 여부 확인
+        boolean isBookmarked = artworkBookmarkService.isBookmarked(userId, artworkId);
+
+        // DTO로 변환하여 반환
+        return artworkMapper.toArtworkDetailData(artwork, isBookmarked);
     }
 }
