@@ -61,7 +61,7 @@ public class GeocoderServiceImpl implements GeocoderService {
             if (!"OK".equals(status)) {
                 if ("NOT_FOUND".equals(status)) {
                     logger.warn("Geocoding failed for address '{}': Status NOT_FOUND", address);
-                    throw new CustomException(ResponseCode.CAFE_GEOCODING_FAILED);
+                    throw new CustomException(ResponseCode.CAFE_INVALID_ADDRESS);
                 } else if ("ERROR".equals(status)) {
                     JSONObject jsError = (JSONObject) jsrs.get("error");
                     String errorCode = (String) jsError.get("code");
