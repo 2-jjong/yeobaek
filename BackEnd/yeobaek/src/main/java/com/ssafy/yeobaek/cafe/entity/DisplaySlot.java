@@ -21,7 +21,8 @@ public class DisplaySlot {
     private ExhibitionStatus status = ExhibitionStatus.AVAILABLE;
 
     @Column(name = "commission_rate", nullable = false)
-    private Double commissionRate;
+    @Builder.Default
+    private Double commissionRate = 0.0;
 
     @Column(name = "requirements")
     private String requirements;

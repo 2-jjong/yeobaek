@@ -290,12 +290,12 @@ public class CafeController {
     })
     @PostMapping("/walls")
     @PreAuthorize("hasRole('CAFE_OWNER')")
-    public ResponseEntity<ResponseDto<Void>> createCafeWalls(@Valid @RequestBody List<CreateDisplayWallRequest> request) {
+    public ResponseEntity<ResponseDto<List<Wall>>> createCafeWalls(@Valid @RequestBody List<CreateDisplayWallRequest> request) {
         Long userId = SecurityUtil.getCurrentUserId();
-//        cafeService.createCafe(userId, request);
+        List<Wall> createdWalls = cafeService.createCafeWall(userId, request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ResponseDto.created());
+                .body(ResponseDto.created(createdWalls));
     }
 
     @Operation(summary = "내 카페 정보 조회", description = "현재 로그인한 카페 사장의 카페 정보를 조회합니다. 수정 목적으로 사용되며, 전체 정보를 반환합니다.")
