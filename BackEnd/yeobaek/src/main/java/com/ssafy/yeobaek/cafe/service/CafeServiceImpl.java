@@ -29,6 +29,7 @@ public class CafeServiceImpl implements CafeService {
 
     /**
      * 카페 등록
+     * @param userId 유저 id
      * @param request 카페 등록 정보
      */
     @Override
