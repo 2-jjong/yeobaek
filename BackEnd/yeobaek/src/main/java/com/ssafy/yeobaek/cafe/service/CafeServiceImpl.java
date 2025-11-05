@@ -39,11 +39,6 @@ public class CafeServiceImpl implements CafeService {
         User user = userService.findById(userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
-        // 3. 권한 확인 (카페 사장)
-        if (SecurityUtil.getCurrentUserType() != UserRole.CAFE_OWNER) {
-            throw new CustomException(ResponseCode.CAFE_FORBIDDEN_CREATE);
-        }
-
         // 4. 중복 등록 확인
         if (cafeRepository.existsByCafeOwner(user)) {
             throw new CustomException(ResponseCode.CAFE_ALREADY_EXISTS);

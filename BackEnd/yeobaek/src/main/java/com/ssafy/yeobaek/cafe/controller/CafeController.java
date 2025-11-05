@@ -21,6 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -81,7 +82,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4031\", \"message\": \"카페 사장만 등록할 수 있습니다\"}"
+                                    value = "{\"code\": \"S4031\", \"message\": \"카페 사장만 등록할 수 있습니다\"}"
                             )
                     )
             ),
@@ -117,6 +118,7 @@ public class CafeController {
             )
     })
     @PostMapping
+    @PreAuthorize("hasRole('CAFE_OWNER')")
     public ResponseEntity<ResponseDto<Void>> createCafe(@Valid @RequestBody CreateCafeRequest request) {
         Long userId = SecurityUtil.getCurrentUserId();
         cafeService.createCafe(userId, request);

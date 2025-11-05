@@ -78,7 +78,6 @@ public enum ResponseCode {
     CAFE_LATITUDE_LONGITUDE_REQUIRED("CF4008", "거리순 정렬 시 위도/경도가 필요합니다", HttpStatus.BAD_REQUEST),
 
     // 카페 관련 에러 (403 Forbidden)
-    CAFE_FORBIDDEN_CREATE("CF4031", "카페 사장만 등록할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_FORBIDDEN_UPDATE_DELETE("CF4032", "본인의 카페만 수정/삭제할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_SLOT_FILTER_FORBIDDEN("CF4033", "슬롯 규격 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_COMMISSION_FILTER_FORBIDDEN("CF4034", "수수료율 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
