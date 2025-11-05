@@ -118,7 +118,7 @@ fun NavGraph(
                         Log.d("NavGraph", "Current UserRole: ${LocalUserRole.current?.displayName}")
                         when (LocalUserRole.current) {
                             UserRole.CAFE_OWNER -> CafeOwnerProfileScreen()
-                            UserRole.ARTIST-> ArtistProfileScreen()
+                            UserRole.ARTIST-> ArtistProfileScreen(key.userId)
                             UserRole.GENERAL, null -> GeneralProfileScreen()
                         }
 

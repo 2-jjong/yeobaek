@@ -9,10 +9,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UserProfileResponse(
     val userId: Long,
-    val email: String,
+    val email: String="",
     val nickname: String,
     val userType: String,
     val profileImageUrl: String?=null,
-    val birthDate: String?,
-    val gender: Gender
+    val birthDate: String="",
+    val gender: Gender=Gender.MALE
 )

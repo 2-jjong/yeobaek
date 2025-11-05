@@ -60,12 +60,14 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable
 fun ArtistProfileScreen(
+    userId: Long? = null,
     artistViewModel: ArtistProfileViewModel = hiltViewModel()
 ) {
+
     val uiState by artistViewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
-        artistViewModel.loadArtistProfile()
+        artistViewModel.loadArtistProfile(userId)
     }
 
     Scaffold(
@@ -89,8 +91,15 @@ fun ArtistProfileScreen(
             ProfileHeader(
                 userInfo = uiState.userInfo,
                 artistInfo = uiState.artistInfo,
-                onEditClick = { artistViewModel.navigateToEditProfile(uiState.userInfo) })
-            ProfileTabs(selectedTab) { selectedTab = it }
+                onEditClick = { artistViewModel.navigateToEditProfile(uiState.userInfo) },
+                isMyProfile = (userId == null)
+            )
+
+            ProfileTabs(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it },
+                isMyProfile = (userId == null)
+            )
 
             when (selectedTab) {
                 0 -> {
@@ -102,10 +111,22 @@ fun ArtistProfileScreen(
                     )
                 }
 
-                1 -> ProfileSettingsSection(
-                    artistInfo = uiState.artistInfo,
-                    onBookmarkClick = artistViewModel::navigateToBookmark
-                )
+                1 -> {
+                    if (userId == null) {
+                        // 내 프로필인 경우: 설정 화면 표시
+                        ProfileSettingsSection(
+                            artistInfo = uiState.artistInfo,
+                            onBookmarkClick = artistViewModel::navigateToBookmark
+                        )
+                    } else {
+                        // 다른 사람 프로필인 경우: 리뷰 화면
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(YeobaegWhite)
+                        )
+                    }
+                }
             }
         }
     }
@@ -115,7 +136,8 @@ fun ArtistProfileScreen(
 fun ProfileHeader(
     userInfo: UserInfo,
     artistInfo: ArtistInfo?,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    isMyProfile: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -156,17 +178,19 @@ fun ProfileHeader(
                         fontSize = 20.sp
                     )
                     Spacer(Modifier.weight(1f))
-                    OutlinedButton(
-                        onClick = onEditClick,
-                        modifier = Modifier.height(36.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
-                    ) {
-                        Text(
-                            text = "프로필 편집",
-                            fontSize = 13.sp,
-                            color = YeobaegBlack
-                        )
+                    if (isMyProfile) {
+                        OutlinedButton(
+                            onClick = onEditClick,
+                            modifier = Modifier.height(36.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+                        ) {
+                            Text(
+                                text = "프로필 편집",
+                                fontSize = 13.sp,
+                                color = YeobaegBlack
+                            )
+                        }
                     }
                 }
                 Spacer(Modifier.height(17.dp))
@@ -219,8 +243,18 @@ fun ProfileStatItem(value: Int, label: String) {
 
 
 @Composable
-fun ProfileTabs(selectedTab: Int, onTabSelected: (Int) -> Unit) {
-    val tabs = listOf(R.drawable.ic_grid, R.drawable.ic_option_list)
+fun ProfileTabs(selectedTab: Int, onTabSelected: (Int) -> Unit, isMyProfile: Boolean) {
+    val tabs = if (isMyProfile) {
+        listOf(
+            R.drawable.ic_grid,
+            R.drawable.ic_option_list    // 설정 탭 (내 프로필 전용)
+        )
+    } else {
+        listOf(
+            R.drawable.ic_grid,
+            R.drawable.ic_star        // 다른 사람 프로필일 땐 리뷰 아이콘
+        )
+    }
     TabRow(
         selectedTabIndex = selectedTab,
         containerColor = YeobaegWhite,

@@ -36,11 +36,17 @@ class ArtistProfileViewModel @Inject constructor(
     private var page = 0
     private val pageSize = 12
 
-    fun loadArtistProfile() {
+    fun loadArtistProfile(userId: Long?) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            profileRepository.getProfile()
+            val result = if (userId == null) {
+                profileRepository.getProfile() // 내 프로필
+            } else {
+                profileRepository.getSomeoneProfile(userId) // 다른 사람 프로필
+            }
+
+            result
                 .onSuccess { profile ->
                     _uiState.update {
                         it.copy(
@@ -61,6 +67,7 @@ class ArtistProfileViewModel @Inject constructor(
                 }
         }
     }
+
 
     /** 페이징 로드 (더미 이미지 기반) */
     fun loadNextArtworks(reset: Boolean = false) {

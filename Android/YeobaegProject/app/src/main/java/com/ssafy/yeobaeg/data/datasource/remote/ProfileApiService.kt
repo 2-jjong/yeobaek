@@ -18,6 +18,11 @@ interface ProfileApiService {
     suspend fun getProfile(
     ): Response<BaseResponse<GetProfileResponseDto>>
 
+    @GET("users/{userId}")
+    suspend fun getSomeoneProfile(
+        @Path("userId") userId: Long
+    ): Response<BaseResponse<GetProfileResponseDto>>
+
     @GET("artworks/bookmarks")
     suspend fun getBookmarkArtworkList(
         @Query("page") page: Int = 0,

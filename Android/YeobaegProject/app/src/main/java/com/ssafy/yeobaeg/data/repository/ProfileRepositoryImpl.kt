@@ -38,6 +38,26 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getSomeoneProfile(userId: Long): Result<Profile> {
+        return try {
+            val response = api.getSomeoneProfile(userId)
+            if (response.isSuccessful) {
+                val profileDto = response.body()?.data
+                Log.d(TAG, "getSomeoneProfile: $profileDto")
+                if (profileDto != null) {
+                    Result.success(profileDto.toDomain())
+                } else {
+                    Result.failure(Exception("Response body is null"))
+                }
+            } else {
+                Result.failure(Exception("Failed to get someone profile"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getSomeoneProfile() error: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
     override suspend fun getBookmarkArtworkList(page: Int, size: Int): Result<BookmarkArtwork> {
         return try {
             val response = api.getBookmarkArtworkList(page = page, size = size)
