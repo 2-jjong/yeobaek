@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.data.repository
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.model.cafe.toDomain
 import com.ssafy.yeobaeg.data.model.request.toDto
+import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
 import com.ssafy.yeobaeg.domain.model.cafe.CafeListResult
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
@@ -42,6 +43,15 @@ class CafeRepositoryImpl @Inject constructor(
             
             response.data?.toDomain() 
                 ?: throw Exception("카페 목록을 불러올 수 없습니다")
+        }
+    }
+    
+    override suspend fun getCafeDetail(cafeId: Long): Result<CafeDetail> {
+        return runCatching {
+            val response = cafeApiService.getCafeDetail(cafeId)
+            
+            response.data?.cafeDetail?.toDomain()
+                ?: throw Exception("카페 정보를 불러올 수 없습니다")
         }
     }
 }

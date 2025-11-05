@@ -1,11 +1,13 @@
 package com.ssafy.yeobaeg.data.datasource.remote
 
 import com.ssafy.yeobaeg.data.model.BaseResponse
+import com.ssafy.yeobaeg.data.model.cafe.CafeDetailData
 import com.ssafy.yeobaeg.data.model.cafe.CafeListResponse
 import com.ssafy.yeobaeg.data.model.request.RegisterCafeRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface CafeApiService {
@@ -44,4 +46,14 @@ interface CafeApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
     ): BaseResponse<CafeListResponse>
+    
+    /**
+     * 카페 상세 정보 조회
+     * 
+     * @param cafeId 카페 ID
+     */
+    @GET("cafes/{cafeId}")
+    suspend fun getCafeDetail(
+        @Path("cafeId") cafeId: Long
+    ): BaseResponse<CafeDetailData>
 }

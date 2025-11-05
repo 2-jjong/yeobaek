@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.domain.repository
 
+import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
 import com.ssafy.yeobaeg.domain.model.cafe.CafeListResult
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
@@ -26,4 +27,11 @@ interface CafeRepository {
         page: Int = 0,
         size: Int = 20
     ): Result<CafeListResult>
+    
+    /**
+     * 카페 상세 정보 조회
+     * 
+     * @param cafeId 카페 ID
+     */
+    suspend fun getCafeDetail(cafeId: Long): Result<CafeDetail>
 }

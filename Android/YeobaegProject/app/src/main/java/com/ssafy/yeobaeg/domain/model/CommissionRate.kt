@@ -1,4 +1,4 @@
-package com.ssafy.yeobaeg.domain.model.cafe
+package com.ssafy.yeobaeg.domain.model
 
 enum class CommissionRate(
     val label: String,
@@ -10,4 +10,3 @@ enum class CommissionRate(
     RATE_11_15("11-15%", 11.0, 15.0),
     OVER_16("16% 이상", 16.0, null)
 }
-

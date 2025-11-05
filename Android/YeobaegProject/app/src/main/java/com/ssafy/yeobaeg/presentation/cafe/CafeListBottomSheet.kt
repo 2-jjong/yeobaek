@@ -21,25 +21,9 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 
 @Composable
-fun CafeListBottomSheet(
-    cafes: List<CafeSummary>,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surface
-    ) {
-        CafeListBottomSheetContent(cafes = cafes)
-    }
-}
-
-@Composable
 fun CafeListBottomSheetContent(
-    cafes: List<CafeSummary>
+    cafes: List<CafeSummary>,
+    onCafeClick: (Long) -> Unit = {}
 ) {
     LazyColumn(
         modifier = Modifier
@@ -48,7 +32,10 @@ fun CafeListBottomSheetContent(
         contentPadding = PaddingValues(vertical = 0.dp)
     ) {
         items(cafes) { cafe ->
-            CafeListItem(cafe = cafe)
+            CafeListItem(
+                cafe = cafe,
+                onClick = { onCafeClick(cafe.cafeId) }
+            )
             HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
             )
@@ -60,12 +47,13 @@ fun CafeListBottomSheetContent(
 @Composable
 fun CafeListItem(
     cafe: CafeSummary,
+    onClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable { /* TODO: 카페 상세 페이지로 이동 */ }
+            .clickable(onClick = onClick)
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {

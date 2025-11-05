@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ssafy.yeobaeg.domain.model.cafe.ArtworkSize
 import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
-import com.ssafy.yeobaeg.domain.model.cafe.CommissionRate
+import com.ssafy.yeobaeg.domain.model.CommissionRate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

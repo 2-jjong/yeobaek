@@ -11,6 +11,8 @@ import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
+import com.ssafy.yeobaeg.navigation.FullScreen
+import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +39,8 @@ data class CafeMapUiState(
 class CafeMapViewModel @Inject constructor(
     private val cafeRepository: CafeRepository,
     private val locationService: LocationService,
-    private val authSessionManager: AuthSessionManager
+    private val authSessionManager: AuthSessionManager,
+    private val navigator: Navigator
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(CafeMapUiState())
@@ -46,7 +49,6 @@ class CafeMapViewModel @Inject constructor(
     init {
         observeUserRole()
     }
-    
     private fun observeUserRole() {
         viewModelScope.launch {
             authSessionManager.currentUserRole.collect { role ->
@@ -220,6 +222,10 @@ class CafeMapViewModel @Inject constructor(
      */
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun navigateToCafeDetail(cafeId: Long) = viewModelScope.launch {
+        navigator.navigate(FullScreen.CafeDetail(cafeId= cafeId))
     }
 }
 

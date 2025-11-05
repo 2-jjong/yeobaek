@@ -25,6 +25,7 @@ import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
+import com.ssafy.yeobaeg.presentation.cafe.CafeDetailScreen
 import com.ssafy.yeobaeg.presentation.cafe.CafeMapScreen
 import com.ssafy.yeobaeg.presentation.home.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
@@ -142,6 +143,12 @@ fun NavGraph(
 
                     is FullScreen.ArtworkDetail -> NavEntry(key) {
                         ArtworkDetailScreen(artworkId = key.artworkId)
+                    }
+
+                    is FullScreen.CafeDetail -> NavEntry(key) {
+                        CafeDetailScreen(
+                            cafeId = key.cafeId,
+                        )
                     }
 
                     is FullScreen.BookmarkList -> NavEntry(key) {
