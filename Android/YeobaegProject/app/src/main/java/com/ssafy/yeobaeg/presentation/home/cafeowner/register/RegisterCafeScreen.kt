@@ -43,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,14 +52,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.domain.model.storage.PresignedUrl
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegStepBar
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.ui.SectionHeader
 import com.ssafy.yeobaeg.presentation.common.util.rememberMultiImagePicker
+import com.ssafy.yeobaeg.presentation.common.util.uriToTempFile
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightYellow
+import java.io.File
 
 @Composable
 fun RegisterCafeScreen(
@@ -96,8 +100,8 @@ fun RegisterCafeScreen(
                     onPhone = { viewModel.update { copy(phone = it) } },
                     onOpen = { viewModel.update { copy(openTime = it) } },
                     onClose = { viewModel.update { copy(closeTime = it) } },
-                    onAddImage = { viewModel.addImage(it) },
-                    onRemoveImage = { viewModel.removeImage(it) }
+                    onAddImage = viewModel::addImage,
+                    onRemoveImage = viewModel::removeImage
                 )
 
                 STEP2 -> Step2Attributes(
@@ -151,8 +155,8 @@ private fun Step1BasicInfo(
     onPhone: (String) -> Unit,
     onOpen: (String) -> Unit,
     onClose: (String) -> Unit,
-    onAddImage: (String) -> Unit,
-    onRemoveImage: (String) -> Unit
+    onAddImage: (List<File>) -> Unit,
+    onRemoveImage: (PresignedUrl) -> Unit
 ) {
     SectionHeader(
         title = "기본 정보 입력",
@@ -214,7 +218,7 @@ private fun Step1BasicInfo(
         }
         Spacer(Modifier.height(8.dp))
         ImagePickerBox(
-            images = state.images.toList(),
+            images = state.uploadedImages,
             onAdd = onAddImage,
             onRemove = onRemoveImage
         )
@@ -223,12 +227,18 @@ private fun Step1BasicInfo(
 
 @Composable
 private fun ImagePickerBox(
-    images: List<String>,
-    onAdd: (String) -> Unit,
-    onRemove: (String) -> Unit
+    images: List<PresignedUrl>,
+    onAdd: (List<File>) -> Unit,
+    onRemove: (PresignedUrl) -> Unit
 ) {
+    val context = LocalContext.current
+
     val pickImages = rememberMultiImagePicker(max = 10) { uris ->
-        uris.forEach { onAdd(it.toString()) }
+        val tempFiles = mutableListOf<File>()
+        uris.forEach {
+            tempFiles.add(uriToTempFile(context, it))
+        }
+        onAdd(tempFiles)
     }
 
     val border = BorderStroke(1.dp, Color(0xFFE0E3E8))
@@ -241,15 +251,15 @@ private fun ImagePickerBox(
             .padding(12.dp)
     ) {
         LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(images) { uri ->
+            items(images) { image ->
                 Box(
                     modifier = Modifier
                         .size(72.dp)
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color(0xFFF2F3F5))
-                        .clickable { onRemove(uri) },
+                        .clickable { onRemove(image) },
                     contentAlignment = Alignment.Center
-                ) { AsyncImage(model = uri, contentDescription = null) }
+                ) { AsyncImage(model = image.downloadUrl, contentDescription = null) }
             }
             item {
                 Box(
@@ -398,7 +408,6 @@ private fun PreviewStep1BasicInfo_Filled() {
                     phone = "02-1234-5678",
                     openTime = "09:00",
                     closeTime = "22:00",
-                    images = setOf("image1", "image2")
                 ),
                 onName = {},
                 onAddress = {},
