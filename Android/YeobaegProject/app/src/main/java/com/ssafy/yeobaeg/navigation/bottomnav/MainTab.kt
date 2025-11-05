@@ -37,6 +37,6 @@ enum class MainTab(
         iconResId = R.drawable.ic_profile,
         contentDescription = "profile Icon",
         label = "프로필",
-        route = BottomNavScreen.Profile,
+        route = BottomNavScreen.Profile(null),
     )
 }

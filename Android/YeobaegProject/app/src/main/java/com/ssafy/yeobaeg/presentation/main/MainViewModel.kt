@@ -58,7 +58,7 @@ internal class MainViewModel @Inject constructor(
 
     fun navigateProfile() = viewModelScope.launch {
         navigator.navigateAndClearBackStack(
-            route = BottomNavScreen.Profile
+            route = BottomNavScreen.Profile(null)
         )
     }
 }

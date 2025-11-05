@@ -34,6 +34,7 @@ import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
 import com.ssafy.yeobaeg.presentation.profile.ReviewManagementScreen
+import com.ssafy.yeobaeg.presentation.profile.artist.ArtistProfileScreen
 import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileScreen
 import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
@@ -117,7 +118,7 @@ fun NavGraph(
                         Log.d("NavGraph", "Current UserRole: ${LocalUserRole.current?.displayName}")
                         when (LocalUserRole.current) {
                             UserRole.CAFE_OWNER -> CafeOwnerProfileScreen()
-                            UserRole.ARTIST-> GeneralProfileScreen()
+                            UserRole.ARTIST-> ArtistProfileScreen(key.userId)
                             UserRole.GENERAL, null -> GeneralProfileScreen()
                         }
 

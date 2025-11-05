@@ -54,7 +54,7 @@ sealed interface BottomNavScreen : Screen {
     data object Chat : BottomNavScreen
 
     @Serializable
-    data object Profile : BottomNavScreen
+    data class Profile(val userId: Long?) : BottomNavScreen
 
     @Serializable
     data class SpaceScanPreview(val displayWalls: List<DisplayWall>) : BottomNavScreen
