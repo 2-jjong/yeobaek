@@ -5,6 +5,7 @@ import com.ssafy.yeobaeg.domain.model.Pagination
 import com.ssafy.yeobaeg.domain.model.profile.ArtistInfo
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,9 +29,9 @@ data class ArtistProfileUiState(
 @HiltViewModel
 class ArtistProfileViewModel @Inject constructor(
     private val navigator: Navigator,
-    private val profileRepository: ProfileRepository
-
-) : ProfileViewModel(navigator) {
+    private val profileRepository: ProfileRepository,
+    authSessionManager: AuthSessionManager
+) : ProfileViewModel(navigator, authSessionManager) {
     private val _uiState = MutableStateFlow(ArtistProfileUiState())
     val uiState: StateFlow<ArtistProfileUiState> = _uiState.asStateFlow()
     private var page = 0

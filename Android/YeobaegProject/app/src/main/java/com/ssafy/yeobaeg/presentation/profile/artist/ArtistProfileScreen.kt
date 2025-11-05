@@ -116,7 +116,8 @@ fun ArtistProfileScreen(
                         // 내 프로필인 경우: 설정 화면 표시
                         ProfileSettingsSection(
                             artistInfo = uiState.artistInfo,
-                            onBookmarkClick = artistViewModel::navigateToBookmark
+                            onBookmarkClick = artistViewModel::navigateToBookmark,
+                            onLogoutClick = artistViewModel::logout
                         )
                     } else {
                         // 다른 사람 프로필인 경우: 리뷰 화면
@@ -289,7 +290,8 @@ fun ProfileTabs(selectedTab: Int, onTabSelected: (Int) -> Unit, isMyProfile: Boo
 @Composable
 fun ProfileSettingsSection(
     artistInfo: ArtistInfo?,
-    onBookmarkClick: () -> Unit
+    onBookmarkClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -301,14 +303,14 @@ fun ProfileSettingsSection(
         SettingItem("알림 설정", null, R.drawable.ic_notify, {})
 
         Spacer(Modifier.weight(1f))
-        LogoutButton()
+        LogoutButton(onClick=onLogoutClick)
     }
 }
 
 @Composable
-fun LogoutButton() {
+fun LogoutButton(onClick: () -> Unit) {
     OutlinedButton(
-        onClick = { /* Handle logout */ },
+        onClick = {onClick()},
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
