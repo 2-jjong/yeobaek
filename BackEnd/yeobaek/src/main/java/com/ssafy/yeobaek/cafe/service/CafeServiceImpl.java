@@ -26,7 +26,6 @@ public class CafeServiceImpl implements CafeService {
     private final UserService userService;
     private final CafeCategoryService cafeCategoryService;
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
-    private final CafeImageService cafeImageService;
 
     /**
      * 카페 등록
@@ -35,9 +34,6 @@ public class CafeServiceImpl implements CafeService {
     @Override
     @Transactional
     public void createCafe(CreateCafeRequest request) {
-
-        // 1. 대표 이미지 1개 확인
-        cafeImageService.validatePrimaryImage(request.getImages());
 
         // 2. 사용자 정보 확인
         Long userId = SecurityUtil.getCurrentUserId();
@@ -64,8 +60,7 @@ public class CafeServiceImpl implements CafeService {
                 .businessStartTime(request.getBusinessHoursStart())
                 .businessEndTime(request.getBusinessHoursEnd())
                 .dailyVisitors(request.getDailyVisitors())
-                .viewCount(0)
-                .bookmarkCount(0)
+                .images(request.getImages())
                 .build();
         cafeRepository.save(cafe);
 
@@ -78,9 +73,6 @@ public class CafeServiceImpl implements CafeService {
                     .build();
             cafeCategoryTagRepository.save(cafeCategoryTag);
         });
-
-        // 7. 카페 이미지 저장
-        cafeImageService.saveImages(cafe, request.getImages());
     }
 
 }

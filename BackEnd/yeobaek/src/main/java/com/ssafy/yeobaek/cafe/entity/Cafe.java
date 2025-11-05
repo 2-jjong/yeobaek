@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -17,7 +18,7 @@ public class Cafe {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long cafeId;
+    private Long id;
 
     @OneToOne
     @JoinColumn(name = "owner_id", nullable = false, unique = true)
@@ -45,8 +46,16 @@ public class Cafe {
     private String dailyVisitors;
 
     @Column(name = "view_count", nullable = false)
-    private Integer viewCount;
+    @Builder .Default
+    private Integer viewCount = 0;
 
     @Column(name = "bookmark_count", nullable = false)
-    private Integer bookmarkCount;
+    @Builder .Default
+    private Integer bookmarkCount = 0;
+
+    @ElementCollection
+    @CollectionTable(name = "cafe_image", joinColumns = @JoinColumn(name = "cafe_id"))
+    @Column(name = "image_url")
+    @OrderColumn(name = "display_order")
+    private List<String> images = new ArrayList<>();
 }
