@@ -1,7 +1,11 @@
 package com.ssafy.yeobaek.common.code;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 
+@Getter
+@RequiredArgsConstructor
 public enum ResponseCode {
     // 성공
     SUCCESS("S0000", "정상 처리", HttpStatus.OK),
@@ -90,28 +94,14 @@ public enum ResponseCode {
     SLOT_EXHIBITING_SIZE_CHANGE("CF4092", "전시 중인 슬롯은 규격을 변경할 수 없습니다", HttpStatus.CONFLICT),
     SLOT_CANNOT_DELETE_EXHIBITING("CF4093", "전시 중이거나 전시 예정인 슬롯은 삭제할 수 없습니다", HttpStatus.CONFLICT),
 
+    // Storage/S3 관련 에러 (400 Bad Request)
+    INVALID_STORAGE_FOLDER("ST4001", "유효하지 않은 저장 폴더입니다", HttpStatus.BAD_REQUEST),
+    INVALID_FILE_COUNT("ST4002", "파일 개수는 1개 이상 10개 이하여야 합니다", HttpStatus.BAD_REQUEST),
+
     // 서버 에러 (500 Internal Server Error)
     INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
     private final HttpStatus httpStatus;
-
-    ResponseCode(String code, String message, HttpStatus httpStatus) {
-        this.code = code;
-        this.message = message;
-        this.httpStatus = httpStatus;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public HttpStatus getHttpStatus() {
-        return httpStatus;
-    }
 }
