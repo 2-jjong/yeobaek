@@ -51,6 +51,15 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.domain.model.art.PopularArtwork
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
+import com.ssafy.yeobaeg.ui.theme.YeobaegBackground
+import com.ssafy.yeobaeg.ui.theme.YeobaegIndicatorGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegLightBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegMediumBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegRed
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextPrimary
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextSecondary
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextTertiary
+import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 
 @Composable
 fun GeneralHomeScreen(
@@ -76,7 +85,8 @@ fun GeneralHomeScreen(
     Scaffold(
         topBar = {
             GeneralHomeTopBar()
-        }
+        },
+        containerColor = YeobaegWhite
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -143,9 +153,9 @@ fun GeneralHomeScreen(
                                             .clip(RoundedCornerShape(50))
                                             .background(
                                                 if (index == cafePagerState.currentPage) 
-                                                    Color(0xFF8B4513) 
+                                                    YeobaegMediumBrown 
                                                 else 
-                                                    Color(0xFFD0D0D0)
+                                                    YeobaegIndicatorGray
                                             )
                                     )
                                     if (index < cafePagerState.pageCount - 1) {
@@ -219,11 +229,11 @@ fun GeneralHomeTopBar() {
                 text = "여백",
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF8B4513)
+                color = YeobaegMediumBrown
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = YeobaegWhite
         ),
         windowInsets = WindowInsets(0.dp)
     )
@@ -249,7 +259,7 @@ fun PopularCafeItem(
             modifier = Modifier
                 .size(100.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF5F5F5)),
+                .background(YeobaegBackground),
             contentScale = ContentScale.Crop
         )
 
@@ -262,7 +272,7 @@ fun PopularCafeItem(
                 text = cafe.cafeName,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A1A1A),
+                color = YeobaegTextPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -274,13 +284,13 @@ fun PopularCafeItem(
                 Icon(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = null,
-                    tint = Color(0xFF666666),
+                    tint = YeobaegTextSecondary,
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
                     text = cafe.address.split(" ").take(2).joinToString(" "),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF666666),
+                    color = YeobaegTextSecondary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -290,7 +300,7 @@ fun PopularCafeItem(
                 text = cafe.categories.firstOrNull() ?: "",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF8B5A3C),
+                color = YeobaegLightBrown,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -298,7 +308,7 @@ fun PopularCafeItem(
             Text(
                 text = "${cafe.totalSlotCount}개 작품 전시 중",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF999999),
+                color = YeobaegTextTertiary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -325,7 +335,7 @@ fun PopularArtworkItem(
                 .fillMaxWidth()
                 .height(200.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Color(0xFFF5F5F5)),
+                .background(YeobaegBackground),
             contentScale = ContentScale.Crop
         )
 
@@ -340,7 +350,7 @@ fun PopularArtworkItem(
                 text = artwork.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A1A1A),
+                color = YeobaegTextPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -348,7 +358,7 @@ fun PopularArtworkItem(
             Text(
                 text = "by ${artwork.artistName}",
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF666666),
+                color = YeobaegTextSecondary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -366,13 +376,13 @@ fun PopularArtworkItem(
                         Icon(
                             imageVector = Icons.Default.LocationOn,
                             contentDescription = null,
-                            tint = Color(0xFF666666),
+                            tint = YeobaegTextSecondary,
                             modifier = Modifier.size(14.dp)
                         )
                         Text(
                             text = cafeName,
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF666666),
+                            color = YeobaegTextSecondary,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -392,7 +402,7 @@ fun PopularArtworkItem(
                     text = "₩${String.format("%,d", artwork.price)}",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1A1A1A),
+                    color = YeobaegTextPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -404,13 +414,13 @@ fun PopularArtworkItem(
                     Icon(
                         imageVector = Icons.Default.Favorite,
                         contentDescription = null,
-                        tint = Color(0xFFFF6B6B),
+                        tint = YeobaegRed,
                         modifier = Modifier.size(14.dp)
                     )
                     Text(
                         text = "${artwork.bookmarkCount}",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF666666)
+                        color = YeobaegTextSecondary
                     )
                 }
             }

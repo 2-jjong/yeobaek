@@ -13,17 +13,25 @@ val Pink40 = Color(0xFF7D5260)
 // 여백 앱 커스텀 컬러
 val YeobaegBrown = Color(0xFF754106)  // 로고 브라운 색상
 val YeobaegDarkBrown = Color(0xFF754106)  // 버튼 다크 브라운
+val YeobaegMediumBrown = Color(0xFF8B4513)  // 중간 브라운 (타이틀, 포인트 색상)
+val YeobaegLightBrown = Color(0xFF8B5A3C)  // 연한 브라운 (카테고리)
 val YeobaegYellow = Color(0xFFFFFBEB)  // 연한 노랑 배경
 
+val YeobaegTextPrimary = Color(0xFF1A1A1A)  // 주요 텍스트 (거의 검은색)
+val YeobaegTextSecondary = Color(0xFF666666)  // 보조 텍스트 (중간 회색)
+val YeobaegTextTertiary = Color(0xFF999999)  // 3차 텍스트 (밝은 회색)
 val YeobaegTextGray = Color(0xFF6B7280)  // 텍스트 회색
 val YeobaegLightGray = Color(0xFFE5E7EB)  // 연한 회색
 val YeobaegGray = Color(0xFF5B5F66)  // 회색
 val YeobaegDarkGray = Color(0xFF374151)  // 진한 회색
+val YeobaegIndicatorGray = Color(0xFFD0D0D0)  // 인디케이터 회색
 
 val YeobaegWhite = Color(0xFFFFFFFF)  // 흰색
 val YeobaegBlack = Color(0xFF000000)  // 검은색
+val YeobaegBackground = Color(0xFFF5F5F5)  // 배경색 (연한 회색)
 
 val YeobaegDivider = Color(0xFFE0E0E0)  // 구분선
+val YeobaegRed = Color(0xFFFF6B6B)  // 좋아요 빨강색
 
 val YeobaegLightGreen = Color(0xFFDCFCE7)  // 연한 초록
 val YeobaegLightBlue = Color(0xFFDBEAFE)  // 연한 파랑
