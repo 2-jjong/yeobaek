@@ -44,6 +44,13 @@ public interface UserService {
     UserProfileData getMyProfile(Long userId);
 
     /**
+     * 특정 사용자 공개 프로필 조회
+     * @param userId 조회할 사용자 ID
+     * @return 공개 프로필 데이터
+     */
+    UserProfileData getUserProfile(Long userId);
+
+    /**
      * 프로필 정보 수정
      * @param userId 사용자 ID
      * @param request 수정할 프로필 정보

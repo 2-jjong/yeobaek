@@ -1,12 +1,11 @@
 package com.ssafy.yeobaek.user.controller;
 
 import com.ssafy.yeobaek.common.dto.ResponseDto;
-import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.dto.request.ChangePasswordRequest;
 import com.ssafy.yeobaek.user.dto.request.DeleteAccountRequest;
 import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
-import com.ssafy.yeobaek.user.dto.response.*;
+import com.ssafy.yeobaek.user.dto.response.UserProfileData;
 import com.ssafy.yeobaek.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -40,15 +39,15 @@ public class UserController {
                             examples = {
                                     @ExampleObject(
                                             name = "작가(ARTIST) 프로필",
-                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 1, \"email\": \"artist@example.com\", \"nickname\": \"작가 홍길동\", \"userType\": \"ARTIST\", \"profileImageUrl\": \"https://example.com/artist-profile.jpg\", \"birthDate\": \"1990-01-01\", \"gender\": \"MALE\"}, \"artist\": {\"introduction\": \"현대 미술을 전공한 신진 작가입니다. 주로 추상화와 설치미술 작업을 하고 있습니다.\", \"artworkCount\": 12, \"exhibitingCount\": 3, \"ratingStats\": {\"totalReviews\": 24, \"averageRating\": 4.3}}}, \"message\": \"정상 처리\"}"
+                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 1, \"email\": \"artist@example.com\", \"nickname\": \"작가 홍길동\", \"userType\": \"ARTIST\", \"profileImageUrl\": \"https://example.com/artist-profile.jpg\", \"birthDate\": \"1990-01-01\", \"gender\": \"MALE\", \"bookmarkCount\": 37}, \"artist\": {\"introduction\": \"현대 미술을 전공한 신진 작가입니다. 주로 추상화와 설치미술 작업을 하고 있습니다.\", \"artworkCount\": 12, \"exhibitingCount\": 3, \"ratingStats\": {\"totalReviews\": 24, \"averageRating\": 4.3}}}, \"message\": \"정상 처리\"}"
                                     ),
                                     @ExampleObject(
                                             name = "카페 사장(CAFE_OWNER) 프로필",
-                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 2, \"email\": \"cafe@example.com\", \"nickname\": \"카페사장\", \"userType\": \"CAFE_OWNER\", \"profileImageUrl\": \"https://example.com/cafe-profile.jpg\", \"birthDate\": \"1985-05-15\", \"gender\": \"FEMALE\"}, \"cafe\": {\"cafeId\": 1, \"cafeName\": \"아트 갤러리 카페\", \"address\": \"서울시 강남구 테헤란로 123\", \"description\": \"작가들의 작품을 전시하고 감상할 수 있는 복합 문화 공간입니다.\", \"contact\": \"02-1234-5678\", \"businessHoursStart\": \"09:00\", \"businessHoursEnd\": \"22:00\", \"ratingStats\": {\"totalReviews\": 156, \"averageRating\": 4.7}}}, \"message\": \"정상 처리\"}"
+                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 2, \"email\": \"cafe@example.com\", \"nickname\": \"카페사장\", \"userType\": \"CAFE_OWNER\", \"profileImageUrl\": \"https://example.com/cafe-profile.jpg\", \"birthDate\": \"1985-05-15\", \"gender\": \"FEMALE\", \"bookmarkCount\": 37}, \"cafe\": {\"cafeId\": 1, \"cafeName\": \"아트 갤러리 카페\", \"address\": \"서울시 강남구 테헤란로 123\", \"description\": \"작가들의 작품을 전시하고 감상할 수 있는 복합 문화 공간입니다.\", \"contact\": \"02-1234-5678\", \"businessHoursStart\": \"09:00\", \"businessHoursEnd\": \"22:00\", \"ratingStats\": {\"totalReviews\": 156, \"averageRating\": 4.7}}}, \"message\": \"정상 처리\"}"
                                     ),
                                     @ExampleObject(
                                             name = "일반 사용자(GENERAL) 프로필",
-                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 3, \"email\": \"user@example.com\", \"nickname\": \"일반사용자\", \"userType\": \"GENERAL\", \"profileImageUrl\": \"https://example.com/user-profile.jpg\", \"birthDate\": \"1995-03-20\", \"gender\": \"MALE\"}}, \"message\": \"정상 처리\"}"
+                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 3, \"email\": \"user@example.com\", \"nickname\": \"일반사용자\", \"userType\": \"GENERAL\", \"profileImageUrl\": \"https://example.com/user-profile.jpg\", \"birthDate\": \"1995-03-20\", \"gender\": \"MALE\", \"bookmarkCount\": 37}}, \"message\": \"정상 처리\"}"
                                     )
                             }
                     )
@@ -105,7 +104,7 @@ public class UserController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "특정 사용자 프로필 조회", description = "특정 사용자의 공개 프로필 정보를 조회합니다.")
+    @Operation(summary = "특정 사용자 프로필 조회", description = "특정 사용자의 공개 프로필 정보를 조회합니다. userType에 따라 반환되는 정보가 다릅니다.\n\n **공개 정보: user 정보 중 userId, nickname, userType, profileImageUrl만 공개됩니다. artist와 cafe 정보는 전부 공개됩니다.**\n\n **Cafe와 Artist가 아직 구현 전이므로 UserType이 CAFE_OWNER와 ARTIST인 경우 더미 데이터를 반환합니다.**")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -113,9 +112,41 @@ public class UserController {
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
-                            examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 1, \"email\": null, \"nickname\": \"작가명\", \"userType\": \"ARTIST\", \"profileImageUrl\": \"https://example.com/artist.jpg\", \"birthDate\": null, \"gender\": null}, \"artist\": {\"introduction\": \"현대 미술을 전공한 신진 작가입니다.\", \"totalExhibitions\": 15, \"totalArtworks\": 5, \"ratingStats\": {\"totalReviews\": 42, \"averageRating\": 4.5}}, \"cafe\": null}, \"message\": \"정상 처리\"}"
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "작가(ARTIST) 프로필",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 1, \"nickname\": \"작가 홍길동\", \"userType\": \"ARTIST\", \"profileImageUrl\": \"https://example.com/artist-profile.jpg\"}, \"artist\": {\"introduction\": \"현대 미술을 전공한 신진 작가입니다. 주로 추상화와 설치미술 작업을 하고 있습니다.\", \"artworkCount\": 12, \"exhibitingCount\": 3, \"ratingStats\": {\"totalReviews\": 24, \"averageRating\": 4.3}}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "카페 사장(CAFE_OWNER) 프로필",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 2, \"nickname\": \"카페사장\", \"userType\": \"CAFE_OWNER\", \"profileImageUrl\": \"https://example.com/cafe-profile.jpg\"}, \"cafe\": {\"cafeId\": 1, \"cafeName\": \"아트 갤러리 카페\", \"address\": \"서울시 강남구 테헤란로 123\", \"description\": \"작가들의 작품을 전시하고 감상할 수 있는 복합 문화 공간입니다.\", \"contact\": \"02-1234-5678\", \"businessHoursStart\": \"09:00\", \"businessHoursEnd\": \"22:00\", \"ratingStats\": {\"totalReviews\": 156, \"averageRating\": 4.7}}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "일반 사용자(GENERAL) 프로필",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"user\": {\"userId\": 3, \"nickname\": \"일반사용자\", \"userType\": \"GENERAL\", \"profileImageUrl\": \"https://example.com/user-profile.jpg\"}}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -124,7 +155,7 @@ public class UserController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"US4041\", \"data\": null, \"message\": \"존재하지 않는 회원입니다\"}"
+                                    value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"
                             )
                     )
             ),
@@ -134,7 +165,7 @@ public class UserController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -144,26 +175,7 @@ public class UserController {
             @Parameter(description = "조회할 회원 ID", required = true)
             @PathVariable Long userId
     ) {
-        // Mock 데이터: ARTIST 사용자 프로필 반환
-        UserData user = new UserData(
-                userId,
-                null, // 이메일은 공개 프로필에서 제외
-                "작가명",
-                UserRole.ARTIST,
-                "https://example.com/artist.jpg",
-                null, // 생년월일은 공개 프로필에서 제외
-                null  // 성별은 공개 프로필에서 제외
-        );
-
-        RatingStatsData ratingStats = new RatingStatsData(42, 4.5);
-        ArtistData artist = new ArtistData(
-                "현대 미술을 전공한 신진 작가입니다.",
-                15,
-                5,
-                ratingStats
-        );
-
-        UserProfileData data = new UserProfileData(user, artist, null);
+        UserProfileData data = userService.getUserProfile(userId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
