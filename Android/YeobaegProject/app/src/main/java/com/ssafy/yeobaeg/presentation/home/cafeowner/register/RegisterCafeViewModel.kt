@@ -18,6 +18,7 @@ import javax.inject.Inject
 
 const val STEP1 = 1
 const val STEP2 = 2
+const val STEP_ADDRESS = 0
 const val TOTAL_STEPS = 2
 
 @HiltViewModel
@@ -52,7 +53,7 @@ class RegisterCafeViewModel @Inject constructor(
     fun removeImage(uri: String) = update { copy(images = images - uri) }
 
     private fun navigateToCafeOwnerHome() = viewModelScope.launch {
-        navigator.navigate(BottomNavScreen.Home)
+        navigator.navigateBack()
     }
 
     private fun registerCafe() = viewModelScope.launch {
