@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.user.entity;
 
+import com.ssafy.yeobaek.common.enums.ArtCategory;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,4 +23,7 @@ public class Artist {
 
     @Column(columnDefinition = "TEXT")
     private String introduction;
+
+    @Enumerated(EnumType.STRING)
+    private ArtCategory category;
 }
