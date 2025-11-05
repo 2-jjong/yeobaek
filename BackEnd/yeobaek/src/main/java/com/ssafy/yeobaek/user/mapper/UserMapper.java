@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.user.mapper;
 
+import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.user.dto.response.ArtistData;
 import com.ssafy.yeobaek.user.dto.response.CafeData;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
@@ -63,8 +64,10 @@ public class UserMapper {
 
         return ArtistData.builder()
                 .introduction("현대 미술을 전공한 신진 작가입니다. 주로 추상화와 설치미술 작업을 하고 있습니다.")
+                .category(ArtCategory.LANDSCAPE)
                 .artworkCount(12)
                 .exhibitingCount(3)
+                .totalExhibitedCount(8)
                 .ratingStats(ratingStats)
                 .build();
     }
@@ -106,8 +109,10 @@ public class UserMapper {
     //
     //     return ArtistData.builder()
     //             .introduction(artist.getIntroduction())
+    //             .category(artist.getCategory())
     //             .artworkCount(/* 실제 작품 수 */)
     //             .exhibitingCount(/* 실제 전시 중인 작품 수 */)
+    //             .totalExhibitedCount(/* 실제 총 전시한 작품 수 */)
     //             .ratingStats(ratingStats)
     //             .build();
     // }
