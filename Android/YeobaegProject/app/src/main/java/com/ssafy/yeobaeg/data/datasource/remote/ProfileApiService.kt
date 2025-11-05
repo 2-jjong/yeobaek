@@ -36,7 +36,7 @@ interface ProfileApiService {
     ): Response<BaseResponse<BookmarkCafesResponse>>
 
     @PATCH("users/me")
-    suspend fun updateProfileNickname(
+    suspend fun updateProfile(
         @Body request: UpdateProfileRequest
     ): Response<BaseResponse<Unit>>
 

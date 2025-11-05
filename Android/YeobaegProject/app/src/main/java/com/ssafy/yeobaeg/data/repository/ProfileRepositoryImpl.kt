@@ -96,24 +96,30 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    // ProfileRepositoryImpl.kt
     override suspend fun updateProfile(
         nickname: String?,
         profileImageUrl: String?,
-        introduction: String?
+        introduction: String?,
+        isArtist: Boolean
     ): Result<Unit> {
         return runCatching {
-            val response = api.updateProfileNickname(
-                request = UpdateProfileRequest(
+            val request = if (isArtist) {
+                UpdateProfileRequest(
                     nickname = nickname,
                     profileImageUrl = profileImageUrl,
                     introduction = introduction
                 )
-            )
-
-            if (!response.isSuccessful) {
-                throw Exception("프로필 수정 실패: ${response.code()} ${response.message()}")
+            } else {
+                UpdateProfileRequest(
+                    nickname = nickname,
+                    profileImageUrl = profileImageUrl
+                    // introduction은 아예 안 넣음
+                )
             }
-            Unit
+
+            val response = api.updateProfile(request)
+            if (!response.isSuccessful) throw Exception("프로필 수정 실패: ${response.code()} ${response.message()}")
         }
     }
 

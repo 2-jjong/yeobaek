@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +54,9 @@ fun GeneralProfileScreen(
     generalViewModel: GeneralProfileViewModel = hiltViewModel(),
 ) {
     val generalUiState by generalViewModel.uiState.collectAsStateWithLifecycle()
-
+    LaunchedEffect(Unit) {
+        generalViewModel.loadGeneralProfile()
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             generalUiState.isLoading -> {
@@ -73,7 +76,12 @@ fun GeneralProfileScreen(
             else -> {
                 GeneralProfileContent(
                     userInfo = generalUiState.userInfo,
-                    onEditClick = {generalViewModel.navigateToEditProfile(generalUiState.userInfo)},
+                    onEditClick = {
+                        generalViewModel.navigateToEditProfile(
+                            generalUiState.userInfo,
+                            null
+                        )
+                    },
                     onBookmarkClick = generalViewModel::navigateToBookmark,
                     onLogoutClick = generalViewModel::logout
                 )

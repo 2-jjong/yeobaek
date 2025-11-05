@@ -15,13 +15,14 @@ class ProfileEditViewModel @Inject constructor(
     private val navigator: Navigator,
 ) : ViewModel() {
 
-    fun updateProfileNickname(newNickname: String, newImage: String?, artistDes: String?) =
+    fun updateProfile(newNickname: String, newImage: String?, artistDes: String?, isArtist:Boolean) =
         viewModelScope.launch {
             viewModelScope.launch {
                 repository.updateProfile(
                     nickname = newNickname,
                     profileImageUrl = null,
-                    introduction = null
+                    introduction = artistDes,
+                    isArtist = isArtist
                 ).onSuccess {
                     navigator.navigateBack() // 성공 시 이동
                 }.onFailure { e ->

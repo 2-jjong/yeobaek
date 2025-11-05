@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,10 +35,12 @@ import com.ssafy.yeobaeg.ui.theme.*
 @Composable
 fun ProfileEditScreen(
     userInfo: UserInfo,
+    introduction:String?,
     viewModel: ProfileEditViewModel = hiltViewModel(),
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     var nickname by rememberSaveable { mutableStateOf(userInfo.nickname) }
+    var introduction by rememberSaveable { mutableStateOf(introduction) }
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
 
     // 갤러리에서 이미지 선택
@@ -87,16 +90,25 @@ fun ProfileEditScreen(
                 nickname = nickname,
                 onNicknameChange = { nickname = it }
             )
+            Spacer(modifier = Modifier.height(40.dp))
+
+            introduction?.let { it1 ->
+                IntroductionInputSection(
+                    introduction = it1,
+                    onIntroductionChange = { introduction = it }
+                )
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
             // 저장하기 버튼
             SaveButton(
                 onClick = {
-                    viewModel.updateProfileNickname(
+                    viewModel.updateProfile(
                         newNickname = nickname,
                         newImage = null,
-                        artistDes = null
+                        artistDes = introduction,
+                        isArtist = introduction!=null
                     )
                 }
             )
@@ -270,6 +282,57 @@ fun NicknameInputSection(
             ),
             singleLine = true
         )
+    }
+}
+
+@Composable
+fun IntroductionInputSection(
+    introduction: String,
+    onIntroductionChange: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // 라벨
+        Text(
+            text = "소개글",
+            fontFamily = jansilFont,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF111111),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 120.dp)
+                .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
+                .background(Color.White, RoundedCornerShape(12.dp))
+                .padding(12.dp)
+        ) {
+            BasicTextField(
+                value = introduction,
+                onValueChange = onIntroductionChange,
+                textStyle = LocalTextStyle.current.copy(
+                    color = Color(0xFF111111),
+                    fontFamily = jansilFont,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                decorationBox = { innerTextField ->
+                    if (introduction.isEmpty()) {
+                        Text(
+                            text = "소개글을 입력하세요.",
+                            color = Color(0xFFBDBDBD),
+                            fontFamily = jansilFont,
+                            fontSize = 14.sp
+                        )
+                    }
+                    innerTextField()
+                }
+            )
+        }
     }
 }
 

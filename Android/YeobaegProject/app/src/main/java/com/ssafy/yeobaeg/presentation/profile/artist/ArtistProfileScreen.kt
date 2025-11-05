@@ -91,7 +91,9 @@ fun ArtistProfileScreen(
             ProfileHeader(
                 userInfo = uiState.userInfo,
                 artistInfo = uiState.artistInfo,
-                onEditClick = { artistViewModel.navigateToEditProfile(uiState.userInfo) },
+                onEditClick = { artistViewModel.navigateToEditProfile(uiState.userInfo,
+                    uiState.artistInfo?.introduction
+                ) },
                 isMyProfile = (userId == null)
             )
 
