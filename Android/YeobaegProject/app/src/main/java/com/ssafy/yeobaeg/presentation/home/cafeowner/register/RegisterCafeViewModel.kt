@@ -18,6 +18,7 @@ import javax.inject.Inject
 
 const val STEP1 = 1
 const val STEP2 = 2
+const val STEP_ADDRESS = 0
 const val TOTAL_STEPS = 2
 
 @HiltViewModel
