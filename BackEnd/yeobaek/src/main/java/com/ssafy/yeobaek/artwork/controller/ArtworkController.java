@@ -498,11 +498,32 @@ public class ArtworkController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
             ),
             @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}")
+                            examples = @ExampleObject(value = "{\"code\": \"AW4041\", \"message\": \"존재하지 않는 작품입니다\"}")
                     )
             ),
             @ApiResponse(
@@ -510,7 +531,7 @@ public class ArtworkController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}")
                     )
             )
     })
@@ -519,30 +540,9 @@ public class ArtworkController {
             @Parameter(description = "조회할 작품 ID", required = true)
             @PathVariable Long artworkId
     ) {
-        // Mock 데이터 (단일 작품)
-        List<ArtworkImage> images = List.of(
-                new ArtworkImage(1L, "https://example.com/image1.jpg", 1),
-                new ArtworkImage(2L, "https://example.com/image2.jpg", 2)
-        );
-
-        Artist artist = new Artist(
-                1L, "홍길동", "https://example.com/profile.jpg",
-                "현대 미술을 전공한 신진 작가입니다."
-        );
-
-        Exhibition exhibition = new Exhibition(
-                1L, "카페 여백", "서울시 강남구 테헤란로 123",
-                "https://example.com/cafe.jpg", "메인 전시 공간",
-                "2024-01-01", "2024-03-31"
-        );
-
-        ArtworkDetail artwork = new ArtworkDetail(
-                artworkId, "여름의 여백", "여름날 햇살이 비치는 풍경을 표현한 작품입니다.",
-                500000, "풍경화", 80, 60, 2.5, 2024,
-                ExhibitionStatus.EXHIBITING, 150, 42, false, images, artist, exhibition
-        );
-
-        ArtworkDetailData data = new ArtworkDetailData(artwork);
+        // 현재 로그인한 사용자 ID 가져오기
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArtworkDetailData data = artworkService.getArtworkDetail(artworkId, userId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
