@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +20,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
             .status(responseCode.getHttpStatus())
             .body(ResponseDto.error(responseCode));
+    }
+
+    // 권한 거부 예외 처리
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ResponseDto<Void>> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ResponseDto.error(ResponseCode.FORBIDDEN));
     }
 
     // Validation 예외 처리

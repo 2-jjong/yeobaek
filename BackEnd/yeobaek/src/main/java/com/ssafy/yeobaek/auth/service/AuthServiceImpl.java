@@ -6,8 +6,6 @@ import com.ssafy.yeobaek.auth.dto.response.EmailCheckData;
 import com.ssafy.yeobaek.auth.dto.response.LoginData;
 import com.ssafy.yeobaek.auth.dto.response.TokenData;
 import com.ssafy.yeobaek.common.code.ResponseCode;
-import com.ssafy.yeobaek.common.enums.Gender;
-import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.common.util.JwtUtil;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
@@ -17,8 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -62,18 +58,8 @@ public class AuthServiceImpl implements AuthService{
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // User 엔티티 생성
-        User user = User.builder()
-                .userType(UserRole.valueOf(request.getUserType()))
-                .email(request.getEmail())
-                .password(encodedPassword)
-                .nickname(request.getNickname())
-                .birthDate(LocalDate.parse(request.getBirthDate()))
-                .gender(Gender.valueOf(request.getGender()))
-                .build();
-
-        // DB 저장
-        userService.save(user);
+        // User 생성 및 저장
+        userService.createUser(request, encodedPassword);
     }
 
     /**
