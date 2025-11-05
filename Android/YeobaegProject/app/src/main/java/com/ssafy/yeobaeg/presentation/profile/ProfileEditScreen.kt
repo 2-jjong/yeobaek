@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.presentation.profile
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,6 +44,7 @@ fun ProfileEditScreen(
     var nickname by rememberSaveable { mutableStateOf(userInfo.nickname) }
     var introduction by rememberSaveable { mutableStateOf(introduction) }
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
 
     // 갤러리에서 이미지 선택
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -72,6 +75,7 @@ fun ProfileEditScreen(
             // 프로필 이미지 섹션
             ProfileImageSection(
                 imageUri = selectedImageUri,
+                existingImageUrl = userInfo.profileImageUrl,
                 onImageClick = { showBottomSheet = true }
             )
 
@@ -104,14 +108,33 @@ fun ProfileEditScreen(
             // 저장하기 버튼
             SaveButton(
                 onClick = {
-                    viewModel.updateProfile(
-                        newNickname = nickname,
-                        newImage = null,
-                        artistDes = introduction,
-                        isArtist = introduction!=null
-                    )
+                    selectedImageUri?.let { uri ->
+                        // 새 이미지 업로드
+                        viewModel.uploadProfileImage(
+                            context = context,
+                            imageUri = uri,
+                            onSuccess = { fileKey ->
+                                viewModel.updateProfile(
+                                    newNickname = nickname,
+                                    newImage = fileKey,
+                                    artistDes = introduction,
+                                    isArtist = introduction != null
+                                )
+                            },
+                            onError = { e -> Log.e("ProfileEdit", "이미지 업로드 실패: ${e.message}") }
+                        )
+                    } ?: run {
+                        // 새 이미지 선택 안 했으면 기존 이미지 그대로 유지
+                        viewModel.updateProfile(
+                            newNickname = nickname,
+                            newImage = null,
+                            artistDes = introduction,
+                            isArtist = introduction != null
+                        )
+                    }
                 }
             )
+
         }
 
         // 바텀시트 (사진 선택용)
@@ -201,29 +224,48 @@ fun BottomSheetMenuItem(
 @Composable
 fun ProfileImageSection(
     imageUri: Uri?,
+    existingImageUrl: String?,
     onImageClick: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.BottomEnd,
         modifier = Modifier.clickable(onClick = onImageClick)
     ) {
-        // 이미지 미리보기
-        if (imageUri != null) {
-            AsyncImage(
-                model = imageUri,
-                contentDescription = "프로필 이미지",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, Color(0xFFE0E0E0), CircleShape),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.profile),
-                contentDescription = "기본 프로필 이미지",
-                modifier = Modifier.size(100.dp)
-            )
+        when {
+            // 새 이미지 선택 시
+            imageUri != null -> {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = "프로필 이미지",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color(0xFFE0E0E0), CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // 서버에서 받은 URL 그대로 사용
+            !existingImageUrl.isNullOrEmpty() -> {
+                AsyncImage(
+                    model = existingImageUrl,
+                    contentDescription = "프로필 이미지",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color(0xFFE0E0E0), CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // 기본 이미지
+            else -> {
+                Image(
+                    painter = painterResource(id = R.drawable.profile),
+                    contentDescription = "기본 프로필 이미지",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
         }
 
         // 카메라 아이콘 버튼

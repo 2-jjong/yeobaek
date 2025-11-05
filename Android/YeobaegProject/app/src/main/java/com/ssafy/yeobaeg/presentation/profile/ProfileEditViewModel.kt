@@ -1,10 +1,14 @@
 package com.ssafy.yeobaeg.presentation.profile
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
+import com.ssafy.yeobaeg.domain.repository.StorageRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.uriToTempFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -12,6 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileEditViewModel @Inject constructor(
     private val repository: ProfileRepository,
+    private val storageRepository: StorageRepository,
     private val navigator: Navigator,
 ) : ViewModel() {
 
@@ -20,7 +25,7 @@ class ProfileEditViewModel @Inject constructor(
             viewModelScope.launch {
                 repository.updateProfile(
                     nickname = newNickname,
-                    profileImageUrl = null,
+                    profileImageUrl = newImage,
                     introduction = artistDes,
                     isArtist = isArtist
                 ).onSuccess {
@@ -30,6 +35,31 @@ class ProfileEditViewModel @Inject constructor(
                 }
             }
         }
+
+    fun uploadProfileImage(context: Context, imageUri: Uri, onSuccess: (String) -> Unit, onError: (Throwable) -> Unit) {
+        viewModelScope.launch {
+            try {
+                // 1. Uri → File 변환
+                val file = uriToTempFile(context, imageUri)
+
+                // 2. Presigned URL 요청
+                val presignedList = storageRepository.createPresignedUrl("IMAGES", 1)
+                    .getOrThrow()
+                val presigned = presignedList.first()
+
+                // 3. S3에 이미지 업로드
+                storageRepository.uploadWithPresignedPut(file, presigned.uploadUrl).getOrThrow()
+
+                // 4. fileKey를 onSuccess로 전달
+                onSuccess(presigned.fileKey)
+
+            } catch (e: Exception) {
+                Log.e("ProfileEdit", "이미지 업로드 중 오류: ${e.message}")
+
+                onError(e)
+            }
+        }
+    }
 
     fun navigateBack() = viewModelScope.launch {
         navigator.navigateBack()

@@ -153,7 +153,7 @@ fun ProfileHeader(
         ) {
             // 프로필 이미지
             AsyncImage(
-                model = "",
+                model = userInfo.profileImageUrl?: R.drawable.profile,
                 contentDescription = "프로필 이미지",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
