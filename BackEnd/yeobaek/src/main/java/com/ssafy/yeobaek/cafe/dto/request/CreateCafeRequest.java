@@ -59,5 +59,5 @@ public class CreateCafeRequest {
 
 	@Schema(description = "카페 이미지 목록 (최소 3장, 최대 10장)")
 	@Size(min = 3, max = 10, message = "CAFE_INVALID_IMAGES_LENGTH")
-	private List<CafeImageRequest> images;
+	private List<String> images;
 }

@@ -6,7 +6,8 @@ public interface CafeService {
 
     /**
      * 카페 등록
+     * @param userId 유저 id
      * @param request 카페 등록 정보
      */
-    void createCafe(CreateCafeRequest request);
+    void createCafe(Long userId, CreateCafeRequest request);
 }
