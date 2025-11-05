@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.profile.CafeInfo
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,9 +27,10 @@ data class CafeProfileUiState(
 @HiltViewModel
 class CafeOwnerProfileViewModel @Inject constructor(
     private val navigator: Navigator,
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    authSessionManager: AuthSessionManager
 
-) : ProfileViewModel(navigator) {
+) : ProfileViewModel(navigator, authSessionManager) {
     private val _uiState = MutableStateFlow(CafeProfileUiState())
     val uiState: StateFlow<CafeProfileUiState> = _uiState.asStateFlow()
 

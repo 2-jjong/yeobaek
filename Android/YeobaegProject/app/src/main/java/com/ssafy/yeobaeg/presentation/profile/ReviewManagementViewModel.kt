@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.presentation.profile
 
 import android.content.ContentValues.TAG
 import android.util.Log
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.profile.ReviewStats
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
@@ -24,7 +25,7 @@ data class ReviewStatsUiState(
 class ReviewManagementViewModel @Inject constructor(
     private val repository: ProfileRepository,
     private val navigator: Navigator,
-) : ProfileViewModel(navigator) {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReviewStatsUiState())
     val uiState: StateFlow<ReviewStatsUiState> = _uiState.asStateFlow()
@@ -54,6 +55,10 @@ class ReviewManagementViewModel @Inject constructor(
                     }
                 }
         }
+    }
+
+    fun navigateBack() = viewModelScope.launch {
+        navigator.navigateBack()
     }
 
 }
