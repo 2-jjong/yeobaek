@@ -55,6 +55,8 @@ public class CafeServiceImpl implements CafeService {
                 .cafeOwner(user)
                 .cafeName(request.getCafeName())
                 .address(request.getAddress())
+                .latitude(0.0)
+                .longitude(0.0)
                 .description(request.getDescription())
                 .contact(request.getContact())
                 .businessStartTime(request.getBusinessHoursStart())
