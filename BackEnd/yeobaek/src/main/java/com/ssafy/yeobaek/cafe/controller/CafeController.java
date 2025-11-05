@@ -82,7 +82,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S4031\", \"message\": \"카페 사장만 등록할 수 있습니다\"}"
+                                    value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
                             )
                     )
             ),
