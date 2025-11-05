@@ -38,4 +38,7 @@ public class UserData {
 
     @Schema(description = "성별", example = "MALE")
     private Gender gender;
+
+    @Schema(description = "북마크한 수(카페, 작품)", example = "37")
+    private Integer bookmarkCount;
 }

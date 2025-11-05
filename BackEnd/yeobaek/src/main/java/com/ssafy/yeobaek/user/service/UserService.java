@@ -1,7 +1,9 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
 import com.ssafy.yeobaek.user.dto.response.UserProfileData;
+import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.entity.User;
 
 import java.util.Optional;
@@ -30,13 +32,6 @@ public interface UserService {
     Optional<User> findById(Long id);
 
     /**
-     * 사용자 저장
-     *
-     * @param user 저장할 사용자 엔티티
-     */
-    void save(User user);
-
-    /**
      * 내 프로필 조회
      * @param userId 사용자 ID
      * @return 사용자 프로필 데이터
@@ -44,9 +39,31 @@ public interface UserService {
     UserProfileData getMyProfile(Long userId);
 
     /**
+     * 특정 사용자 공개 프로필 조회
+     * @param userId 조회할 사용자 ID
+     * @return 공개 프로필 데이터
+     */
+    UserProfileData getUserProfile(Long userId);
+
+    /**
      * 프로필 정보 수정
      * @param userId 사용자 ID
      * @param request 수정할 프로필 정보
      */
     void updateProfile(Long userId, UpdateProfileRequest request);
+
+    /**
+     * Artist 프록시 객체 조회
+     * @param artistId 작가 ID
+     * @return Artist 프록시 객체
+     */
+    Artist getArtistReference(Long artistId);
+
+    /**
+     * 회원가입 - 사용자 생성 및 저장
+     *
+     * @param request         회원가입 요청 정보
+     * @param encodedPassword 암호화된 비밀번호
+     */
+    void createUser(SignupRequest request, String encodedPassword);
 }

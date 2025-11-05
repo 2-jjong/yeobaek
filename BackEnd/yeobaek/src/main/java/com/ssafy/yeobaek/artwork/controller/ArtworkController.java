@@ -3,9 +3,11 @@ package com.ssafy.yeobaek.artwork.controller;
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
+import com.ssafy.yeobaek.artwork.service.ArtworkService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
+import com.ssafy.yeobaek.common.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,8 +16,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,11 +29,13 @@ import java.util.stream.IntStream;
 @Tag(name = "작품 관리", description = "작품 관리 API")
 @RestController
 @RequestMapping("/api/v1/artworks")
+@RequiredArgsConstructor
 public class ArtworkController {
 
+    private final ArtworkService artworkService;
     private final int MOCK_ARTWORK_COUNT = 20;
 
-    @Operation(summary = "작품 등록", description = "작가가 피드 형식으로 작품을 등록합니다. 이미지는 최소 1장, 최대 10장까지 슬라이드 형식으로 등록 가능합니다.")
+    @Operation(summary = "작품 등록", description = "작가가 피드 형식으로 작품을 등록합니다. 이미지는 최소 1장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
@@ -37,7 +44,7 @@ public class ArtworkController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
                             )
                     )
             ),
@@ -47,13 +54,26 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "최소 이미지 개수 미달", value = "{\"code\": \"AW4001\", \"data\": null, \"message\": \"이미지는 최소 1장 이상 등록해야 합니다\"}"),
-                                    @ExampleObject(name = "최대 이미지 개수 초과", value = "{\"code\": \"AW4002\", \"data\": null, \"message\": \"이미지는 최대 10장까지 등록 가능합니다\"}"),
-                                    @ExampleObject(name = "작품명 길이 오류", value = "{\"code\": \"AW4003\", \"data\": null, \"message\": \"작품명은 1~100자 이내여야 합니다\"}"),
-                                    @ExampleObject(name = "작품 설명 길이 오류", value = "{\"code\": \"AW4004\", \"data\": null, \"message\": \"작품 설명은 최대 1000자까지 입력 가능합니다\"}"),
-                                    @ExampleObject(name = "유효하지 않은 카테고리", value = "{\"code\": \"AW4006\", \"data\": null, \"message\": \"유효하지 않은 카테고리입니다\"}"),
-                                    @ExampleObject(name = "대표 이미지 개수 오류", value = "{\"code\": \"AW4008\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}"),
-                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"data\": null, \"message\": \"필수 입력값이 누락되었습니다\"}")
+                                    @ExampleObject(
+                                            name = "필수 값 누락",
+                                            value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "이미지 개수 오류",
+                                            value = "{\"code\": \"AW4001\", \"message\": \"작품 이미지는 최소 1장 최대 10장까지 등록 가능합니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품명 길이 오류",
+                                            value = "{\"code\": \"AW4003\", \"message\": \"작품명은 1~100자 이내여야 합니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품 설명 길이 오류",
+                                            value = "{\"code\": \"AW4004\", \"message\": \"작품 설명은 최대 500자까지 입력 가능합니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 카테고리",
+                                            value = "{\"code\": \"AW4006\", \"message\": \"유효하지 않은 카테고리입니다\"}"
+                                    )
                             }
                     )
             ),
@@ -63,8 +83,18 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
                             }
                     )
             ),
@@ -74,7 +104,7 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"AW4031\", \"data\": null, \"message\": \"작가만 작품을 등록할 수 있습니다\"}"
+                                    value = "{\"code\": \"AW4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
                             )
                     )
             ),
@@ -84,13 +114,17 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
     })
     @PostMapping
-    public ResponseEntity<ResponseDto<Void>> createArtwork(@RequestBody CreateArtworkRequest request) {
+    @PreAuthorize("hasRole('ARTIST')")
+    public ResponseEntity<ResponseDto<Void>> createArtwork(@Valid @RequestBody CreateArtworkRequest request) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        artworkService.createArtwork(userId, request);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ResponseDto.created());
@@ -115,12 +149,10 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "최소 이미지 개수 미달", value = "{\"code\": \"AW4001\", \"data\": null, \"message\": \"이미지는 최소 1장 이상 등록해야 합니다\"}"),
-                                    @ExampleObject(name = "최대 이미지 개수 초과", value = "{\"code\": \"AW4002\", \"data\": null, \"message\": \"이미지는 최대 10장까지 등록 가능합니다\"}"),
+                                    @ExampleObject(name = "이미지 개수 오류", value = "{\"code\": \"AW4001\", \"data\": null, \"message\": \"작품 이미지는 최소 1장 최대 10장까지 등록 가능합니다\"}"),
                                     @ExampleObject(name = "작품명 길이 오류", value = "{\"code\": \"AW4003\", \"data\": null, \"message\": \"작품명은 1~100자 이내여야 합니다\"}"),
-                                    @ExampleObject(name = "작품 설명 길이 오류", value = "{\"code\": \"AW4004\", \"data\": null, \"message\": \"작품 설명은 최대 1000자까지 입력 가능합니다\"}"),
-                                    @ExampleObject(name = "유효하지 않은 카테고리", value = "{\"code\": \"AW4006\", \"data\": null, \"message\": \"유효하지 않은 카테고리입니다\"}"),
-                                    @ExampleObject(name = "대표 이미지 개수 오류", value = "{\"code\": \"AW4008\", \"data\": null, \"message\": \"대표 이미지는 1개만 선택해야 합니다\"}")
+                                    @ExampleObject(name = "작품 설명 길이 오류", value = "{\"code\": \"AW4004\", \"data\": null, \"message\": \"작품 설명은 최대 500자까지 입력 가능합니다\"}"),
+                                    @ExampleObject(name = "유효하지 않은 카테고리", value = "{\"code\": \"AW4006\", \"data\": null, \"message\": \"유효하지 않은 카테고리입니다\"}")
                             }
                     )
             ),
