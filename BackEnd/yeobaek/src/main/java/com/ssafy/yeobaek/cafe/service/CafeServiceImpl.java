@@ -36,16 +36,16 @@ public class CafeServiceImpl implements CafeService {
     @Transactional
     public void createCafe(Long userId, CreateCafeRequest request) {
 
-        // 2. 사용자 정보 확인
+        // 1. 사용자 정보 확인
         User user = userService.findById(userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
-        // 4. 중복 등록 확인
+        // 2. 중복 등록 확인
         if (cafeRepository.existsByCafeOwner(user)) {
             throw new CustomException(ResponseCode.CAFE_ALREADY_EXISTS);
         }
 
-        // 5. 카페 엔티티 생성 및 저장
+        // 3. 카페 엔티티 생성 및 저장
         Cafe cafe = Cafe.builder()
                 .cafeOwner(user)
                 .cafeName(request.getCafeName())
@@ -61,7 +61,7 @@ public class CafeServiceImpl implements CafeService {
                 .build();
         cafeRepository.save(cafe);
 
-        // 6. 카페 카테고리 저장
+        // 4. 카페 카테고리 저장
         List<CafeCategory> categories = cafeCategoryService.findCategoriesByIds(request.getCategoryIds());
         categories.forEach(cafeCategory -> {
             CafeCategoryTag cafeCategoryTag = CafeCategoryTag.builder()
