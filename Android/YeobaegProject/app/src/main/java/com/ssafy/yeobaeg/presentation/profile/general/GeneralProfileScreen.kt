@@ -74,7 +74,8 @@ fun GeneralProfileScreen(
                 GeneralProfileContent(
                     userInfo = generalUiState.userInfo,
                     onEditClick = {generalViewModel.navigateToEditProfile(generalUiState.userInfo)},
-                    onBookmarkClick = generalViewModel::navigateToBookmark
+                    onBookmarkClick = generalViewModel::navigateToBookmark,
+                    onLogoutClick = generalViewModel::logout
                 )
             }
         }
@@ -86,7 +87,8 @@ fun GeneralProfileScreen(
 fun GeneralProfileContent(
     userInfo: UserInfo,
     onEditClick: () -> Unit,
-    onBookmarkClick: () -> Unit
+    onBookmarkClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -112,7 +114,7 @@ fun GeneralProfileContent(
         Spacer(modifier = Modifier.weight(1f))
 
         // 로그아웃 버튼
-        LogoutButton()
+        LogoutButton(onClick = onLogoutClick)
     }
 }
 
@@ -209,9 +211,9 @@ fun MenuListSection(
 }
 
 @Composable
-fun LogoutButton() {
+fun LogoutButton(onClick: () -> Unit) {
     OutlinedButton(
-        onClick = { /* Handle logout */ },
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),
