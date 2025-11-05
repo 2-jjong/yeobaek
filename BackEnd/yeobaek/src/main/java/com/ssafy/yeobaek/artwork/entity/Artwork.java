@@ -22,7 +22,7 @@ public class Artwork {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long artworkId;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "artist_id", nullable = false)
