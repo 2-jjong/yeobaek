@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -95,16 +98,61 @@ fun GeneralHomeScreen(
                 }
 
                 item {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(330.dp)
+                    val cafePagerState = rememberPagerState(pageCount = { 
+                        (uiState.popularCafes.size + 2) / 3 
+                    })
+                    
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        items(uiState.popularCafes) { cafe ->
-                            PopularCafeItem(
-                                cafe = cafe,
-                                onClick = { onCafeClick(cafe.cafeId) }
-                            )
+                        HorizontalPager(
+                            state = cafePagerState,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(380.dp)
+                        ) { page ->
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(0.dp)
+                            ) {
+                                val startIndex = page * 3
+                                val cafesInPage = uiState.popularCafes.drop(startIndex).take(3)
+                                
+                                cafesInPage.forEach { cafe ->
+                                    PopularCafeItem(
+                                        cafe = cafe,
+                                        onClick = { onCafeClick(cafe.cafeId) }
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // 페이지 인디케이터
+                        if (cafePagerState.pageCount > 1) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 16.dp),
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                repeat(cafePagerState.pageCount) { index ->
+                                    Box(
+                                        modifier = Modifier
+                                            .size(if (index == cafePagerState.currentPage) 8.dp else 6.dp)
+                                            .clip(RoundedCornerShape(50))
+                                            .background(
+                                                if (index == cafePagerState.currentPage) 
+                                                    Color(0xFF8B4513) 
+                                                else 
+                                                    Color(0xFFD0D0D0)
+                                            )
+                                    )
+                                    if (index < cafePagerState.pageCount - 1) {
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -176,7 +224,8 @@ fun GeneralHomeTopBar() {
         },
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        windowInsets = WindowInsets(0.dp)
     )
 }
 

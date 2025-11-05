@@ -41,8 +41,8 @@ class GeneralHomeViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
-            val cafesResult = cafeRepository.getPopularCafes(10)
-            val artworksResult = artRepository.getPopularArtworks(10)
+            val cafesResult = cafeRepository.getPopularCafes(15)
+            val artworksResult = artRepository.getPopularArtworks(15)
 
             cafesResult.onSuccess { cafes ->
                 _uiState.update { it.copy(popularCafes = cafes) }
