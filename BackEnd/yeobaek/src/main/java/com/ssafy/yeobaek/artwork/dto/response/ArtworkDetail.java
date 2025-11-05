@@ -1,9 +1,11 @@
 package com.ssafy.yeobaek.artwork.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +17,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ArtworkDetail {
     @Schema(description = "작품 ID", example = "1")
@@ -30,7 +33,7 @@ public class ArtworkDetail {
     private Integer price;
 
     @Schema(description = "카테고리", example = "풍경화")
-    private String category;
+    private ArtCategory category;
 
     @Schema(description = "작품 가로 (cm)", example = "80")
     private Integer widthCm;
@@ -57,7 +60,7 @@ public class ArtworkDetail {
     private Boolean isBookmarked;
 
     @Schema(description = "작품 이미지 목록")
-    private List<ArtworkImage> images;
+    private List<String> images;
 
     @Schema(description = "작가 정보")
     private Artist artist;

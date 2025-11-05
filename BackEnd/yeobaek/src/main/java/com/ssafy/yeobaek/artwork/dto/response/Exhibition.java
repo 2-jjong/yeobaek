@@ -2,15 +2,19 @@ package com.ssafy.yeobaek.artwork.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Schema(description = "전시 정보")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Exhibition {
     @Schema(description = "카페 ID", example = "1")
     private Long cafeId;
@@ -28,8 +32,8 @@ public class Exhibition {
     private String slotName;
 
     @Schema(description = "전시 시작일 (YYYY-MM-DD)", example = "2024-01-01")
-    private String exhibitionStartDate;
+    private LocalDate exhibitionStartDate;
 
     @Schema(description = "전시 종료일 (YYYY-MM-DD)", example = "2024-03-31")
-    private String exhibitionEndDate;
+    private LocalDate exhibitionEndDate;
 }
