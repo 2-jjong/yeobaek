@@ -41,9 +41,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.domain.model.art.PopularArtwork
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 
@@ -52,7 +54,22 @@ fun GeneralHomeScreen(
     viewModel: GeneralHomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
+    GeneralHomeScreen(
+        uiState = uiState,
+        onCafeClick = viewModel::navigateToCafeDetail,
+        onArtworkClick = viewModel::navigateToArtworkDetail,
+        onErrorDismiss = viewModel::clearError
+    )
+}
 
+@Composable
+fun GeneralHomeScreen(
+    uiState: GeneralHomeUiState,
+    onCafeClick: (Long) -> Unit = {},
+    onArtworkClick: (Long) -> Unit = {},
+    onErrorDismiss: () -> Unit = {}
+) {
     Scaffold(
         topBar = {
             GeneralHomeTopBar()
@@ -86,7 +103,7 @@ fun GeneralHomeScreen(
                         items(uiState.popularCafes) { cafe ->
                             PopularCafeItem(
                                 cafe = cafe,
-                                onClick = { viewModel.navigateToCafeDetail(cafe.cafeId) }
+                                onClick = { onCafeClick(cafe.cafeId) }
                             )
                         }
                     }
@@ -111,7 +128,7 @@ fun GeneralHomeScreen(
                         items(uiState.popularArtworks) { artwork ->
                             PopularArtworkItem(
                                 artwork = artwork,
-                                onClick = { viewModel.navigateToArtworkDetail(artwork.artworkId) }
+                                onClick = { onArtworkClick(artwork.artworkId) }
                             )
                         }
                     }
@@ -133,7 +150,7 @@ fun GeneralHomeScreen(
                         .align(Alignment.BottomCenter)
                         .padding(16.dp),
                     action = {
-                        TextButton(onClick = viewModel::clearError) {
+                        TextButton(onClick = onErrorDismiss) {
                             Text("확인")
                         }
                     }
@@ -349,5 +366,80 @@ fun PopularArtworkItem(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GeneralHomeScreenPreview() {
+    MaterialTheme {
+        GeneralHomeScreen(
+            uiState = GeneralHomeUiState(
+                popularCafes = listOf(
+                    CafeSummary(
+                        cafeId = 1,
+                        cafeName = "Brew & Canvas",
+                        address = "서울시 강남구 테헤란로 123",
+                        primaryImageUrl = "",
+                        availableSlotCount = 5,
+                        totalSlotCount = 12,
+                        distance = null,
+                        categories = listOf("Urban Dreams Collection", "모던")
+                    ),
+                    CafeSummary(
+                        cafeId = 2,
+                        cafeName = "The Art Spot",
+                        address = "서울시 강남구 역삼동 456",
+                        primaryImageUrl = "",
+                        availableSlotCount = 3,
+                        totalSlotCount = 8,
+                        distance = null,
+                        categories = listOf("Nature & Serenity", "미니멀")
+                    ),
+                    CafeSummary(
+                        cafeId = 3,
+                        cafeName = "Moonlight Café",
+                        address = "서울시 마포구 홍대입구 789",
+                        primaryImageUrl = "",
+                        availableSlotCount = 7,
+                        totalSlotCount = 15,
+                        distance = null,
+                        categories = listOf("Contemporary Visions", "인더스트리얼")
+                    )
+                ),
+                popularArtworks = listOf(
+                    PopularArtwork(
+                        artworkId = 1,
+                        title = "Urban Dreams",
+                        thumbnailUrl = "",
+                        artistName = "김아티스트",
+                        artistProfileImageUrl = "",
+                        price = 450000,
+                        category = "풍경화",
+                        widthCm = 60,
+                        heightCm = 80,
+                        status = SlotStatus.AVAILABLE,
+                        bookmarkCount = 234,
+                        cafeName = "Brew & Canvas"
+                    ),
+                    PopularArtwork(
+                        artworkId = 2,
+                        title = "Morning Light",
+                        thumbnailUrl = "",
+                        artistName = "박화가",
+                        artistProfileImageUrl = "",
+                        price = 320000,
+                        category = "추상화",
+                        widthCm = 50,
+                        heightCm = 70,
+                        status = SlotStatus.ONGOING,
+                        bookmarkCount = 189,
+                        cafeName = null
+                    )
+                ),
+                isLoading = false,
+                error = null
+            )
+        )
     }
 }
