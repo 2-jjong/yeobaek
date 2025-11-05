@@ -32,6 +32,5 @@ open class ProfileViewModel @Inject constructor(
 
     fun logout() = viewModelScope.launch {
         authSessionManager.logout()
-        navigator.navigateAndClearBackStack(FullScreen.Login)
     }
 }

@@ -26,7 +26,7 @@ internal class MainViewModel @Inject constructor(
         viewModelScope.launch {
             authSessionManager.authEvents.collect { event ->
                 when (event) {
-                    AuthEvent.TokenExpired -> {
+                    AuthEvent.TokenExpired, AuthEvent.LoggedOut -> {
                         // 토큰이 만료되면 로그인 화면으로 이동
                         navigator.navigateAndClearBackStack(FullScreen.Login)
                     }

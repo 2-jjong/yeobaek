@@ -47,6 +47,7 @@ class AuthSessionManagerImpl @Inject constructor(
         _currentUserRole.value = null
         // 토큰 삭제
         tokenDataSource.clearTokens()
+        _authEvents.emit(AuthEvent.LoggedOut)
         Log.d("AuthSessionManager", "User logged out - role and tokens cleared")
     }
     
