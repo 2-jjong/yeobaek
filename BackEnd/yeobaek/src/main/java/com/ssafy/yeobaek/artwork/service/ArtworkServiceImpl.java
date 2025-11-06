@@ -8,11 +8,14 @@ import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class ArtworkServiceImpl implements ArtworkService {
     private final ArtworkBookmarkService artworkBookmarkService;
     private final UserService userService;
     private final ArtworkMapper artworkMapper;
+    private final S3Service s3Service;
 
     /**
      * 작품 등록
@@ -73,7 +77,11 @@ public class ArtworkServiceImpl implements ArtworkService {
         // 북마크 여부 확인
         boolean isBookmarked = artworkBookmarkService.isBookmarked(userId, artworkId);
 
+        // S3 presigned URL 변환
+        List<String> artworkImageUrls = s3Service.generatePresignedUrlsForDownload(artwork.getImages());
+        String artistProfileImageUrl = s3Service.generatePresignedUrlForDownload(artwork.getArtist().getUser().getProfileImageUrl());
+
         // DTO로 변환하여 반환
-        return artworkMapper.toArtworkDetailData(artwork, isBookmarked);
+        return artworkMapper.toArtworkDetailData(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl);
     }
 }
