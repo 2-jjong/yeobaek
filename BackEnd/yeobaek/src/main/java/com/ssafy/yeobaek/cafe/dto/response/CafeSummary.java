@@ -35,6 +35,6 @@ public class CafeSummary {
     @Schema(description = "거리 (km)", example = "1.5")
     private Double distance;
 
-    @Schema(description = "인테리어 스타일 목록", example = "[\"모던\", \"미니멀\"]")
-    private List<String> categories;
+    @Schema(description = "인테리어 스타일 목록", example = "[ 1, 2 ]")
+    private List<Long> categories;
 }

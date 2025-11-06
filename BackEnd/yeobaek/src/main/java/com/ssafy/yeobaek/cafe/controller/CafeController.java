@@ -469,7 +469,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4008\", \"data\": null, \"message\": \"거리순 정렬 시 위도/경도가 필요합니다\"}"
+                                    value = "{\"code\": \"CF4008\", \"message\": \"거리순 정렬 시 위도/경도가 필요합니다\"}"
                             )
                     )
             ),
@@ -479,9 +479,9 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "슬롯 규격 필터 권한 없음", value = "{\"code\": \"CF4033\", \"data\": null, \"message\": \"슬롯 규격 필터는 작가만 사용할 수 있습니다\"}"),
-                                    @ExampleObject(name = "수수료율 필터 권한 없음", value = "{\"code\": \"CF4034\", \"data\": null, \"message\": \"수수료율 필터는 작가만 사용할 수 있습니다\"}"),
-                                    @ExampleObject(name = "수수료율 정렬 권한 없음", value = "{\"code\": \"CF4035\", \"data\": null, \"message\": \"수수료율 정렬은 작가만 사용할 수 있습니다\"}")
+                                    @ExampleObject(name = "슬롯 규격 필터 권한 없음", value = "{\"code\": \"CF4033\", \"message\": \"슬롯 규격 필터는 작가만 사용할 수 있습니다\"}"),
+                                    @ExampleObject(name = "수수료율 필터 권한 없음", value = "{\"code\": \"CF4034\", \"message\": \"수수료율 필터는 작가만 사용할 수 있습니다\"}"),
+                                    @ExampleObject(name = "수수료율 정렬 권한 없음", value = "{\"code\": \"CF4035\", \"message\": \"수수료율 정렬은 작가만 사용할 수 있습니다\"}")
                             }
                     )
             ),
@@ -491,7 +491,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -722,9 +722,8 @@ public class CafeController {
         String[] addresses = {"서울시 강남구 테헤란로 123", "서울시 종로구 인사동길 45",
                 "서울시 마포구 홍익로 78", "서울시 용산구 이태원로 234",
                 "서울시 성동구 성수이로 156"};
-        String[][] categoriesList = {
-                {"모던", "미니멀"}, {"빈티지", "클래식"}, {"인더스트리얼", "모던"},
-                {"북유럽", "미니멀"}, {"레트로", "빈티지"}
+        Long[][] categoriesList = {
+                {1L, 2L}, {3L, 4L},{5L, 6L},{7L, 8L}
         };
 
         return IntStream.range(0, count)
@@ -736,7 +735,7 @@ public class CafeController {
                     int availableSlotCount = 1 + (i % 4);
                     int totalSlotCount = 3 + (i % 3);
                     Double distance = baseDistance != null ? baseDistance + (i * 0.3) : null;
-                    List<String> categories = List.of(categoriesList[i % categoriesList.length]);
+                    List<Long> categories = List.of(categoriesList[i % categoriesList.length]);
 
                     return new CafeSummary(
                             id, name, address, primaryImageUrl,
