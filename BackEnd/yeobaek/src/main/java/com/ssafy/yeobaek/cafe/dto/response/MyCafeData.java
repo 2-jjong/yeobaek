@@ -18,6 +18,4 @@ public class MyCafeData {
     @Schema(description = "내 카페 정보")
     private MyCafeSummary cafeSummary;
 
-    @Schema(description = "전시 슬롯 정보")
-    private List<DisplaySlot> displaySlots;
 }

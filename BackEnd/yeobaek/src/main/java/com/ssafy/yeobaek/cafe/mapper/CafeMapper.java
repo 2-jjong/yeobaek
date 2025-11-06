@@ -90,6 +90,11 @@ public class CafeMapper {
         // 협업 작가 수 (임시)
         long collaboratingArtists = 15L;
 
+        // 슬롯 정보
+        List<DisplaySlot> displaySlots = walls.stream()
+                .map(this::toDisplaySlot)
+                .collect(Collectors.toList());
+
         // 요약 정보
         MyCafeSummary summary = new MyCafeSummary(
                 cafe.getId(),
@@ -98,15 +103,11 @@ public class CafeMapper {
                 cafe.getImages().isEmpty() ? null : cafe.getImages().get(0),
                 totalSlots,
                 exhibitingSlots,
-                collaboratingArtists
+                collaboratingArtists,
+                displaySlots
         );
 
-        // 슬롯 정보
-        List<DisplaySlot> displaySlots = walls.stream()
-                .map(this::toDisplaySlot)
-                .collect(Collectors.toList());
-
-        return new MyCafeData(summary, displaySlots);
+        return new MyCafeData(summary);
     }
 
     private DisplaySlot toDisplaySlot(DisplayWall wall) {
