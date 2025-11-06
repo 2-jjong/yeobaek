@@ -690,34 +690,7 @@ public class CafeController {
             @Parameter(description = "조회할 카페 ID", required = true)
             @PathVariable Long cafeId
     ) {
-        // Mock 데이터
-        List<String> images = List.of("https://example.com/cafe1.jpg", "https://example.com/cafe2.jpg", "https://example.com/cafe3.jpg");
-
-        ExhibitionInfo exhibition = new ExhibitionInfo(
-                1L, "여름의 여백", "https://example.com/artwork1.jpg",
-                "홍길동", "2024-01-01", "2024-03-31"
-        );
-
-        List<DisplaySlot> slots = List.of(
-                new DisplaySlot(1L, "1번 벽", 200.0, 250.0, WallStatus.AVAILABLE, 15.0, "카페 입구 오른쪽 벽면", exhibition),
-                new DisplaySlot(2L, "2번 벽", 200.0, 250.0, WallStatus.EXHIBITING, 15.0, "카페 입구 오른쪽 벽면", exhibition),
-                new DisplaySlot(3L, "3번 벽", 200.0, 250.0, WallStatus.UNAVAILABLE, 15.0, "카페 입구 오른쪽 벽면", exhibition)
-        );
-
-        RatingStatsData ratingStats = new RatingStatsData(42, 4.5);
-        CafeOwner owner = new CafeOwner(
-                1L, "카페사장", "https://example.com/profile.jpg", ratingStats
-        );
-
-        CafeDetail cafeDetail = new CafeDetail(
-                cafeId, "카페 여백", "서울시 강남구 테헤란로 123",
-                "조용하고 아늑한 분위기의 카페입니다.", "02-1234-5678",
-                "09:00", "22:00", "100~200명", 150, false,
-                List.of("모던", "미니멀"), images, slots, owner
-        );
-
-        CafeDetailData data = new CafeDetailData(cafeDetail);
-
+        CafeDetailData data = cafeService.getCafeDetail(cafeId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
