@@ -72,6 +72,8 @@ fun ProfileEditScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(40.dp))
+
             // 프로필 이미지 섹션
             ProfileImageSection(
                 imageUri = selectedImageUri,
