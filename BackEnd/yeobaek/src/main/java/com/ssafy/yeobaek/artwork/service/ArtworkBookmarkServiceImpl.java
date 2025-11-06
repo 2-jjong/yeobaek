@@ -66,7 +66,7 @@ public class ArtworkBookmarkServiceImpl implements ArtworkBookmarkService {
 
         // 사용자 정보 조회
         User user = userService.findById(userId)
-                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
 
         // 작품 조회
         Artwork artwork = artworkRepository.findById(artworkId)
