@@ -332,51 +332,49 @@ fun IntroductionInputSection(
     introduction: String,
     onIntroductionChange: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        // 라벨
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = "소개글",
             fontFamily = jansilFont,
-            fontSize = 16.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF111111),
-            modifier = Modifier.padding(bottom = 8.dp)
+            color = Color.Black
         )
-        Box(
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = introduction,
+            onValueChange = onIntroductionChange,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 120.dp)
-                .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(12.dp))
-                .background(Color.White, RoundedCornerShape(12.dp))
-                .padding(12.dp)
-        ) {
-            BasicTextField(
-                value = introduction,
-                onValueChange = onIntroductionChange,
-                textStyle = LocalTextStyle.current.copy(
-                    color = Color(0xFF111111),
+                .heightIn(min = 120.dp),
+            placeholder = {
+                Text(
+                    text = "소개글을 입력하세요.",
+                    color = YeobaegTextGray,
                     fontFamily = jansilFont,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp
-                ),
-                modifier = Modifier.fillMaxWidth(),
-                decorationBox = { innerTextField ->
-                    if (introduction.isEmpty()) {
-                        Text(
-                            text = "소개글을 입력하세요.",
-                            color = Color(0xFFBDBDBD),
-                            fontFamily = jansilFont,
-                            fontSize = 14.sp
-                        )
-                    }
-                    innerTextField()
-                }
-            )
-        }
+                    fontWeight = FontWeight.Normal
+                )
+            },
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFFE0E0E0),
+                unfocusedBorderColor = Color(0xFFE0E0E0),
+                focusedContainerColor = Color.White,
+                unfocusedContainerColor = Color.White
+            ),
+            textStyle = LocalTextStyle.current.copy(
+                color = Color(0xFF111111),
+                fontFamily = jansilFont,
+                fontSize = 14.sp,
+                lineHeight = 20.sp
+            ),
+            maxLines = 5
+        )
     }
 }
+
 
 @Composable
 fun SaveButton(onClick: () -> Unit) {
