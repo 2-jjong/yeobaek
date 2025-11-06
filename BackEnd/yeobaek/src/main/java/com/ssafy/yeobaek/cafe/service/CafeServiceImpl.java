@@ -1,13 +1,15 @@
 package com.ssafy.yeobaek.cafe.service;
 
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
+import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
 import com.ssafy.yeobaek.cafe.dto.response.Coordinates;
-import com.ssafy.yeobaek.cafe.entity.Cafe;
-import com.ssafy.yeobaek.cafe.entity.CafeCategory;
-import com.ssafy.yeobaek.cafe.entity.CafeCategoryTag;
+import com.ssafy.yeobaek.cafe.dto.response.Wall;
+import com.ssafy.yeobaek.cafe.entity.*;
 import com.ssafy.yeobaek.cafe.mapper.CafeMapper;
 import com.ssafy.yeobaek.cafe.repository.CafeCategoryTagRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
+import com.ssafy.yeobaek.cafe.repository.DisplaySlotRepository;
+import com.ssafy.yeobaek.cafe.repository.DisplayWallRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.user.entity.User;
@@ -16,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -28,6 +31,8 @@ public class CafeServiceImpl implements CafeService {
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
     private final GeocoderService geocoderService;
     private final CafeMapper cafeMapper;
+    private final DisplayWallRepository displayWallRepository;
+    private final DisplaySlotRepository displaySlotRepository;
 
     /**
      * 카페 등록
@@ -65,4 +70,44 @@ public class CafeServiceImpl implements CafeService {
         });
     }
 
+    /**
+     * 카페 공간 등록
+     * @param userId 유저 id
+     * @param request 카페 공간 등록 정보
+     * @return 등록된 공간 목록
+     */
+    @Override
+    @Transactional
+    public List<Wall> createCafeWall(Long userId, List<CreateDisplayWallRequest> request) {
+
+        // 1. 사용자 정보 확인 및 카페 조회
+        User user = userService.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+        Cafe cafe = cafeRepository.findByCafeOwner(user)
+                .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
+
+        // 2. 중복 등록 확인
+        if (displayWallRepository.existsByCafe(cafe)) {
+            throw new CustomException(ResponseCode.WALL_ALREADY_EXISTS);
+        }
+
+        List<Wall> createdWalls = new ArrayList<>();
+
+        // 3. 요청된 벽 정보들을 순회하며 저장
+        request.forEach(wallRequest -> {
+            DisplayWall displayWall = cafeMapper.toDisplayWallEntity(wallRequest, cafe);
+            displayWallRepository.save(displayWall);
+
+            // 4. 전시 가능한 벽인 경우, 슬롯 정보도 함께 저장
+            if (wallRequest.getStatus()) {
+                DisplaySlot displaySlot = DisplaySlot.builder()
+                        .id(displayWall.getId())
+                        .build();
+                displaySlotRepository.save(displaySlot);
+            }
+            createdWalls.add(cafeMapper.toWallDto(displayWall));
+        });
+
+        return createdWalls;
+    }
 }
