@@ -4,6 +4,8 @@ import com.ssafy.yeobaek.storage.dto.request.PresignedUrlRequest;
 import com.ssafy.yeobaek.storage.dto.response.PresignedUrl;
 import com.ssafy.yeobaek.storage.dto.response.PresignedUrlListData;
 
+import java.util.List;
+
 public interface S3Service {
 
     /**
@@ -29,6 +31,7 @@ public interface S3Service {
 
     /**
      * 조회용 Presigned URL 생성
+     * fileKey가 null이면 null로 반환
      * @param fileKey S3 파일 키
      * @return 조회용 Presigned URL 문자열
      */
