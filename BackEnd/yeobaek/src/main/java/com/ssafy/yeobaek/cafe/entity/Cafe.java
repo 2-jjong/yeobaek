@@ -74,4 +74,8 @@ public class Cafe {
 
     @OneToMany(mappedBy = "cafe")
     private List<DisplayWall> displayWalls = new ArrayList<>();
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
 }

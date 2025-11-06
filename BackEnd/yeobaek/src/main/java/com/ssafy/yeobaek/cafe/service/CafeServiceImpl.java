@@ -209,7 +209,7 @@ public class CafeServiceImpl implements CafeService {
         Cafe cafe = cafeRepository.findById(cafeId)
             .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
 
-        // 2. 연관 데이터 조회 - 벽, 슬롯, 전시 정보
+        // 2. 벽, 슬롯, 전시 정보 조회
         List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafeId);
 
         // 3. 카테고리 정보 조회
@@ -217,8 +217,11 @@ public class CafeServiceImpl implements CafeService {
             .map(tag -> tag.getCategory().getCategoryName())
             .collect(Collectors.toList());
 
-        // 4. DTO로 변환
+        // 4. DTO 변환
         CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories);
+
+        // 5. 조회수 1 증가
+        cafe.increaseViewCount();
 
         return cafeDetailData;
     }
