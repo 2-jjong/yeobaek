@@ -350,22 +350,11 @@ public class CafeController {
                     )
             )
     })
+    @PreAuthorize("hasRole('CAFE_OWNER')")
     @GetMapping("/me")
-    public ResponseEntity<ResponseDto<CafeData>> getMyCafe() {
-        // Mock 데이터
-        List<CafeImage> images = List.of(
-                new CafeImage(1L, "https://example.com/cafe1.jpg", true, 1),
-                new CafeImage(2L, "https://example.com/cafe2.jpg", false, 2),
-                new CafeImage(3L, "https://example.com/cafe3.jpg", false, 3)
-        );
-
-        Cafe cafe = new Cafe(
-                1L, "카페 여백", "서울시 강남구 테헤란로 123",
-                "02-1234-5678", List.of("모던", "미니멀"), images
-        );
-
-        CafeData data = new CafeData(cafe);
-
+    public ResponseEntity<ResponseDto<MyCafeData>> getMyCafe() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        MyCafeData data = cafeService.getMyCafe(userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));

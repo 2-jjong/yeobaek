@@ -111,13 +111,11 @@ public class CafeMapper {
 
     private DisplaySlot toDisplaySlot(DisplayWall wall) {
 
-        if (!wall.getStatus()) return null;
-
         ExhibitionInfo exhibitionInfo = null;
         com.ssafy.yeobaek.cafe.entity.DisplaySlot slot = wall.getSlot();
 
-        if (wall.getSlot().getStatus() == ExhibitionStatus.EXHIBITING
-                || wall.getSlot().getStatus() == ExhibitionStatus.SCHEDULED) {
+        if (slot != null && (wall.getSlot().getStatus() == ExhibitionStatus.EXHIBITING
+                || wall.getSlot().getStatus() == ExhibitionStatus.SCHEDULED)) {
             exhibitionInfo = new ExhibitionInfo(
                     1L,
                     "여름의 여백",
@@ -133,9 +131,9 @@ public class CafeMapper {
                 wall.getWallName(),
                 wall.getWidthCm(),
                 wall.getHeightCm(),
-                slot.getStatus().toWallStatus(),
-                slot.getCommissionRate(),
-                slot.getRequirements(),
+                slot != null ? slot.getStatus().toWallStatus() : WallStatus.UNAVAILABLE,
+                slot != null ? slot.getCommissionRate() : null,
+                slot != null ? slot.getRequirements() : null,
                 exhibitionInfo
         );
     }
