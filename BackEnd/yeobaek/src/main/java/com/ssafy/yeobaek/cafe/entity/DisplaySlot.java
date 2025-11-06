@@ -16,6 +16,11 @@ public class DisplaySlot {
     @Id
     private Long id;
 
+    @MapsId
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id")
+    private DisplayWall wall;
+
     @Column(name = "status", nullable = false)
     @Builder.Default
     private ExhibitionStatus status = ExhibitionStatus.AVAILABLE;

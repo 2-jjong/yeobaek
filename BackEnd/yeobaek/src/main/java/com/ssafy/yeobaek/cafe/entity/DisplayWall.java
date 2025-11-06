@@ -37,4 +37,7 @@ public class DisplayWall {
 
     @Column(name = "status", nullable = false)
     private Boolean status;
+
+    @OneToOne(mappedBy = "wall", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private DisplaySlot slot;
 }
