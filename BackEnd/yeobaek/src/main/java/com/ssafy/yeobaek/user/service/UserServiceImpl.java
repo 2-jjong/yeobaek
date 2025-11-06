@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -195,5 +196,22 @@ public class UserServiceImpl implements UserService {
             artistRepository.save(artist);
         }
 
+    }
+
+    /**
+     * 작가명으로 검색
+     * @param keyword 검색 키워드
+     * @return 작가명에 키워드가 포함된 작가 목록
+     */
+    @Override
+    public List<Artist> searchArtistsByKeyword(String keyword) {
+        // ARTIST 타입인 사용자 중 닉네임에 키워드가 포함된 사용자 검색
+        List<User> users = userRepository.findByNicknameContainingAndUserType(keyword, UserRole.ARTIST);
+
+        // User ID로 Artist 엔티티 조회
+        return users.stream()
+                .map(user -> artistRepository.findById(user.getId()).orElse(null))
+                .filter(artist -> artist != null)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

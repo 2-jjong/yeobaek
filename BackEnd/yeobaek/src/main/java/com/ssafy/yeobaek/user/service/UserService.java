@@ -6,6 +6,7 @@ import com.ssafy.yeobaek.user.dto.response.UserProfileData;
 import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.entity.User;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
@@ -66,4 +67,11 @@ public interface UserService {
      * @param encodedPassword 암호화된 비밀번호
      */
     void createUser(SignupRequest request, String encodedPassword);
+
+    /**
+     * 작가명으로 검색
+     * @param keyword 검색 키워드
+     * @return 작가명에 키워드가 포함된 작가 목록
+     */
+    List<Artist> searchArtistsByKeyword(String keyword);
 }
