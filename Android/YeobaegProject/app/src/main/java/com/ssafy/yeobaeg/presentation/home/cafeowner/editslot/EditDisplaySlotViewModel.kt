@@ -17,10 +17,24 @@ class EditDisplaySlotViewModel @Inject constructor(
     private val navigator: Navigator
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(EditSlotState())
-    val uiState  = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
 
-    fun update(block: EditSlotState.() -> EditSlotState) {
+    private fun update(block: EditSlotState.() -> EditSlotState) {
         _uiState.value = _uiState.value.block()
+    }
+
+    fun updateDateRange(startMillis: Long?, endMillis: Long?) {
+        if (startMillis != null && endMillis != null) {
+            update { copy(startAtMillis = startMillis, endAtMillis = endMillis) }
+        }
+    }
+
+    fun updateFeePercent(percent: Int) {
+        update { copy(feePercent = percent) }
+    }
+
+    fun updateNote(text: String) {
+        update { copy(note = text.take(500)) }
     }
 
     fun registerSlot() {

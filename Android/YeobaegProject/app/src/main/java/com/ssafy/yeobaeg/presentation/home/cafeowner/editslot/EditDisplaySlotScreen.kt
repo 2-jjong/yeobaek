@@ -27,6 +27,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -47,6 +48,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,13 +57,14 @@ import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.ui.SectionHeader
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightYellow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
+// EditDisplaySlotScreen.kt 수정
 @Composable
 fun EditDisplaySlotScreen(
     slotId: Long,
@@ -70,26 +73,18 @@ fun EditDisplaySlotScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     EditDisplaySlotScreen(
         state = state,
-        onChangeDateRange = { s, e ->
-            viewModel.update {
-                copy(
-                    startAtMillis = s,
-                    endAtMillis = e
-                )
-            }
-        },
-        onChangeFee = { viewModel.update { copy(feePercent = it) } },
-        onChangeNote = { viewModel.update { copy(note = it.take(500)) } },
+        onChangeDateRange = viewModel::updateDateRange,
+        onChangeFee = viewModel::updateFeePercent,
+        onChangeNote = viewModel::updateNote,
         onPrev = viewModel::onBackPressed,
         onSubmit = viewModel::registerSlot
     )
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditDisplaySlotScreen(
     state: EditSlotState,
-    onChangeDateRange: (Long, Long) -> Unit,
+    onChangeDateRange: (Long?, Long?) -> Unit,
     onChangeFee: (Int) -> Unit,
     onChangeNote: (String) -> Unit,
     onPrev: () -> Unit,
@@ -152,7 +147,7 @@ fun EditDisplaySlotScreen(
             Text(
                 "작품 판매 시 카페가 받는 수수료 비율입니다",
                 fontSize = 12.sp,
-                color = Color(0xFF7A7F87)
+                color = YeobaegDarkGray
             )
             Spacer(Modifier.height(8.dp))
             FieldTitle("추가 요청사항 (500자 이내)")
@@ -170,7 +165,7 @@ fun EditDisplaySlotScreen(
                         Text(
                             "${state.note.length}/500",
                             fontSize = 12.sp,
-                            color = Color(0xFF7A7F87)
+                            color = YeobaegDarkGray
                         )
                     }
                 },
@@ -222,7 +217,7 @@ private fun BottomBar(
 private fun PeriodRangeField(
     startAtMillis: Long?,
     endAtMillis: Long?,
-    onSelected: (Long, Long) -> Unit
+    onSelected: (Long?, Long?) -> Unit
 ) {
     var open by remember { mutableStateOf(false) }
     val brown = YeobaegLightBrown
@@ -286,8 +281,8 @@ private fun PeriodRangeField(
                     enabled = pickerState.selectedStartDateMillis != null &&
                             pickerState.selectedEndDateMillis != null,
                     onClick = {
-                        val s = pickerState.selectedStartDateMillis!!
-                        val e = pickerState.selectedEndDateMillis!!
+                        val s = pickerState.selectedStartDateMillis
+                        val e = pickerState.selectedEndDateMillis
                         onSelected(s, e)
                         open = false
                     },
@@ -450,3 +445,43 @@ private fun Bullet(text: String) {
     }
 }
 
+
+@Preview(showBackground = true, name = "전시 슬롯 등록 - 빈 상태")
+@Composable
+private fun PreviewEditDisplaySlotScreen_Empty() {
+    MaterialTheme {
+        EditDisplaySlotScreen(
+            state = EditSlotState(
+                startAtMillis = null,
+                endAtMillis = null,
+                feePercent = null,
+                note = ""
+            ),
+            onChangeDateRange = { _, _ -> },
+            onChangeFee = {},
+            onChangeNote = {},
+            onPrev = {},
+            onSubmit = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "전시 슬롯 등록 - 입력 완료")
+@Composable
+private fun PreviewEditDisplaySlotScreen_Filled() {
+    MaterialTheme {
+        EditDisplaySlotScreen(
+            state = EditSlotState(
+                startAtMillis = 1704067200000L, // 2024-01-01
+                endAtMillis = 1735689600000L,   // 2024-12-31
+                feePercent = 20,
+                note = "작품 전시 시 조명은 자연광을 활용하며, 매일 오전 청소 시간에 작품 관리를 부탁드립니다. 카페 운영 시간은 오전 9시부터 오후 10시까지입니다."
+            ),
+            onChangeDateRange = { _, _ -> },
+            onChangeFee = {},
+            onChangeNote = {},
+            onPrev = {},
+            onSubmit = {}
+        )
+    }
+}
