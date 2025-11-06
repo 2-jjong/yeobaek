@@ -92,10 +92,24 @@ public class ArtworkMapper {
     /**
      * Artwork 엔티티를 ArtworkSummary DTO로 변환
      * @param artwork Artwork 엔티티
+     * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
      * @return ArtworkSummary DTO
      */
-    public ArtworkSummary toArtworkSummary(Artwork artwork) {
+    public ArtworkSummary toArtworkSummary(Artwork artwork, String thumbnailUrl) {
         return new ArtworkSummary(
+                artwork.getId(),
+                artwork.getTitle(),
+                thumbnailUrl
+        );
+    }
+
+    /**
+     * Artwork 엔티티를 ArtworkSummaryDetail DTO로 변환 (상세 버전)
+     * @param artwork Artwork 엔티티
+     * @return ArtworkSummaryDetail DTO
+     */
+    public ArtworkSummaryDetail toArtworkSummaryDetail(Artwork artwork) {
+        return new ArtworkSummaryDetail(
                 artwork.getId(),
                 artwork.getTitle(),
                 artwork.getImages().isEmpty() ? null : artwork.getImages().get(0),
