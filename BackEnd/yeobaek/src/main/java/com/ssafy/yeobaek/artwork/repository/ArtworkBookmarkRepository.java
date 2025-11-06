@@ -14,4 +14,11 @@ public interface ArtworkBookmarkRepository extends JpaRepository<ArtworkBookmark
      * @return 북마크 여부
      */
     boolean existsByUser_IdAndArtwork_Id(Long userId, Long artworkId);
+
+    /**
+     * 사용자가 특정 작품을 북마크한 엔티티 삭제
+     * @param userId 사용자 ID
+     * @param artworkId 작품 ID
+     */
+    void deleteArtworkBookmarkByUser_IdAndArtwork_Id(Long userId, Long artworkId);
 }

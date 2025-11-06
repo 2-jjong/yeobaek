@@ -71,6 +71,7 @@ public enum ResponseCode {
 
     // 카페 관련 에러 (400 Bad Request)
     CAFE_INVALID_IMAGES_LENGTH("CF4001", "카페 이미지는 최소 3장 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
+    CAFE_WALL_INVALID_NAME_LENGTH("CF4002", "카페 벽 이름은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_PRIMARY_IMAGE_ONLY_ONE("CF4003", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_DESCRIPTION_LENGTH("CF4005", "카페 소개는 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
@@ -94,6 +95,7 @@ public enum ResponseCode {
     CAFE_ALREADY_EXISTS("CF4091", "이미 등록된 카페가 있습니다", HttpStatus.CONFLICT),
     SLOT_EXHIBITING_SIZE_CHANGE("CF4092", "전시 중인 슬롯은 규격을 변경할 수 없습니다", HttpStatus.CONFLICT),
     SLOT_CANNOT_DELETE_EXHIBITING("CF4093", "전시 중이거나 전시 예정인 슬롯은 삭제할 수 없습니다", HttpStatus.CONFLICT),
+    WALL_ALREADY_EXISTS("CF4094", "이미 등록된 카페 공간이 있습니다", HttpStatus.CONFLICT),
 
     // Storage/S3 관련 에러 (400 Bad Request)
     INVALID_STORAGE_FOLDER("ST4001", "유효하지 않은 저장 폴더입니다", HttpStatus.BAD_REQUEST),

@@ -89,8 +89,12 @@ public class ArtworkServiceImpl implements ArtworkService {
         // 북마크 여부 확인
         boolean isBookmarked = artworkBookmarkService.isBookmarked(userId, artworkId);
 
+        // S3 presigned URL 변환
+        List<String> artworkImageUrls = s3Service.generatePresignedUrlsForDownload(artwork.getImages());
+        String artistProfileImageUrl = s3Service.generatePresignedUrlForDownload(artwork.getArtist().getUser().getProfileImageUrl());
+
         // DTO로 변환하여 반환
-        return artworkMapper.toArtworkDetailData(artwork, isBookmarked);
+        return artworkMapper.toArtworkDetailData(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl);
     }
 
     /**

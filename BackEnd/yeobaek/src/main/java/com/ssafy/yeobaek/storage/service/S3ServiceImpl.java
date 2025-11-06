@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -84,11 +85,16 @@ public class S3ServiceImpl implements S3Service {
 
     /**
      * 조회용 Presigned URL 생성
+     * fileKey가 null이면 null로 반환
      * @param fileKey S3 파일 키
-     * @return Presigned URL 문자열
+     * @return 조회용 Presigned URL 문자열
      */
     @Override
     public String generatePresignedUrlForDownload(String fileKey) {
+        if (fileKey == null) {
+            return null;
+        }
+
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileKey)
@@ -100,6 +106,23 @@ public class S3ServiceImpl implements S3Service {
                 .build();
 
         return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    /**
+     * 여러 파일의 조회용 Presigned URL 생성
+     * fileKeys가 null이면 빈 리스트 반환, null 요소는 null로 변환
+     * @param fileKeys S3 파일 키 리스트
+     * @return 조회용 Presigned URL 리스트
+     */
+    @Override
+    public List<String> generatePresignedUrlsForDownload(List<String> fileKeys) {
+        if (fileKeys == null) {
+            return new ArrayList<>();
+        }
+
+        return fileKeys.stream()
+                .map(this::generatePresignedUrlForDownload)
+                .collect(Collectors.toList());
     }
 
     /**

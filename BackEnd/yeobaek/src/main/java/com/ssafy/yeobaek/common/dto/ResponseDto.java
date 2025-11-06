@@ -43,6 +43,15 @@ public class ResponseDto<T> {
         );
     }
 
+    // 생성 성공 응답 - 데이터 포함 (201)
+    public static <T> ResponseDto<T> created(T data) {
+        return new ResponseDto<>(
+                ResponseCode.CREATED.getCode(),
+                data,
+                ResponseCode.CREATED.getMessage()
+        );
+    }
+
     // 생성 성공 응답 - 데이터 없음 (201)
     public static <T> ResponseDto<T> created() {
         return new ResponseDto<>(

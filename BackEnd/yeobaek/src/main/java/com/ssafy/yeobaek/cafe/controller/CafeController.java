@@ -210,6 +210,94 @@ public class CafeController {
                 .body(ResponseDto.success());
     }
 
+    @Operation(summary = "카페 공간 등록", description = "카페 사장이 카페 내부 공간을 등록합니다. 카페 등록 후 처음 카페 공간을 등록할 때 사용합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "벽 이름 길이 오류", value = "{\"code\": \"CF4002\", \"message\": \"카페 벽 이름은 2~15자 이내여야 합니다\"}"),
+                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "중복 등록",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"CF4094\", \"message\": \"이미 등록된 카페 공간이 있습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    )
+                            }
+                    )
+            )
+    })
+    @PostMapping("/walls")
+    @PreAuthorize("hasRole('CAFE_OWNER')")
+    public ResponseEntity<ResponseDto<List<Wall>>> createCafeWalls(@Valid @RequestBody List<CreateDisplayWallRequest> request) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<Wall> createdWalls = cafeService.createCafeWall(userId, request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ResponseDto.created(createdWalls));
+    }
+
     @Operation(summary = "내 카페 정보 조회", description = "현재 로그인한 카페 사장의 카페 정보를 조회합니다. 수정 목적으로 사용되며, 전체 정보를 반환합니다.")
     @ApiResponses(value = {
             @ApiResponse(
@@ -217,7 +305,13 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "나의 카페 정보",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"cafeSummary\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"경기도 안양시 동안구 관양동 1588-8\",\"primaryImageUrl\":\"string\",\"totalSlots\":3,\"exhibitingSlots\":1,\"collaboratingArtists\":15,\"displaySlots\":[{\"wallId\":1,\"wallName\":\"벽 A\",\"width\":0,\"height\":0,\"status\":\"AVAILABLE\",\"commissionRate\":0},{\"wallId\":2,\"wallName\":\"벽 B\",\"width\":0,\"height\":0,\"status\":\"UNAVAILABLE\"},{\"wallId\":3,\"wallName\":\"벽 C\",\"width\":208.3,\"height\":100.5,\"status\":\"EXHIBITING\",\"commissionRate\":10,\"requirements\":\"잘 부탁드립니다\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}]}}\n}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -262,22 +356,11 @@ public class CafeController {
                     )
             )
     })
+    @PreAuthorize("hasRole('CAFE_OWNER')")
     @GetMapping("/me")
-    public ResponseEntity<ResponseDto<CafeData>> getMyCafe() {
-        // Mock 데이터
-        List<CafeImage> images = List.of(
-                new CafeImage(1L, "https://example.com/cafe1.jpg", true, 1),
-                new CafeImage(2L, "https://example.com/cafe2.jpg", false, 2),
-                new CafeImage(3L, "https://example.com/cafe3.jpg", false, 3)
-        );
-
-        Cafe cafe = new Cafe(
-                1L, "카페 여백", "서울시 강남구 테헤란로 123",
-                "02-1234-5678", List.of("모던", "미니멀"), images
-        );
-
-        CafeData data = new CafeData(cafe);
-
+    public ResponseEntity<ResponseDto<MyCafeData>> getMyCafe() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        MyCafeData data = cafeService.getMyCafe(userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
