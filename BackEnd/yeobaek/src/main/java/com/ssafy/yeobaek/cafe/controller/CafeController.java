@@ -521,11 +521,7 @@ public class CafeController {
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터 - 거리 정보 포함
-        List<CafeSummary> cafes = createMockCafes(MOCK_CAFE_COUNT, 200L, 0.5);
-
-        Pagination pagination = new Pagination(page, size, (long) MOCK_CAFE_COUNT, (int) Math.ceil((double) MOCK_CAFE_COUNT / size), false);
-        CafeListData data = new CafeListData(cafes, pagination);
+        CafeListData data = cafeService.searchCafes(keyword, latitude, longitude, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
