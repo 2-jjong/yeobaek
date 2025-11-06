@@ -305,7 +305,13 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "나의 카페 정보",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"cafeSummary\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"경기도 안양시 동안구 관양동 1588-8\",\"primaryImageUrl\":\"string\",\"totalSlots\":3,\"exhibitingSlots\":1,\"collaboratingArtists\":15,\"displaySlots\":[{\"wallId\":1,\"wallName\":\"벽 A\",\"width\":0,\"height\":0,\"status\":\"AVAILABLE\",\"commissionRate\":0},{\"wallId\":2,\"wallName\":\"벽 B\",\"width\":0,\"height\":0,\"status\":\"UNAVAILABLE\"},{\"wallId\":3,\"wallName\":\"벽 C\",\"width\":208.3,\"height\":100.5,\"status\":\"EXHIBITING\",\"commissionRate\":10,\"requirements\":\"잘 부탁드립니다\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}]}}\n}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -350,22 +356,11 @@ public class CafeController {
                     )
             )
     })
+    @PreAuthorize("hasRole('CAFE_OWNER')")
     @GetMapping("/me")
-    public ResponseEntity<ResponseDto<CafeData>> getMyCafe() {
-        // Mock 데이터
-        List<CafeImage> images = List.of(
-                new CafeImage(1L, "https://example.com/cafe1.jpg", true, 1),
-                new CafeImage(2L, "https://example.com/cafe2.jpg", false, 2),
-                new CafeImage(3L, "https://example.com/cafe3.jpg", false, 3)
-        );
-
-        Cafe cafe = new Cafe(
-                1L, "카페 여백", "서울시 강남구 테헤란로 123",
-                "02-1234-5678", List.of("모던", "미니멀"), images
-        );
-
-        CafeData data = new CafeData(cafe);
-
+    public ResponseEntity<ResponseDto<MyCafeData>> getMyCafe() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        MyCafeData data = cafeService.getMyCafe(userId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));

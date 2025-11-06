@@ -10,4 +10,6 @@ public interface CafeRepository extends JpaRepository<Cafe, Long> {
     boolean existsByCafeOwner(User user);
 
     Optional<Cafe> findByCafeOwner(User user);
+
+    Optional<Cafe> findByCafeOwnerId(Long ownerId);
 }

@@ -35,6 +35,12 @@ public class DisplayWall {
     @Column(name = "end_y", nullable = false)
     private Double endY;
 
+    @Column(name = "width_cm", nullable = false)
+    private Double widthCm;
+
+    @Column(name = "height_cm", nullable = false)
+    private Double heightCm;
+
     @Column(name = "status", nullable = false)
     private Boolean status;
 
