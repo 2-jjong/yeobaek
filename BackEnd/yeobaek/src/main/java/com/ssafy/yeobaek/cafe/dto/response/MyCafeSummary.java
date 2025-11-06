@@ -33,7 +33,7 @@ public class MyCafeSummary {
     @Schema(description = "전시 중인 슬롯 수", example = "3")
     private Long exhibitingSlots;
 
-    @Schema(description = "협업 작가", example = "15")
+    @Schema(description = "협업 작가 수", example = "15")
     private Long collaboratingArtists;
 
     @Schema(description = "전시 슬롯 정보")
