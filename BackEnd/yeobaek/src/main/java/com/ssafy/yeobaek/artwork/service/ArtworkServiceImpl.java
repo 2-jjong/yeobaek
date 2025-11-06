@@ -24,6 +24,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -139,7 +140,7 @@ public class ArtworkServiceImpl implements ArtworkService {
         List<ArtworkSummary> artworkSummaries = convertToArtworkSummaries(artworkPage.getContent());
 
         // 키워드가 있으면 작가 검색도 수행
-        List<ArtistSummary> artistSummaries = null;
+        List<ArtistSummary> artistSummaries = new ArrayList<>();
         if (keyword != null && !keyword.trim().isEmpty()) {
             artistSummaries = searchArtistsByKeyword(keyword);
         }
