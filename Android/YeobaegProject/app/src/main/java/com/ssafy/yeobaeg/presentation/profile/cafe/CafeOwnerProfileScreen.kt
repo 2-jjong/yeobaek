@@ -101,7 +101,7 @@ fun CafeOwnerProfileScreen(
                     CafeOwnerProfileContent(
                         userInfo = uiState.userInfo,
                         cafeInfo = uiState.cafeInfo,
-                        onEditClick = { cafeViewModel.navigateToEditProfile(uiState.userInfo) },
+                        onEditClick = { cafeViewModel.navigateToEditProfile(uiState.userInfo,null) },
                         onBookmarkClick = cafeViewModel::navigateToBookmark,
                         onReviewClick = cafeViewModel::navigateToReviewManagement,
                         onLogoutClick = cafeViewModel::logout

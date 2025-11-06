@@ -125,7 +125,7 @@ fun NavGraph(
                     }
 
                     is FullScreen.ProfileEdit -> NavEntry(key) {
-                        ProfileEditScreen(key.userInfo)
+                        ProfileEditScreen(key.userInfo, key.introduction)
                     }
 
                     is FullScreen.SpaceScan -> NavEntry(key) {

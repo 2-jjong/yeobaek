@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.presentation.profile
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,26 +20,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.main.LocalUserRole
 import com.ssafy.yeobaeg.ui.theme.*
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun ProfileEditScreen(
     userInfo: UserInfo,
+    introduction:String?,
     viewModel: ProfileEditViewModel = hiltViewModel(),
 ) {
     var showBottomSheet by remember { mutableStateOf(false) }
     var nickname by rememberSaveable { mutableStateOf(userInfo.nickname) }
+    var introduction by rememberSaveable { mutableStateOf(introduction) }
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+    val userRole = LocalUserRole.current
+
 
     // 갤러리에서 이미지 선택
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -66,9 +75,12 @@ fun ProfileEditScreen(
                 .padding(horizontal = 24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(40.dp))
+
             // 프로필 이미지 섹션
             ProfileImageSection(
                 imageUri = selectedImageUri,
+                existingImageUrl = userInfo.profileImageUrl,
                 onImageClick = { showBottomSheet = true }
             )
 
@@ -87,19 +99,30 @@ fun ProfileEditScreen(
                 nickname = nickname,
                 onNicknameChange = { nickname = it }
             )
+            Spacer(modifier = Modifier.height(40.dp))
+
+            if (userRole == UserRole.ARTIST) {
+                IntroductionInputSection(
+                    introduction = introduction,
+                    onIntroductionChange = { introduction = it }
+                )
+                Spacer(modifier = Modifier.height(40.dp))
+            }
 
             Spacer(modifier = Modifier.weight(1f))
 
             // 저장하기 버튼
             SaveButton(
                 onClick = {
-                    viewModel.updateProfileNickname(
-                        newNickname = nickname,
-                        newImage = null,
-                        artistDes = null
+                    viewModel.onSaveProfile(
+                        context = context,
+                        nickname = nickname,
+                        introduction = introduction,
+                        imageUri = selectedImageUri,
                     )
                 }
             )
+
         }
 
         // 바텀시트 (사진 선택용)
@@ -189,29 +212,48 @@ fun BottomSheetMenuItem(
 @Composable
 fun ProfileImageSection(
     imageUri: Uri?,
+    existingImageUrl: String?,
     onImageClick: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.BottomEnd,
         modifier = Modifier.clickable(onClick = onImageClick)
     ) {
-        // 이미지 미리보기
-        if (imageUri != null) {
-            AsyncImage(
-                model = imageUri,
-                contentDescription = "프로필 이미지",
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, Color(0xFFE0E0E0), CircleShape),
-                contentScale = ContentScale.Crop
-            )
-        } else {
-            Image(
-                painter = painterResource(id = R.drawable.profile),
-                contentDescription = "기본 프로필 이미지",
-                modifier = Modifier.size(100.dp)
-            )
+        when {
+            // 새 이미지 선택 시
+            imageUri != null -> {
+                AsyncImage(
+                    model = imageUri,
+                    contentDescription = "프로필 이미지",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color(0xFFE0E0E0), CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // 서버에서 받은 URL 그대로 사용
+            !existingImageUrl.isNullOrEmpty() -> {
+                AsyncImage(
+                    model = existingImageUrl,
+                    contentDescription = "프로필 이미지",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color(0xFFE0E0E0), CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // 기본 이미지
+            else -> {
+                Image(
+                    painter = painterResource(id = R.drawable.profile),
+                    contentDescription = "기본 프로필 이미지",
+                    modifier = Modifier.size(100.dp)
+                )
+            }
         }
 
         // 카메라 아이콘 버튼
@@ -272,6 +314,57 @@ fun NicknameInputSection(
         )
     }
 }
+
+@Composable
+fun IntroductionInputSection(
+    introduction: String?,
+    onIntroductionChange: (String) -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "소개글",
+            fontFamily = jansilFont,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        if (introduction != null) {
+            OutlinedTextField(
+                value = introduction,
+                onValueChange = onIntroductionChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 120.dp),
+                placeholder = {
+                    Text(
+                        text = "소개글을 입력하세요.",
+                        color = YeobaegTextGray,
+                        fontFamily = jansilFont,
+                        fontWeight = FontWeight.Normal
+                    )
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE0E0E0),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                ),
+                textStyle = LocalTextStyle.current.copy(
+                    color = Color(0xFF111111),
+                    fontFamily = jansilFont,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                ),
+                maxLines = 5
+            )
+        }
+    }
+}
+
 
 @Composable
 fun SaveButton(onClick: () -> Unit) {

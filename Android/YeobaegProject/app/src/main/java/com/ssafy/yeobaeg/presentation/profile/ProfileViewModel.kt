@@ -23,8 +23,8 @@ open class ProfileViewModel @Inject constructor(
         navigator.navigate(FullScreen.BookmarkList)
     }
 
-    fun navigateToEditProfile(userInfo: UserInfo) = viewModelScope.launch {
-        navigator.navigate(FullScreen.ProfileEdit(userInfo))
+    fun navigateToEditProfile(userInfo: UserInfo, introduction:String?) = viewModelScope.launch {
+        navigator.navigate(FullScreen.ProfileEdit(userInfo,introduction))
     }
     fun navigateToReviewManagement() = viewModelScope.launch {
         navigator.navigate(FullScreen.ReviewManagementScreen)
