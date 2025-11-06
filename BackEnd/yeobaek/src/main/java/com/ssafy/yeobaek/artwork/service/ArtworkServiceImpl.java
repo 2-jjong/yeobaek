@@ -1,7 +1,7 @@
 package com.ssafy.yeobaek.artwork.service;
 
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
-import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailData;
+import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
 import com.ssafy.yeobaek.artwork.mapper.ArtworkMapper;
 import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
@@ -13,6 +13,9 @@ import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -75,5 +78,45 @@ public class ArtworkServiceImpl implements ArtworkService {
 
         // DTO로 변환하여 반환
         return artworkMapper.toArtworkDetailData(artwork, isBookmarked);
+    }
+
+    /**
+     * 키워드로 작품/작가 검색
+     * @param keyword 검색 키워드
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 작품 및 작가 목록
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ArtworkListData searchByKeyword(String keyword, Integer page, Integer size) {
+        // 작품명으로 검색
+        List<Artwork> artworks = artworkRepository.findByTitleContaining(keyword);
+
+        // 작가명으로 검색
+        List<Artist> artists = userService.searchArtistsByKeyword(keyword);
+
+        // Artist를 ArtistSummary로 변환
+        List<ArtistSummary> artistSummaries = artists.stream()
+                .map(artist -> {
+                    int artworkCount = artworkRepository.countByArtist(artist);
+                    return artworkMapper.toArtistSummary(artist, artworkCount);
+                })
+                .collect(Collectors.toList());
+
+        // 작품을 ArtworkSummary로 변환
+        List<ArtworkSummary> artworkSummaries = artworks.stream()
+                .map(artworkMapper::toArtworkSummary)
+                .collect(Collectors.toList());
+
+        // TODO: 페이징 처리 구현 필요
+        long totalElements = artworkSummaries.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        boolean hasNext = page < totalPages - 1;
+
+        Pagination pagination = new Pagination(page, size, totalElements, totalPages, hasNext);
+
+        // 결과 반환
+        return new ArtworkListData(artistSummaries, artworkSummaries, pagination);
     }
 }

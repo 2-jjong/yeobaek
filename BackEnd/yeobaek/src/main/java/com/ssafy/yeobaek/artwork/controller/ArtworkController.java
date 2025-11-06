@@ -5,6 +5,7 @@ import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.service.ArtworkService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
@@ -411,7 +412,7 @@ public class ArtworkController {
             @Parameter(description = "작품명, 작가명 검색 키워드")
             @RequestParam(required = false) String keyword,
             @Parameter(description = "카테고리 필터 (다중 선택)")
-            @RequestParam(required = false) List<String> categories,
+            @RequestParam(required = false) List<ArtCategory> categories,
             @Parameter(description = "작품 최소 가로 (cm)")
             @RequestParam(required = false) Integer minWidth,
             @Parameter(description = "작품 최대 가로 (cm)")
@@ -420,23 +421,28 @@ public class ArtworkController {
             @RequestParam(required = false) Integer minHeight,
             @Parameter(description = "작품 최대 세로 (cm)")
             @RequestParam(required = false) Integer maxHeight,
-            @Parameter(description = "정렬 기준 (POPULARITY: 인기순, LATEST: 최신 등록순)")
+            @Parameter(description = "정렬 기준 (LATEST: 최신 등록순, POPULARITY: 인기순)")
             @RequestParam(defaultValue = "LATEST") ArtworkSortBy sortBy,
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
             @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터
+        // 키워드 검색이 있는 경우 서비스 호출
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            ArtworkListData data = artworkService.searchByKeyword(keyword, page, size);
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(ResponseDto.success(data));
+        }
+
+        // 키워드가 없는 경우 Mock 데이터 반환 (추후 다른 필터 기능 구현 시 수정)
         ArtistSummary artist1 = new ArtistSummary(
                 1L, "홍길동", "https://example.com/profile1.jpg",
                 "현대 미술을 전공한 신진 작가입니다.", 15
         );
 
-        // Mock 데이터 - 20개로 증가
-        List<ArtworkSummary> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 200L); // 다른 ID로 시작
-
-        // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
+        List<ArtworkSummary> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 200L);
         Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
         ArtworkListData data = new ArtworkListData(List.of(artist1), artworks, pagination);
 
@@ -677,7 +683,7 @@ public class ArtworkController {
 
     private List<ArtworkSummary> createMockArtworks(int count, Long startId) {
         String[] titles = {"여름의 여백", "가을의 정적", "봄날의 꿈", "겨울의 침묵", "도시의 밤", "산속의 오두막", "추상의 세계", "바다의 속삭임", "황혼의 노래", "새벽의 기도", "꽃병과 과일", "푸른 하늘", "고요한 아침", "빛과 그림자", "시간의 흐름", "미지의 공간", "노을 진 풍경", "밤하늘의 별", "꿈속의 정원", "자유로운 영혼"};
-        String[] categories = {"풍경화", "인물화", "정물화", "장르화", "기타", "역사화"};
+        ArtCategory[] categories = {ArtCategory.LANDSCAPE, ArtCategory.PORTRAIT, ArtCategory.STILL_LIFE, ArtCategory.GENRE, ArtCategory.OTHER, ArtCategory.HISTORY};
         ExhibitionStatus[] statuses = {ExhibitionStatus.AVAILABLE, ExhibitionStatus.EXHIBITING};
         String[] exhibitLocations = {null, "카페 여백", "아트카페", "오션뷰 카페", null};
 
@@ -687,7 +693,7 @@ public class ArtworkController {
                     String title = titles[i % titles.length] + " #" + id;
                     String image = "https://example.com/artwork" + (i + 1) + ".jpg";
                     int price = 400000 + (i * 50000) % 500000;
-                    String category = categories[i % categories.length];
+                    ArtCategory category = categories[i % categories.length];
                     int width = 60 + (i * 5) % 60;
                     int height = 70 + (i * 5) % 50;
                     ExhibitionStatus status = statuses[i % statuses.length];
