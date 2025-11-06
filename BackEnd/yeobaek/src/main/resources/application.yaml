@@ -50,3 +50,10 @@ jwt:
   secret: ${JWT_SECRET}
   access-token-expiration: 3600000    # 1시간 (밀리초)
   refresh-token-expiration: 604800000 # 7일 (밀리초)
+
+vworld:
+  api:
+    key: ${GEOCODER_API_KEY}
+    search-type: parcel
+    epsg: epsg:4326
+    url: https://api.vworld.kr/req/address

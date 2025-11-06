@@ -1,15 +1,15 @@
 package com.ssafy.yeobaek.cafe.service;
 
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
+import com.ssafy.yeobaek.cafe.dto.response.Coordinates;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.CafeCategory;
 import com.ssafy.yeobaek.cafe.entity.CafeCategoryTag;
+import com.ssafy.yeobaek.cafe.mapper.CafeMapper;
 import com.ssafy.yeobaek.cafe.repository.CafeCategoryTagRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
-import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
-import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +26,8 @@ public class CafeServiceImpl implements CafeService {
     private final UserService userService;
     private final CafeCategoryService cafeCategoryService;
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
+    private final GeocoderService geocoderService;
+    private final CafeMapper cafeMapper;
 
     /**
      * 카페 등록
@@ -45,23 +47,14 @@ public class CafeServiceImpl implements CafeService {
             throw new CustomException(ResponseCode.CAFE_ALREADY_EXISTS);
         }
 
-        // 3. 카페 엔티티 생성 및 저장
-        Cafe cafe = Cafe.builder()
-                .cafeOwner(user)
-                .cafeName(request.getCafeName())
-                .address(request.getAddress())
-                .latitude(0.0)
-                .longitude(0.0)
-                .description(request.getDescription())
-                .contact(request.getContact())
-                .businessStartTime(request.getBusinessHoursStart())
-                .businessEndTime(request.getBusinessHoursEnd())
-                .dailyVisitors(request.getDailyVisitors())
-                .images(request.getImages())
-                .build();
+        // 3. 주소를 좌표로 변환
+        Coordinates coordinates = geocoderService.getCoordinates(request.getAddress());
+
+        // 4. 카페 엔티티 생성 및 저장
+        Cafe cafe = cafeMapper.toEntity(request, user, coordinates);
         cafeRepository.save(cafe);
 
-        // 4. 카페 카테고리 저장
+        // 5. 카페 카테고리 저장
         List<CafeCategory> categories = cafeCategoryService.findCategoriesByIds(request.getCategoryIds());
         categories.forEach(cafeCategory -> {
             CafeCategoryTag cafeCategoryTag = CafeCategoryTag.builder()

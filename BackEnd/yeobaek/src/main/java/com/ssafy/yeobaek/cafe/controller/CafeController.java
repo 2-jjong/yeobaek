@@ -61,6 +61,7 @@ public class CafeController {
                                     @ExampleObject(name = "매장명 길이 오류", value = "{\"code\": \"CF4004\", \"message\": \"매장명은 2~15자 이내여야 합니다\"}"),
                                     @ExampleObject(name = "카페 소개 길이 오류", value = "{\"code\": \"CF4005\", \"message\": \"카페 소개는 최대 500자까지 입력 가능합니다\"}"),
                                     @ExampleObject(name = "영업시간 형식 오류", value = "{\"code\": \"CF4007\", \"message\": \"영업시간 형식이 올바르지 않습니다 (HH:mm)\"}"),
+                                    @ExampleObject(name = "유효하지 않은 주소 오류", value = "{\"code\": \"CF4009\", \"message\": \"좌표로 변환할 수 없는 주소입니다\"}"),
                                     @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}")
                             }
                     )
@@ -111,9 +112,10 @@ public class CafeController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
-                            )
+                            examples = {
+                                    @ExampleObject(value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"),
+                                    @ExampleObject(value = "{\"code\": \"S5001\", \"message\": \"지오코더 API 서버에 오류가 발생했습니다\"}")
+                            }
                     )
             )
     })

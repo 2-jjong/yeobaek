@@ -76,6 +76,7 @@ public enum ResponseCode {
     CAFE_INVALID_COMMISSION_RATE("CF4006", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_HOURS_FORMAT("CF4007", "영업시간 형식이 올바르지 않습니다 (HH:mm)", HttpStatus.BAD_REQUEST),
     CAFE_LATITUDE_LONGITUDE_REQUIRED("CF4008", "거리순 정렬 시 위도/경도가 필요합니다", HttpStatus.BAD_REQUEST),
+    CAFE_INVALID_ADDRESS("CF4009", "좌표로 변환할 수 없는 주소입니다", HttpStatus.BAD_REQUEST),
 
     // 카페 관련 에러 (403 Forbidden)
     CAFE_FORBIDDEN_UPDATE_DELETE("CF4032", "본인의 카페만 수정/삭제할 수 있습니다", HttpStatus.FORBIDDEN),
@@ -98,7 +99,8 @@ public enum ResponseCode {
     INVALID_FILE_COUNT("ST4002", "파일 개수는 1개 이상 10개 이하여야 합니다", HttpStatus.BAD_REQUEST),
 
     // 서버 에러 (500 Internal Server Error)
-    INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
+    INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    GEOCODING_API_ERROR("S5001", "지오코더 API 서버에 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;
