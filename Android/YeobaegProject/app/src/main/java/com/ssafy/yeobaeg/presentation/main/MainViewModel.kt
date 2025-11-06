@@ -44,6 +44,7 @@ internal class MainViewModel @Inject constructor(
                     }
                     AuthEvent.SignUpSuccess -> {
                         // 회원가입 성공 스낵바 메시지 표시
+                        navigator.navigateAndClearBackStack(FullScreen.Login)
                         _snackbarMessage.update { "회원가입에 성공했습니다!" }
                     }
                 }

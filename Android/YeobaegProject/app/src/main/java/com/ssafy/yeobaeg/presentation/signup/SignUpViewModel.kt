@@ -247,10 +247,6 @@ class SignUpViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(isLoading = false)
                 }
-
-                // 먼저 로그인 화면으로 이동
-                navigator.navigateAndClearBackStack(FullScreen.Login)
-
                 // 회원가입 성공 이벤트 발행
                 authSessionManager.emitSignUpSuccess()
             },
