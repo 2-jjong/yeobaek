@@ -9,7 +9,11 @@ import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,18 +25,35 @@ internal class MainViewModel @Inject constructor(
 
     val userRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
 
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
+
     init {
-        // 토큰 만료 이벤트 구독
+        // 인증 이벤트 구독
         viewModelScope.launch {
             authSessionManager.authEvents.collect { event ->
                 when (event) {
                     AuthEvent.TokenExpired, AuthEvent.LoggedOut -> {
                         // 토큰이 만료되면 로그인 화면으로 이동
                         navigator.navigateAndClearBackStack(FullScreen.Login)
+                        _snackbarMessage.update { "로그아웃 되었습니다." }
+                    }
+                    AuthEvent.LoginSuccess -> {
+                        // 로그인 성공 스낵바 메시지 표시
+                        navigator.navigateAndClearBackStack(route = BottomNavScreen.Home)
+                        _snackbarMessage.update { "로그인 성공!" }
+                    }
+                    AuthEvent.SignUpSuccess -> {
+                        // 회원가입 성공 스낵바 메시지 표시
+                        _snackbarMessage.update { "회원가입에 성공했습니다!" }
                     }
                 }
             }
         }
+    }
+
+    fun clearSnackbarMessage() {
+        _snackbarMessage.update { null }
     }
     fun navigateHome() = viewModelScope.launch {
         navigator.navigateAndClearBackStack(route = BottomNavScreen.Home)

@@ -10,5 +10,15 @@ sealed class AuthEvent {
     data object TokenExpired : AuthEvent()
 
     data object LoggedOut : AuthEvent()
+
+    /**
+     * 로그인 성공
+     */
+    data object LoginSuccess : AuthEvent()
+
+    /**
+     * 회원가입 성공
+     */
+    data object SignUpSuccess : AuthEvent()
 }
 

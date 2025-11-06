@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
@@ -17,6 +18,7 @@ import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.ssafy.yeobaeg.domain.model.UserRole
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegSnackbarHost
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
@@ -45,6 +47,7 @@ val LocalUserRole = compositionLocalOf<UserRole?> { null }
 @Composable
 fun NavGraph(
     navBackStack: NavBackStack,
+    snackbarHostState: SnackbarHostState,
     onTabSelected: (MainTab) -> Unit = {},
 ) {
     Scaffold(
@@ -55,6 +58,9 @@ fun NavGraph(
                     currentTab = mapTab(navBackStack.lastOrNull()),
                     onTabSelected = onTabSelected,
                 )
+        },
+        snackbarHost = {
+            YeobaegSnackbarHost(hostState = snackbarHostState)
         }
     ) { innerPadding ->
 

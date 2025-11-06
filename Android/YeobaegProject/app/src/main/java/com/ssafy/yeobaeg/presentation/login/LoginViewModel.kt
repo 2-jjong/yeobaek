@@ -71,12 +71,13 @@ class LoginViewModel @Inject constructor(
                 .onSuccess { userRole ->
                     // AuthSessionManager에 유저 롤 저장
                     authSessionManager.updateUserRole(userRole)
-                    
+
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
                     }
-                  
-                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+
+                    // 로그인 성공 이벤트 발행 (홈 화면에서 스낵바 표시)
+                    authSessionManager.emitLoginSuccess()
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -111,12 +112,15 @@ class LoginViewModel @Inject constructor(
                     // AuthSessionManager에 유저 롤 저장
                     authSessionManager.updateUserRole(userRole)
 
-                    
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
                     }
-                    
+
+                    // 먼저 홈 화면으로 이동
                     navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+
+                    // 로그인 성공 이벤트 발행 (홈 화면에서 스낵바 표시)
+                    authSessionManager.emitLoginSuccess()
                 }
                 .onFailure { error ->
                     _uiState.update {

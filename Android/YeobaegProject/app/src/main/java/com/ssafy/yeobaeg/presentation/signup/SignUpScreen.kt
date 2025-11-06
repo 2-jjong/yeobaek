@@ -17,36 +17,47 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ssafy.yeobaeg.domain.model.ArtType
 import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegStepBar
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegErrorDialog
+import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
+import java.util.Calendar
 
 @Composable
 fun SignUpScreen(
@@ -60,14 +71,24 @@ fun SignUpScreen(
                 .fillMaxSize()
                 .background(Color.White)
         ) {
+            // 상단 바 (뒤로가기 버튼 포함)
+            YeobaegTopAppBar(
+                title = "회원가입",
+                onBackClick = {
+                    if (uiState.currentStep == 1) {
+                        viewModel.onBack()
+                    } else {
+                        viewModel.previousStep()
+                    }
+                },
+                actionIcon = null,
+                onActionClick = {}
+            )
+            
             // 프로그래스 바
-            LinearProgressIndicator(
-                progress = { uiState.currentStep.toFloat() / uiState.totalSteps.toFloat() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp),
-                color = YeobaegDarkBrown,
-                trackColor = YeobaegLightGray,
+            YeobaegStepBar(
+                step = uiState.currentStep,
+                totalStep = uiState.totalSteps
             )
 
             when (uiState.currentStep) {
@@ -75,43 +96,37 @@ fun SignUpScreen(
                     email = uiState.email,
                     password = uiState.password,
                     passwordConfirm = uiState.passwordConfirm,
+                    emailError = uiState.emailError,
+                    passwordError = uiState.passwordError,
+                    passwordConfirmError = uiState.passwordConfirmError,
                     onEmailChange = viewModel::updateEmail,
                     onPasswordChange = viewModel::updatePassword,
                     onPasswordConfirmChange = viewModel::updatePasswordConfirm,
                     onNextClick = viewModel::nextStep,
-                    onBackClick = viewModel::onBack,
                     canProceed = viewModel.canProceedFromEmailPasswordStep()
                 )
                 2 -> Step2RoleSelection(
                     selectedRole = uiState.userRole,
                     onRoleSelect = viewModel::selectUserRole,
                     onNextClick = viewModel::nextStep,
-                    onBackClick = viewModel::previousStep,
                     canProceed = viewModel.canProceedFromRoleSelectionStep()
                 )
                 3 -> Step3GenderAndAge(
                     birthDate = uiState.birthDate,
                     selectedGender = uiState.gender,
+                    birthDateError = uiState.birthDateError,
                     onBirthDateChange = viewModel::updateBirthDate,
                     onGenderSelect = viewModel::selectGender,
                     onNextClick = viewModel::nextStep,
-                    onBackClick = viewModel::previousStep,
                     canProceed = viewModel.canProceedFromGenderAndAgeStep()
                 )
                 4 -> Step4Nickname(
                     nickname = uiState.nickname,
                     userRole = uiState.userRole,
+                    nicknameError = uiState.nicknameError,
                     onNicknameChange = viewModel::updateNickname,
                     onNextClick = viewModel::nextStep,
-                    onBackClick = viewModel::previousStep,
                     canProceed = viewModel.canProceedFromNicknameStep()
-                )
-                5 -> Step5ArtType(
-                    selectedArtType = uiState.artType,
-                    onArtTypeSelect = viewModel::selectArtType,
-                    onNextClick = viewModel::nextStep,
-                    onBackClick = viewModel::previousStep,
-                    canProceed = viewModel.canProceedFromArtTypeStep()
                 )
             }
         }
@@ -129,16 +144,10 @@ fun SignUpScreen(
         }
 
         // 에러 다이얼로그
-        if (uiState.error != null) {
-            AlertDialog(
-                onDismissRequest = { viewModel.clearError() },
-                title = { Text("오류") },
-                text = { Text(uiState.error ?: "") },
-                confirmButton = {
-                    TextButton(onClick = { viewModel.clearError() }) {
-                        Text("확인")
-                    }
-                }
+        uiState.error?.let { errorMessage ->
+            YeobaegErrorDialog(
+                message = errorMessage,
+                onConfirm = viewModel::clearError
             )
         }
     }
@@ -149,11 +158,13 @@ private fun Step1EmailPassword(
     email: String,
     password: String,
     passwordConfirm: String,
+    emailError: String?,
+    passwordError: String?,
+    passwordConfirmError: String?,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onPasswordConfirmChange: (String) -> Unit,
     onNextClick: () -> Unit,
-    onBackClick: () -> Unit,
     canProceed: Boolean
 ) {
     Column(
@@ -161,16 +172,6 @@ private fun Step1EmailPassword(
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Text(
-            text = "회원가입",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
 
         YeobaegTextField(
             value = email,
@@ -178,18 +179,36 @@ private fun Step1EmailPassword(
             label = "이메일",
             placeholder = "coffee@gmail.com"
         )
+        
+        if (emailError != null) {
+            Text(
+                text = emailError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         YeobaegTextField(
             value = password,
             onValueChange = onPasswordChange,
-            label = "비밀번호",
-            placeholder = "coffee",
+            label = "비밀번호 (8자 이상, 영문+숫자+특수문자)",
+            placeholder = "Password123!",
             visualTransformation = PasswordVisualTransformation()
         )
+        
+        if (passwordError != null) {
+            Text(
+                text = passwordError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         YeobaegTextField(
             value = passwordConfirm,
@@ -198,6 +217,15 @@ private fun Step1EmailPassword(
             placeholder = "비밀번호를 다시 입력하세요",
             visualTransformation = PasswordVisualTransformation()
         )
+        
+        if (passwordConfirmError != null) {
+            Text(
+                text = passwordConfirmError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
@@ -214,7 +242,6 @@ private fun Step2RoleSelection(
     selectedRole: UserRole?,
     onRoleSelect: (UserRole) -> Unit,
     onNextClick: () -> Unit,
-    onBackClick: () -> Unit,
     canProceed: Boolean
 ) {
     Column(
@@ -222,7 +249,6 @@ private fun Step2RoleSelection(
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
 
         Text(
             text = "어떤 역할로 시작하시겠어요?",
@@ -367,22 +393,24 @@ private fun RoleSelectionItem(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Step3GenderAndAge(
     birthDate: String,
     selectedGender: Gender?,
+    birthDateError: String?,
     onBirthDateChange: (String) -> Unit,
     onGenderSelect: (Gender) -> Unit,
     onNextClick: () -> Unit,
-    onBackClick: () -> Unit,
     canProceed: Boolean
 ) {
+    var showDatePicker by remember { mutableStateOf(false) }
+    
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
     ) {
-        Spacer(modifier = Modifier.height(40.dp))
 
         Text(
             text = "성별과 나이를 입력해 주세요",
@@ -393,12 +421,46 @@ private fun Step3GenderAndAge(
 
         Spacer(modifier = Modifier.height(48.dp))
 
-        YeobaegTextField(
-            value = birthDate,
-            onValueChange = onBirthDateChange,
-            label = "생년월일",
-            placeholder = "2025.01.01"
+        Text(
+            text = "생년월일",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Medium,
+            color = Color.Black,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
+        
+        // 날짜 선택 필드
+        OutlinedTextField(
+            value = birthDate.ifEmpty { "날짜를 선택하세요" },
+            onValueChange = { },
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDatePicker = true },
+            enabled = false,
+            trailingIcon = {
+                IconButton(onClick = { showDatePicker = true }) {
+                    Icon(
+                        imageVector = Icons.Default.DateRange,
+                        contentDescription = "날짜 선택",
+                        tint = YeobaegDarkBrown
+                    )
+                }
+            },
+            colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                disabledTextColor = Color.Black,
+                disabledBorderColor = YeobaegTextGray,
+                disabledTrailingIconColor = YeobaegDarkBrown
+            )
+        )
+        
+        if (birthDateError != null) {
+            Text(
+                text = birthDateError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
 
         Spacer(modifier = Modifier.height(32.dp))
 
@@ -435,6 +497,48 @@ private fun Step3GenderAndAge(
             onClick = onNextClick,
             enabled = canProceed
         )
+    }
+    
+    // DatePicker Dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = if (birthDate.isNotEmpty()) {
+                DateFormatter.parseFromApiFormat(birthDate)?.time
+            } else {
+                Calendar.getInstance().apply {
+                    set(Calendar.YEAR, 1990)
+                    set(Calendar.MONTH, Calendar.JANUARY)
+                    set(Calendar.DAY_OF_MONTH, 1)
+                }.timeInMillis
+            }
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val calendar = Calendar.getInstance().apply {
+                                timeInMillis = millis
+                            }
+                            val formattedDate = DateFormatter.formatToApiFormat(calendar)
+                            onBirthDateChange(formattedDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("확인")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("취소")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
     }
 }
 
@@ -484,9 +588,9 @@ private fun GenderButton(
 private fun Step4Nickname(
     nickname: String,
     userRole: UserRole?,
+    nicknameError: String?,
     onNicknameChange: (String) -> Unit,
     onNextClick: () -> Unit,
-    onBackClick: () -> Unit,
     canProceed: Boolean
 ) {
     val label = when (userRole) {
@@ -509,7 +613,6 @@ private fun Step4Nickname(
             color = Color.Black
         )
 
-        Spacer(modifier = Modifier.height(48.dp))
 
         YeobaegTextField(
             value = nickname,
@@ -517,124 +620,22 @@ private fun Step4Nickname(
             label = label,
             placeholder = "커피왕자"
         )
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        YeobaegButton(
-            text = "다음",
-            onClick = onNextClick,
-            enabled = canProceed
-        )
-    }
-}
-
-@Composable
-private fun Step5ArtType(
-    selectedArtType: ArtType?,
-    onArtTypeSelect: (ArtType) -> Unit,
-    onNextClick: () -> Unit,
-    onBackClick: () -> Unit,
-    canProceed: Boolean
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp)
-    ) {
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Text(
-            text = "주로 어떤 작품을 그리시나요?",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = "카페 매장에 도움이 돼요.",
-            fontSize = 14.sp,
-            color = YeobaegTextGray
-        )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            ArtTypeCard(
-                artType = ArtType.LANDSCAPE,
-                isSelected = selectedArtType == ArtType.LANDSCAPE,
-                onSelect = { onArtTypeSelect(ArtType.LANDSCAPE) },
-                modifier = Modifier.weight(1f)
-            )
-            ArtTypeCard(
-                artType = ArtType.PORTRAIT,
-                isSelected = selectedArtType == ArtType.PORTRAIT,
-                onSelect = { onArtTypeSelect(ArtType.PORTRAIT) },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            ArtTypeCard(
-                artType = ArtType.STILL_LIFE,
-                isSelected = selectedArtType == ArtType.STILL_LIFE,
-                onSelect = { onArtTypeSelect(ArtType.STILL_LIFE) },
-                modifier = Modifier.weight(1f)
-            )
-            ArtTypeCard(
-                artType = ArtType.HISTORY_CREATIVE,
-                isSelected = selectedArtType == ArtType.HISTORY_CREATIVE,
-                onSelect = { onArtTypeSelect(ArtType.HISTORY_CREATIVE) },
-                modifier = Modifier.weight(1f)
+        
+        if (nicknameError != null) {
+            Text(
+                text = nicknameError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
             )
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
         YeobaegButton(
-            text = "다음",
+            text = "회원가입",
             onClick = onNextClick,
             enabled = canProceed
-        )
-    }
-}
-
-@Composable
-private fun ArtTypeCard(
-    artType: ArtType,
-    isSelected: Boolean,
-    onSelect: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .height(100.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(if (isSelected) YeobaegDarkBrown.copy(alpha = 0.1f) else YeobaegLightGray)
-            .border(
-                width = if (isSelected) 2.dp else 0.dp,
-                color = if (isSelected) YeobaegDarkBrown else Color.Transparent,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .clickable(onClick = onSelect)
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = artType.displayName,
-            fontSize = 16.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-            color = if (isSelected) YeobaegDarkBrown else Color.Black,
-            textAlign = TextAlign.Center
         )
     }
 }
@@ -643,17 +644,32 @@ private fun ArtTypeCard(
 @Composable
 fun SignUpStep1Preview() {
     YeobaegProjectTheme {
-        Step1EmailPassword(
-            email = "",
-            password = "",
-            passwordConfirm = "",
-            onEmailChange = {},
-            onPasswordChange = {},
-            onPasswordConfirmChange = {},
-            onNextClick = {},
-            onBackClick = {},
-            canProceed = false
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            YeobaegTopAppBar(
+                title = "회원가입",
+                onBackClick = {},
+                actionIcon = null,
+                onActionClick = {}
+            )
+            YeobaegStepBar(step = 1, totalStep = 4)
+            Step1EmailPassword(
+                email = "",
+                password = "",
+                passwordConfirm = "",
+                emailError = null,
+                passwordError = null,
+                passwordConfirmError = null,
+                onEmailChange = {},
+                onPasswordChange = {},
+                onPasswordConfirmChange = {},
+                onNextClick = {},
+                canProceed = false
+            )
+        }
     }
 }
 
@@ -661,13 +677,25 @@ fun SignUpStep1Preview() {
 @Composable
 fun SignUpStep2Preview() {
     YeobaegProjectTheme {
-        Step2RoleSelection(
-            selectedRole = UserRole.CAFE_OWNER,
-            onRoleSelect = {},
-            onNextClick = {},
-            onBackClick = {},
-            canProceed = true
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            YeobaegTopAppBar(
+                title = "회원가입",
+                onBackClick = {},
+                actionIcon = null,
+                onActionClick = {}
+            )
+            YeobaegStepBar(step = 2, totalStep = 4)
+            Step2RoleSelection(
+                selectedRole = UserRole.CAFE_OWNER,
+                onRoleSelect = {},
+                onNextClick = {},
+                canProceed = true
+            )
+        }
     }
 }
 
@@ -675,15 +703,28 @@ fun SignUpStep2Preview() {
 @Composable
 fun SignUpStep3Preview() {
     YeobaegProjectTheme {
-        Step3GenderAndAge(
-            birthDate = "2025.01.01",
-            selectedGender = Gender.MALE,
-            onBirthDateChange = {},
-            onGenderSelect = {},
-            onNextClick = {},
-            onBackClick = {},
-            canProceed = true
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            YeobaegTopAppBar(
+                title = "회원가입",
+                onBackClick = {},
+                actionIcon = null,
+                onActionClick = {}
+            )
+            YeobaegStepBar(step = 3, totalStep = 4)
+            Step3GenderAndAge(
+                birthDate = "1990-01-01",
+                selectedGender = Gender.MALE,
+                birthDateError = null,
+                onBirthDateChange = {},
+                onGenderSelect = {},
+                onNextClick = {},
+                canProceed = true
+            )
+        }
     }
 }
 
@@ -691,14 +732,27 @@ fun SignUpStep3Preview() {
 @Composable
 fun SignUpStep4ArtistPreview() {
     YeobaegProjectTheme {
-        Step4Nickname(
-            nickname = "커피왕자",
-            userRole = UserRole.ARTIST,
-            onNicknameChange = {},
-            onNextClick = {},
-            onBackClick = {},
-            canProceed = true
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            YeobaegTopAppBar(
+                title = "회원가입",
+                onBackClick = {},
+                actionIcon = null,
+                onActionClick = {}
+            )
+            YeobaegStepBar(step = 4, totalStep = 4)
+            Step4Nickname(
+                nickname = "커피왕자",
+                userRole = UserRole.ARTIST,
+                nicknameError = null,
+                onNicknameChange = {},
+                onNextClick = {},
+                canProceed = true
+            )
+        }
     }
 }
 
@@ -706,28 +760,27 @@ fun SignUpStep4ArtistPreview() {
 @Composable
 fun SignUpStep4CafeOwnerPreview() {
     YeobaegProjectTheme {
-        Step4Nickname(
-            nickname = "커피왕자",
-            userRole = UserRole.CAFE_OWNER,
-            onNicknameChange = {},
-            onNextClick = {},
-            onBackClick = {},
-            canProceed = true
-        )
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun SignUpStep5Preview() {
-    YeobaegProjectTheme {
-        Step5ArtType(
-            selectedArtType = ArtType.LANDSCAPE,
-            onArtTypeSelect = {},
-            onNextClick = {},
-            onBackClick = {},
-            canProceed = true
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            YeobaegTopAppBar(
+                title = "회원가입",
+                onBackClick = {},
+                actionIcon = null,
+                onActionClick = {}
+            )
+            YeobaegStepBar(step = 4, totalStep = 4)
+            Step4Nickname(
+                nickname = "커피왕자",
+                userRole = UserRole.CAFE_OWNER,
+                nicknameError = null,
+                onNicknameChange = {},
+                onNextClick = {},
+                canProceed = true
+            )
+        }
     }
 }
 

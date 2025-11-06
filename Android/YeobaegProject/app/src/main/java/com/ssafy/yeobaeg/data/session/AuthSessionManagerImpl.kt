@@ -54,4 +54,12 @@ class AuthSessionManagerImpl @Inject constructor(
     override suspend fun emitTokenExpired() {
         _authEvents.emit(AuthEvent.TokenExpired)
     }
+
+    override suspend fun emitLoginSuccess() {
+        _authEvents.emit(AuthEvent.LoginSuccess)
+    }
+
+    override suspend fun emitSignUpSuccess() {
+        _authEvents.emit(AuthEvent.SignUpSuccess)
+    }
 }

@@ -52,4 +52,14 @@ interface AuthSessionManager {
      * 토큰 만료 이벤트 발행
      */
     suspend fun emitTokenExpired()
+
+    /**
+     * 로그인 성공 이벤트 발행
+     */
+    suspend fun emitLoginSuccess()
+
+    /**
+     * 회원가입 성공 이벤트 발행
+     */
+    suspend fun emitSignUpSuccess()
 }
