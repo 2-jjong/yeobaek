@@ -1,22 +1,34 @@
 package com.ssafy.yeobaek.artwork.service;
 
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
-import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailData;
+import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
 import com.ssafy.yeobaek.artwork.mapper.ArtworkMapper;
 import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
+import com.ssafy.yeobaek.artwork.repository.ArtworkSpecification;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
+import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
+import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.Artist;
+import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ArtworkServiceImpl implements ArtworkService {
@@ -83,5 +95,122 @@ public class ArtworkServiceImpl implements ArtworkService {
 
         // DTO로 변환하여 반환
         return artworkMapper.toArtworkDetailData(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl);
+    }
+
+    /**
+     * 작품 검색 (키워드, 필터, 정렬)
+     * 키워드가 있으면 작가/작품 통합 검색을 수행하고, 없으면 필터링과 정렬만 적용합니다.
+     * 규격 필터(가로/세로)는 카페 사장만 사용할 수 있습니다.
+     * @param userId 현재 사용자 ID (권한 검증용, null 가능)
+     * @param keyword 작품명/작가명 검색 키워드 (null 가능)
+     * @param categories 카테고리 필터 목록 (null 가능)
+     * @param minWidth 최소 가로 크기 (cm 단위, null 가능)
+     * @param maxWidth 최대 가로 크기 (cm 단위, null 가능)
+     * @param minHeight 최소 세로 크기 (cm 단위, null 가능)
+     * @param maxHeight 최대 세로 크기 (cm 단위, null 가능)
+     * @param sortBy 정렬 기준 (LATEST: 최신순, POPULARITY: 인기순)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 작품 목록 및 작가 목록 (키워드가 있으면 작가 목록 포함, 없으면 null)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ArtworkListData searchArtworks(
+            Long userId,
+            String keyword,
+            List<ArtCategory> categories,
+            Integer minWidth,
+            Integer maxWidth,
+            Integer minHeight,
+            Integer maxHeight,
+            ArtworkSortBy sortBy,
+            Integer page,
+            Integer size
+    ) {
+        // 규격 필터 권한 검증 (카페 사장만 사용 가능)
+        validateSpecFilter(userId, minWidth, maxWidth, minHeight, maxHeight);
+
+        // Pageable 생성
+        Pageable pageable = PageRequest.of(page, size);
+
+        // Specification을 사용한 작품 검색
+        Specification<Artwork> spec = Specification
+                .where(ArtworkSpecification.withFilters(keyword, categories, minWidth, maxWidth, minHeight, maxHeight))
+                .and(ArtworkSpecification.withSort(sortBy));
+
+        Page<Artwork> artworkPage = artworkRepository.findAll(spec, pageable);
+
+        // 작품을 ArtworkSummary로 변환
+        List<ArtworkSummary> artworkSummaries = convertToArtworkSummaries(artworkPage.getContent());
+
+        // 키워드가 있으면 작가 검색도 수행
+        List<ArtistSummary> artistSummaries = new ArrayList<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            artistSummaries = searchArtistsByKeyword(keyword);
+        }
+
+        // Pagination DTO 생성
+        Pagination pagination = new Pagination(
+                artworkPage.getNumber(),
+                artworkPage.getSize(),
+                artworkPage.getTotalElements(),
+                artworkPage.getTotalPages(),
+                artworkPage.hasNext()
+        );
+
+        return new ArtworkListData(artistSummaries, artworkSummaries, pagination);
+    }
+
+    /**
+     * 규격 필터 권한 검증 (카페 사장만 사용 가능)
+     */
+    private void validateSpecFilter(Long userId, Integer minWidth, Integer maxWidth, Integer minHeight, Integer maxHeight) {
+        boolean hasSpecFilter = minWidth != null || maxWidth != null || minHeight != null || maxHeight != null;
+        if (hasSpecFilter && userId != null) {
+            User user = userService.findById(userId)
+                    .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+
+            if (user.getUserType() != UserRole.CAFE_OWNER) {
+                throw new CustomException(ResponseCode.ARTWORK_SIZE_FILTER_FORBIDDEN);
+            }
+        }
+    }
+
+    /**
+     * 작품 엔티티를 ArtworkSummary DTO로 변환 (S3 presigned URL 포함)
+     */
+    private List<ArtworkSummary> convertToArtworkSummaries(List<Artwork> artworks) {
+        return artworks.stream()
+                .map(artwork -> {
+                    // 썸네일 URL 변환 (첫 번째 이미지 사용)
+                    String thumbnailUrl = null;
+                    if (artwork.getImages() != null && !artwork.getImages().isEmpty()) {
+                        thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                    }
+                    return artworkMapper.toArtworkSummary(artwork, thumbnailUrl);
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 키워드로 작가 검색 및 ArtistSummary로 변환 (S3 presigned URL 포함)
+     */
+    private List<ArtistSummary> searchArtistsByKeyword(String keyword) {
+        List<Artist> artists = userService.searchArtistsByKeyword(keyword);
+
+        return artists.stream()
+                .map(artist -> {
+                    int artworkCount = artworkRepository.countByArtist(artist);
+                    ArtistSummary summary = artworkMapper.toArtistSummary(artist, artworkCount);
+
+                    // 프로필 이미지 URL을 presigned URL로 변환
+                    if (summary.getProfileImageUrl() != null && !summary.getProfileImageUrl().isEmpty()) {
+                        String presignedUrl = s3Service.generatePresignedUrlForDownload(summary.getProfileImageUrl());
+                        summary.setProfileImageUrl(presignedUrl);
+                    }
+
+                    return summary;
+                })
+                .collect(Collectors.toList());
     }
 }

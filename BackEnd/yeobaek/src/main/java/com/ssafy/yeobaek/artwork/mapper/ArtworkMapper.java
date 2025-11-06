@@ -1,10 +1,8 @@
 package com.ssafy.yeobaek.artwork.mapper;
 
-import com.ssafy.yeobaek.artwork.dto.response.Artist;
-import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetail;
-import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailData;
-import com.ssafy.yeobaek.artwork.dto.response.Exhibition;
+import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
+import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -98,6 +96,59 @@ public class ArtworkMapper {
                 .exhibitionStartDate(java.time.LocalDate.of(2025, 1, 1))
                 .exhibitionEndDate(java.time.LocalDate.of(2025, 12, 31))
                 .build();
+    }
+
+    /**
+     * Artwork 엔티티를 ArtworkSummary DTO로 변환
+     * @param artwork Artwork 엔티티
+     * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
+     * @return ArtworkSummary DTO
+     */
+    public ArtworkSummary toArtworkSummary(Artwork artwork, String thumbnailUrl) {
+        return new ArtworkSummary(
+                artwork.getId(),
+                artwork.getTitle(),
+                thumbnailUrl
+        );
+    }
+
+    /**
+     * Artwork 엔티티를 ArtworkSummaryDetail DTO로 변환 (상세 버전)
+     * @param artwork Artwork 엔티티
+     * @return ArtworkSummaryDetail DTO
+     */
+    public ArtworkSummaryDetail toArtworkSummaryDetail(Artwork artwork) {
+        return new ArtworkSummaryDetail(
+                artwork.getId(),
+                artwork.getTitle(),
+                artwork.getImages().isEmpty() ? null : artwork.getImages().get(0),
+                artwork.getArtist().getUser().getNickname(),
+                artwork.getArtist().getUser().getProfileImageUrl(),
+                artwork.getPrice(),
+                artwork.getArtCategory(),
+                artwork.getWidthCm().intValue(),
+                artwork.getHeightCm().intValue(),
+                artwork.getExhibitionStatus(),
+                artwork.getBookmarkCount(),
+                null  // TODO: cafeName은 추후 Exhibition 연동 시 추가
+        );
+    }
+
+    /**
+     * Artist 엔티티를 ArtistSummary DTO로 변환
+     * @param artist Artist 엔티티
+     * @param artworkCount 작품 수
+     * @return ArtistSummary DTO
+     */
+    public ArtistSummary toArtistSummary(com.ssafy.yeobaek.user.entity.Artist artist, int artworkCount) {
+        User user = artist.getUser();
+        return new ArtistSummary(
+                user.getId(),
+                user.getNickname(),
+                user.getProfileImageUrl(),
+                artist.getIntroduction(),
+                artworkCount
+        );
     }
 
     // TODO: Exhibition 엔티티 구현 후 아래 메서드 추가
