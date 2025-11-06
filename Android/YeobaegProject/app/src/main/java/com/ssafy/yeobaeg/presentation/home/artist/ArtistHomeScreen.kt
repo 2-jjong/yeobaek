@@ -20,6 +20,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -28,6 +29,8 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.home.cafeowner.StatusChip
+import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 
 @Composable
 fun ArtistHomeScreen(
@@ -266,26 +269,12 @@ private fun ArtistArtworkItem(
     }
 }
 
-/* ───────────── Status chip ───────────── */
-
+@Preview
 @Composable
-private fun StatusChip(status: ArtistWorkStatus) {
-    val (bg, fg) = when (status) {
-        ArtistWorkStatus.ONGOING   -> Color(0xFFE6F6E9) to Color(0xFF22A163)
-        ArtistWorkStatus.AVAILABLE -> Color(0xFFEAF2FF) to Color(0xFF3B82F6)
-        ArtistWorkStatus.REVIEW    -> Color(0xFFFFF2CC) to Color(0xFFB58100)
-    }
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(bg)
-    ) {
-        Text(
-            text = status.label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = fg,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+fun Preview_ArtistHome() {
+    YeobaegProjectTheme {
+        ArtistHomeScreen(
+            state = ArtistHomeState()
         )
     }
 }

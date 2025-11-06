@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.presentation.home.artist
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,14 +26,9 @@ data class ArtistArtwork(
     val priceWon: String,           // "￦450,000" 등 표시용
     val likes: Int,
     val placeName: String? = null,  // 전시 중일 때만 노출
-    val status: ArtistWorkStatus
+    val status: SlotStatus
 )
 
-enum class ArtistWorkStatus(val label: String) {
-    ONGOING("전시 중"),
-    AVAILABLE("전시 가능"),
-    REVIEW("검토 중")
-}
 
 // 실제로는 @HiltViewModel 로 상태 만들면 됨
 @HiltViewModel
@@ -57,7 +53,7 @@ private val demoArtworks = listOf(
         priceWon = "￦450,000",
         likes = 45,
         placeName = "Brew & Canvas",
-        status = ArtistWorkStatus.ONGOING
+        status = SlotStatus.ONGOING
     ),
     ArtistArtwork(
         id = 2L,
@@ -66,7 +62,7 @@ private val demoArtworks = listOf(
         priceWon = "￦320,000",
         likes = 28,
         placeName = null,
-        status = ArtistWorkStatus.AVAILABLE
+        status = SlotStatus.AVAILABLE
     ),
     ArtistArtwork(
         id = 3L,
@@ -75,6 +71,6 @@ private val demoArtworks = listOf(
         priceWon = "￦280,000",
         likes = 12,
         placeName = "The Art Spot",
-        status = ArtistWorkStatus.REVIEW
+        status = SlotStatus.RESERVED
     )
 )
