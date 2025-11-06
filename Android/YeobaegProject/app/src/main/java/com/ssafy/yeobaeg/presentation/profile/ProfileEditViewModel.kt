@@ -5,11 +5,14 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.domain.repository.StorageRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.common.util.uriToTempFile
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,16 +21,17 @@ class ProfileEditViewModel @Inject constructor(
     private val repository: ProfileRepository,
     private val storageRepository: StorageRepository,
     private val navigator: Navigator,
-) : ViewModel() {
+    private val authSessionManager: AuthSessionManager,
+    ) : ViewModel() {
+    val userRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
 
-    fun updateProfile(newNickname: String, newImage: String?, artistDes: String?, isArtist:Boolean) =
+    fun updateProfile(newNickname: String, newImage: String?, artistDes: String?) =
         viewModelScope.launch {
             viewModelScope.launch {
                 repository.updateProfile(
                     nickname = newNickname,
                     profileImageUrl = newImage,
                     introduction = artistDes,
-                    isArtist = isArtist
                 ).onSuccess {
                     navigator.navigateBack() // 성공 시 이동
                 }.onFailure { e ->

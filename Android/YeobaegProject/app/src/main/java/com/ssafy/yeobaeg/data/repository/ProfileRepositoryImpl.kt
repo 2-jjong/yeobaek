@@ -101,22 +101,14 @@ class ProfileRepositoryImpl @Inject constructor(
         nickname: String?,
         profileImageUrl: String?,
         introduction: String?,
-        isArtist: Boolean
     ): Result<Unit> {
         return runCatching {
-            val request = if (isArtist) {
+            val request =
                 UpdateProfileRequest(
                     nickname = nickname,
                     profileImageUrl = profileImageUrl,
                     introduction = introduction
                 )
-            } else {
-                UpdateProfileRequest(
-                    nickname = nickname,
-                    profileImageUrl = profileImageUrl
-                    // introduction은 아예 안 넣음
-                )
-            }
 
             val response = api.updateProfile(request)
             if (!response.isSuccessful) throw Exception("프로필 수정 실패: ${response.code()} ${response.message()}")

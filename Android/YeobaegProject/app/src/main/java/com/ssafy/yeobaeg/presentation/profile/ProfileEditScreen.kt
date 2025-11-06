@@ -12,7 +12,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -24,7 +23,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -45,6 +43,8 @@ fun ProfileEditScreen(
     var introduction by rememberSaveable { mutableStateOf(introduction) }
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
+    val userRole by viewModel.userRole.collectAsState()
+
 
     // 갤러리에서 이미지 선택
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -98,11 +98,12 @@ fun ProfileEditScreen(
             )
             Spacer(modifier = Modifier.height(40.dp))
 
-            introduction?.let { it1 ->
+            if (userRole?.name == "ARTIST") {
                 IntroductionInputSection(
-                    introduction = it1,
+                    introduction = introduction,
                     onIntroductionChange = { introduction = it }
                 )
+                Spacer(modifier = Modifier.height(40.dp))
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -120,7 +121,6 @@ fun ProfileEditScreen(
                                     newNickname = nickname,
                                     newImage = fileKey,
                                     artistDes = introduction,
-                                    isArtist = introduction != null
                                 )
                             },
                             onError = { e -> Log.e("ProfileEdit", "이미지 업로드 실패: ${e.message}") }
@@ -131,7 +131,6 @@ fun ProfileEditScreen(
                             newNickname = nickname,
                             newImage = null,
                             artistDes = introduction,
-                            isArtist = introduction != null
                         )
                     }
                 }
@@ -331,7 +330,7 @@ fun NicknameInputSection(
 
 @Composable
 fun IntroductionInputSection(
-    introduction: String,
+    introduction: String?,
     onIntroductionChange: (String) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -345,35 +344,37 @@ fun IntroductionInputSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        OutlinedTextField(
-            value = introduction,
-            onValueChange = onIntroductionChange,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 120.dp),
-            placeholder = {
-                Text(
-                    text = "소개글을 입력하세요.",
-                    color = YeobaegTextGray,
+        if (introduction != null) {
+            OutlinedTextField(
+                value = introduction,
+                onValueChange = onIntroductionChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 120.dp),
+                placeholder = {
+                    Text(
+                        text = "소개글을 입력하세요.",
+                        color = YeobaegTextGray,
+                        fontFamily = jansilFont,
+                        fontWeight = FontWeight.Normal
+                    )
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFFE0E0E0),
+                    unfocusedBorderColor = Color(0xFFE0E0E0),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                ),
+                textStyle = LocalTextStyle.current.copy(
+                    color = Color(0xFF111111),
                     fontFamily = jansilFont,
-                    fontWeight = FontWeight.Normal
-                )
-            },
-            shape = RoundedCornerShape(12.dp),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFFE0E0E0),
-                unfocusedBorderColor = Color(0xFFE0E0E0),
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
-            ),
-            textStyle = LocalTextStyle.current.copy(
-                color = Color(0xFF111111),
-                fontFamily = jansilFont,
-                fontSize = 14.sp,
-                lineHeight = 20.sp
-            ),
-            maxLines = 5
-        )
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                ),
+                maxLines = 5
+            )
+        }
     }
 }
 
