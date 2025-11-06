@@ -33,6 +33,12 @@ public class ChatServiceImpl implements ChatService {
     private final ArtworkRepository artworkRepository;
     private final CafeRepository cafeRepository;
 
+    /**
+     * 채팅방 생성
+     * @param senderId 보내는 사람 ID
+     * @param request 채팅방 생성 요청
+     * @return 생성된 채팅방 정보
+     */
     @Override
     @Transactional
     public ChatRoom createChatRoom(Long senderId, CreateChatRoomRequest request) {
