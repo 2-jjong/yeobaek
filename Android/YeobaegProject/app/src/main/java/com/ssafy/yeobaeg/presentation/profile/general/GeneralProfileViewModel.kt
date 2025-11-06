@@ -31,11 +31,7 @@ class GeneralProfileViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(GeneralProfileUiState())
     val uiState: StateFlow<GeneralProfileUiState> = _uiState.asStateFlow()
 
-    init {
-        loadGeneralProfile()
-    }
-
-    private fun loadGeneralProfile() {
+    fun loadGeneralProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 

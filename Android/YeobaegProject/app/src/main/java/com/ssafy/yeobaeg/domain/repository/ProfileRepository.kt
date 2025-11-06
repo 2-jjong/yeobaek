@@ -13,7 +13,7 @@ interface ProfileRepository {
     suspend fun updateProfile(
         nickname: String?,
         profileImageUrl: String?,
-        introduction: String?
+        introduction: String?,
     ):Result<Unit>
     suspend fun getReviewStatistics(userId:Long):Result<ReviewStats>
 }

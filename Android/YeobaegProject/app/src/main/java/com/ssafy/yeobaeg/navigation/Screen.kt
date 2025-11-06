@@ -21,7 +21,7 @@ sealed interface FullScreen : Screen {
     data object SignUp : FullScreen
 
     @Serializable
-    data class  ProfileEdit(val userInfo: UserInfo): FullScreen
+    data class  ProfileEdit(val userInfo: UserInfo, val introduction:String?): FullScreen
 
     @Serializable
     data object SpaceScan : FullScreen
@@ -37,6 +37,9 @@ sealed interface FullScreen : Screen {
 
     @Serializable
     data object ReviewManagementScreen: FullScreen
+
+    @Serializable
+    data class EditDisplaySlotScreen(val slotId: Long): FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {

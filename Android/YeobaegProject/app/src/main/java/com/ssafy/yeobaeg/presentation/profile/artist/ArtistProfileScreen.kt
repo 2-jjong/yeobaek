@@ -91,7 +91,9 @@ fun ArtistProfileScreen(
             ProfileHeader(
                 userInfo = uiState.userInfo,
                 artistInfo = uiState.artistInfo,
-                onEditClick = { artistViewModel.navigateToEditProfile(uiState.userInfo) },
+                onEditClick = { artistViewModel.navigateToEditProfile(uiState.userInfo,
+                    uiState.artistInfo?.introduction
+                ) },
                 isMyProfile = (userId == null)
             )
 
@@ -151,7 +153,7 @@ fun ProfileHeader(
         ) {
             // 프로필 이미지
             AsyncImage(
-                model = "",
+                model = userInfo.profileImageUrl?: R.drawable.profile,
                 contentDescription = "프로필 이미지",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
