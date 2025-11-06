@@ -1,24 +1,41 @@
 package com.ssafy.yeobaeg.presentation.common.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.ssafy.yeobaeg.ui.theme.*
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGreen
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkRed
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkYellow
+import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextPrimary
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextSecondary
+import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 
 enum class DialogType {
     ERROR,
@@ -209,5 +226,63 @@ fun YeobaegConfirmDialog(
         dismissText = dismissText,
         onConfirm = onConfirm,
         onDismiss = onDismiss
+    )
+}
+
+// ==================== Previews ====================
+
+@Preview(showBackground = true, name = "에러 다이얼로그")
+@Composable
+private fun YeobaegErrorDialogPreview() {
+    YeobaegErrorDialog(
+        message = "올바른 이메일 형식이 아닙니다",
+        onConfirm = {}
+    )
+}
+
+@Preview(showBackground = true, name = "경고 다이얼로그 - 확인/취소")
+@Composable
+private fun YeobaegConfirmDialogPreview() {
+    YeobaegConfirmDialog(
+        title = "로그아웃",
+        message = "정말 로그아웃 하시겠습니까?",
+        confirmText = "로그아웃",
+        dismissText = "취소",
+        onConfirm = {},
+        onDismiss = {}
+    )
+}
+
+@Preview(showBackground = true, name = "정보 다이얼로그")
+@Composable
+private fun YeobaegInfoDialogPreview() {
+    YeobaegDialog(
+        title = "안내",
+        message = "이 기능은 작가 계정에서만 사용할 수 있습니다.",
+        type = DialogType.INFO,
+        onConfirm = {}
+    )
+}
+
+@Preview(showBackground = true, name = "성공 다이얼로그")
+@Composable
+private fun YeobaegSuccessDialogPreview() {
+    YeobaegDialog(
+        title = "완료",
+        message = "작품이 성공적으로 등록되었습니다!",
+        type = DialogType.SUCCESS,
+        confirmText = "확인",
+        onConfirm = {}
+    )
+}
+
+@Preview(showBackground = true, name = "긴 메시지 다이얼로그")
+@Composable
+private fun YeobaegLongMessageDialogPreview() {
+    YeobaegDialog(
+        title = "네트워크 오류",
+        message = "서버와의 연결이 원활하지 않습니다.\n잠시 후 다시 시도해주세요.\n문제가 계속되면 고객센터로 문의해주세요.",
+        type = DialogType.ERROR,
+        onConfirm = {}
     )
 }

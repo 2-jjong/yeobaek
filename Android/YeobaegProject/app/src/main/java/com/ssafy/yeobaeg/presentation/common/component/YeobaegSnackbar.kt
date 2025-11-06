@@ -1,21 +1,36 @@
 package com.ssafy.yeobaeg.presentation.common.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.yeobaeg.ui.theme.*
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGreen
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkRed
+import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 
 enum class SnackbarType {
     SUCCESS,
@@ -146,4 +161,90 @@ suspend fun SnackbarHostState.showYeobaegSnackbar(
         message = prefixedMessage,
         duration = duration
     )
+}
+
+// ==================== Previews ====================
+
+@Preview(showBackground = true, name = "성공 스낵바")
+@Composable
+private fun YeobaegSuccessSnackbarPreview() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        YeobaegSnackbar(
+            message = "로그인 성공!",
+            type = SnackbarType.SUCCESS
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "에러 스낵바")
+@Composable
+private fun YeobaegErrorSnackbarPreview() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        YeobaegSnackbar(
+            message = "네트워크 오류가 발생했습니다",
+            type = SnackbarType.ERROR
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "정보 스낵바")
+@Composable
+private fun YeobaegInfoSnackbarPreview() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        YeobaegSnackbar(
+            message = "새로운 업데이트가 있습니다",
+            type = SnackbarType.INFO
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "긴 메시지 스낵바")
+@Composable
+private fun YeobaegLongMessageSnackbarPreview() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        YeobaegSnackbar(
+            message = "회원가입에 성공했습니다! 이제 로그인하여 서비스를 이용하실 수 있습니다.",
+            type = SnackbarType.SUCCESS
+        )
+    }
+}
+
+@Preview(showBackground = true, name = "스낵바 비교")
+@Composable
+private fun YeobaegSnackbarComparisonPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        YeobaegSnackbar(
+            message = "로그인 성공!",
+            type = SnackbarType.SUCCESS
+        )
+        YeobaegSnackbar(
+            message = "네트워크 오류",
+            type = SnackbarType.ERROR
+        )
+        YeobaegSnackbar(
+            message = "새 메시지 도착",
+            type = SnackbarType.INFO
+        )
+    }
 }
