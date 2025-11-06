@@ -27,10 +27,10 @@ public class MyCafeSummary {
     @Schema(description = "대표 이미지 URL", example = "https://example.com/cafe1.jpg")
     private String primaryImageUrl;
 
-    @Schema(description = "전시 공간", example = "5")
+    @Schema(description = "전시 슬롯 수", example = "5")
     private Long totalSlots;
 
-    @Schema(description = "전시 중", example = "3")
+    @Schema(description = "전시 중인 슬롯 수", example = "3")
     private Long exhibitingSlots;
 
     @Schema(description = "협업 작가", example = "15")

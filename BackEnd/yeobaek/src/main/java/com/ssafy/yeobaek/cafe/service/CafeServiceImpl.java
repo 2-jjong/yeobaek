@@ -118,7 +118,7 @@ public class CafeServiceImpl implements CafeService {
      * @return 나의 카페 정보 및 공간 정보
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public MyCafeData getMyCafe(Long userId) {
 
         // 1. 카페 조회
