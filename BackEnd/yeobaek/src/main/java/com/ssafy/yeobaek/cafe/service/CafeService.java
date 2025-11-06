@@ -48,6 +48,6 @@ public interface CafeService {
      * @param size 사이즈
      * @return 카페 목록 데이터
      */
-    CafeListData searchCafes(String keyword, Double latitude, Double longitude, Integer minWidth, Integer maxWidth,
+    CafeListData searchCafes(Boolean isArtist, String keyword, Double latitude, Double longitude, Integer minWidth, Integer maxWidth,
         Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size);
 }

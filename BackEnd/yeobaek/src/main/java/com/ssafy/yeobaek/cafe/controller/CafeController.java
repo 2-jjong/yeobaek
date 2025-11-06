@@ -7,6 +7,7 @@ import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
+import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +19,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -468,9 +472,48 @@ public class CafeController {
                     description = "잘못된 요청",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4008\", \"message\": \"거리순 정렬 시 위도/경도가 필요합니다\"}"
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "키워드 길이 초과",
+                                            description = "keyword가 100자를 초과한 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "위도 범위 오류",
+                                            description = "latitude가 -90~90 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "경도 범위 오류",
+                                            description = "longitude가 -180~180 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "너비 크기 범위 오류",
+                                            description = "minWidth 또는 maxWidth가 1-500 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "높이 크기 범위 오류",
+                                            description = "minHeight 또는 maxHeight가 1-500 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "수수료율 범위 오류",
+                                            description = "minCommission 또는 maxCommission이 0-30 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "페이지 번호 오류",
+                                            description = "page가 0 미만인 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "페이지 크기 오류",
+                                            description = "size가 1-50 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -481,7 +524,6 @@ public class CafeController {
                             examples = {
                                     @ExampleObject(name = "슬롯 규격 필터 권한 없음", value = "{\"code\": \"CF4033\", \"message\": \"슬롯 규격 필터는 작가만 사용할 수 있습니다\"}"),
                                     @ExampleObject(name = "수수료율 필터 권한 없음", value = "{\"code\": \"CF4034\", \"message\": \"수수료율 필터는 작가만 사용할 수 있습니다\"}"),
-                                    @ExampleObject(name = "수수료율 정렬 권한 없음", value = "{\"code\": \"CF4035\", \"message\": \"수수료율 정렬은 작가만 사용할 수 있습니다\"}")
                             }
                     )
             ),
@@ -498,30 +540,62 @@ public class CafeController {
     })
     @GetMapping
     public ResponseEntity<ResponseDto<CafeListData>> searchCafes(
-            @Parameter(description = "카페명 검색 키워드")
+            @Parameter(description = "카페명 검색 키워드 (최대 100자)")
+            @Size(max = 100, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) String keyword,
+
             @Parameter(description = "위도", required = true)
+            @Min(value = -90, message = "INVALID_INPUT_VALUE")
+            @Max(value = 90, message = "INVALID_INPUT_VALUE")
             @RequestParam Double latitude,
+
             @Parameter(description = "경도", required = true)
+            @Min(value = -180, message = "INVALID_INPUT_VALUE")
+            @Max(value = 180, message = "INVALID_INPUT_VALUE")
             @RequestParam Double longitude,
+
             @Parameter(description = "슬롯 최소 폭 (cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer minWidth,
+
             @Parameter(description = "슬롯 최대 폭 (cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer maxWidth,
+
             @Parameter(description = "슬롯 최소 높이 (cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer minHeight,
+
             @Parameter(description = "슬롯 최대 높이 (cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer maxHeight,
+
             @Parameter(description = "최소 수수료율 (%)")
+            @Min(value = 0, message = "INVALID_INPUT_VALUE")
+            @Max(value = 30, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Double minCommission,
+
             @Parameter(description = "최대 수수료율 (%)")
+            @Min(value = 0, message = "INVALID_INPUT_VALUE")
+            @Max(value = 30, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Double maxCommission,
+
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
+            @Min(value = 0, message = "INVALID_INPUT_VALUE")
             @RequestParam(defaultValue = "0") Integer page,
+
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 50, message = "INVALID_INPUT_VALUE")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        CafeListData data = cafeService.searchCafes(keyword, latitude, longitude, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission, page, size);
+        Boolean isArtist = SecurityUtil.getCurrentUserType().equals(UserRole.ARTIST);
+
+        CafeListData data = cafeService.searchCafes(isArtist, keyword, latitude, longitude, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

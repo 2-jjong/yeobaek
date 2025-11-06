@@ -136,7 +136,17 @@ public class CafeServiceImpl implements CafeService {
      */
     @Override
     @Transactional(readOnly = true)
-    public CafeListData searchCafes(String keyword, Double latitude, Double longitude, Integer minWidth, Integer maxWidth, Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size) {
+    public CafeListData searchCafes(Boolean isArtist, String keyword, Double latitude, Double longitude, Integer minWidth, Integer maxWidth, Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size) {
+
+        // 작가 전용 필터 권한 검사
+        if (!isArtist) {
+            if (minWidth != null || maxWidth != null || minHeight != null || maxHeight != null) {
+                throw new com.ssafy.yeobaek.common.exception.CustomException(com.ssafy.yeobaek.common.code.ResponseCode.CAFE_SLOT_FILTER_FORBIDDEN);
+            }
+            if (minCommission != null || maxCommission != null) {
+                throw new com.ssafy.yeobaek.common.exception.CustomException(com.ssafy.yeobaek.common.code.ResponseCode.CAFE_COMMISSION_FILTER_FORBIDDEN);
+            }
+        }
 
         // 1. 필터 조건 생성
         Specification<Cafe> spec = CafeSpecification.withFilters(keyword, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission);
