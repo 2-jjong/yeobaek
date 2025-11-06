@@ -43,20 +43,10 @@ public class CafeServiceImpl implements CafeService {
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
 
-    // Haversine 공식으로 두 지점 간의 거리를 계산 (km 단위)
-    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371; // 지구 반지름 (km)
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                   Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                   Math.sin(dLon / 2) * Math.sin(dLon / 2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c;
-    }
-
     /**
-     * {@inheritDoc}
+     * 카페 등록
+     * @param userId 유저 id
+     * @param request 카페 등록 정보
      */
     @Override
     @Transactional
@@ -80,7 +70,9 @@ public class CafeServiceImpl implements CafeService {
     }
 
     /**
-     * {@inheritDoc}
+     * 카페 공간 등록
+     * @param userId 유저 id
+     * @param request 카페 공간 등록 정보
      */
     @Override
     @Transactional
@@ -108,7 +100,9 @@ public class CafeServiceImpl implements CafeService {
     }
 
     /**
-     * {@inheritDoc}
+     * 나의 카페 조회
+     * @param userId 유저 id
+     * @return 나의 카페 정보 및 공간 정보
      */
     @Override
     @Transactional(readOnly = true)
@@ -164,15 +158,15 @@ public class CafeServiceImpl implements CafeService {
                 int totalSlotCount = cafe.getDisplayWalls().size();
                 int availableSlotCount = (int) cafe.getDisplayWalls().stream().filter(DisplayWall::getStatus).count();
 
-                // 카테고리 ID 목록 추출
-                List<Long> categoryIds = cafeCategoryTagRepository.findAllByCafe(cafe).stream()
-                    .map(tag -> tag.getCategory().getId())
+                // 카테고리 목록 추출
+                List<String> categories = cafeCategoryTagRepository.findAllByCafe(cafe).stream()
+                    .map(tag -> tag.getCategory().getCategoryName())
                     .collect(Collectors.toList());
 
                 // 대표 이미지 URL 추출
                 String primaryImageUrl = cafe.getImages().isEmpty() ? null : cafe.getImages().get(0);
 
-                return new CafeSummary(cafe.getId(), cafe.getCafeName(), cafe.getAddress(), primaryImageUrl, availableSlotCount, totalSlotCount, distance, categoryIds);
+                return new CafeSummary(cafe.getId(), cafe.getCafeName(), cafe.getAddress(), primaryImageUrl, availableSlotCount, totalSlotCount, distance, categories);
             })
             .sorted(Comparator.comparing(CafeSummary::getDistance)) // 거리순으로 정렬
             .collect(Collectors.toList());
@@ -190,4 +184,17 @@ public class CafeServiceImpl implements CafeService {
 
         return new CafeListData(cafeSummaryPage.getContent(), pagination);
     }
+
+    // Haversine 공식으로 두 지점 간의 거리를 계산 (km 단위)
+    private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371; // 지구 반지름 (km)
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
 }
