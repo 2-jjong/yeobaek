@@ -3,6 +3,7 @@ package com.ssafy.yeobaek.artwork.controller;
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
+import com.ssafy.yeobaek.artwork.service.ArtworkBookmarkService;
 import com.ssafy.yeobaek.artwork.service.ArtworkService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
@@ -34,6 +35,7 @@ public class ArtworkController {
 
     private final ArtworkService artworkService;
     private final int MOCK_ARTWORK_COUNT = 20;
+    private final ArtworkBookmarkService artworkBookmarkService;
 
     @Operation(summary = "작품 등록", description = "작가가 피드 형식으로 작품을 등록합니다. 이미지는 최소 1장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
@@ -581,12 +583,17 @@ public class ArtworkController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "작품 북마크 토글", description = "작품을 북마크에 추가하거나 제거합니다 (토글 방식). 북마크가 없으면 추가하고, 이미 있으면 제거합니다.")
+    @Operation(summary = "작품 북마크 토글", description = "작품을 북마크에 추가하거나 제거합니다.\n\n" + " 북마크가 없으면 추가하고, 이미 있으면 제거합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": {\"isBookmarked\" : true}, \"message\": \"정상 처리\"}"
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -594,8 +601,18 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
                             }
                     )
             ),
@@ -604,7 +621,16 @@ public class ArtworkController {
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}")
+                            examples = {
+                                    @ExampleObject(
+                                            name = "회원 정보 없음",
+                                            value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품 정보 없음",
+                                            value = "{\"code\": \"AW4041\", \"message\": \"존재하지 않는 작품입니다\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -612,7 +638,9 @@ public class ArtworkController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
                     )
             )
     })
@@ -621,8 +649,8 @@ public class ArtworkController {
             @Parameter(description = "북마크 토글할 작품 ID", required = true)
             @PathVariable Long artworkId
     ) {
-        // Mock 데이터: 북마크 추가됨
-        BookmarkToggleData data = new BookmarkToggleData(true);
+        Long userId = SecurityUtil.getCurrentUserId();
+        BookmarkToggleData data = artworkBookmarkService.toggleBookmark(userId, artworkId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
