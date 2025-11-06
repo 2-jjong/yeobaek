@@ -483,3 +483,49 @@ private fun PreviewCafeOwnerHomeScreen_Registered_Status() {
         )
     }
 }
+
+@Preview(showBackground = true, name = "슬롯 리스트")
+@Composable
+private fun PreviewSlotAvailabilityList() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .background(Color.White)
+                .padding(16.dp)
+        ) {
+            SlotAvailabilityList(
+                slots = listOf(
+                    DisplaySlot(
+                        wid = 1L,
+                        wName = "입구 좌측 벽",
+                        width = 120f,
+                        height = 80f,
+                        status = SlotStatus.AVAILABLE,
+                        commission = 15f,
+                        requirements = "실내 조명 밝음",
+                        deadline = ""
+                    ),
+                    DisplaySlot(
+                        wid = 2L,
+                        wName = "메인 전시 공간",
+                        width = 150f,
+                        height = 100f,
+                        status = SlotStatus.ONGOING,
+                        artTitle = "푸른 밤의 꿈",
+                        artist = "김예술",
+                        deadline = "2024-12-31"
+                    ),
+                    DisplaySlot(
+                        wid = 3L,
+                        wName = "창가 벽면",
+                        width = 100f,
+                        height = 100f,
+                        status = SlotStatus.RESERVED,
+                        deadline = "2025-01-15"
+                    )
+                ),
+                onRowClick = {}
+            )
+        }
+    }
+}
