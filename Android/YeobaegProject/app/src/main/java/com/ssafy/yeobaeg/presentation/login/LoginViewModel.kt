@@ -1,10 +1,8 @@
 package com.ssafy.yeobaeg.presentation.login
 
-import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
