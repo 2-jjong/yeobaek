@@ -64,6 +64,38 @@ class ProfileEditViewModel @Inject constructor(
         }
     }
 
+    fun onSaveProfile(
+        context: Context,
+        nickname: String,
+        introduction: String?,
+        imageUri: Uri?,
+    ) {
+        viewModelScope.launch {
+            if (imageUri != null) {
+                // 새 이미지 업로드 → 성공 시 프로필 업데이트
+                uploadProfileImage(
+                    context = context,
+                    imageUri = imageUri,
+                    onSuccess = { fileKey ->
+                        updateProfile(
+                            newNickname = nickname,
+                            newImage = fileKey,
+                            artistDes =introduction
+                        )
+                    },
+                    onError = { e -> Log.e("ProfileEdit", "이미지 업로드 실패: ${e.message}") }
+                )
+            } else {
+                // 새 이미지 선택 안 했으면 기존 이미지 유지
+                updateProfile(
+                    newNickname = nickname,
+                    newImage = null,
+                    artistDes =introduction
+                )
+            }
+        }
+    }
+
     fun navigateBack() = viewModelScope.launch {
         navigator.navigateBack()
     }

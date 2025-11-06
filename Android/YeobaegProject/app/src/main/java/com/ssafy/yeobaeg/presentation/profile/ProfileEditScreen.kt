@@ -114,28 +114,12 @@ fun ProfileEditScreen(
             // 저장하기 버튼
             SaveButton(
                 onClick = {
-                    selectedImageUri?.let { uri ->
-                        // 새 이미지 업로드
-                        viewModel.uploadProfileImage(
-                            context = context,
-                            imageUri = uri,
-                            onSuccess = { fileKey ->
-                                viewModel.updateProfile(
-                                    newNickname = nickname,
-                                    newImage = fileKey,
-                                    artistDes = introduction,
-                                )
-                            },
-                            onError = { e -> Log.e("ProfileEdit", "이미지 업로드 실패: ${e.message}") }
-                        )
-                    } ?: run {
-                        // 새 이미지 선택 안 했으면 기존 이미지 그대로 유지
-                        viewModel.updateProfile(
-                            newNickname = nickname,
-                            newImage = null,
-                            artistDes = introduction,
-                        )
-                    }
+                    viewModel.onSaveProfile(
+                        context = context,
+                        nickname = nickname,
+                        introduction = introduction,
+                        imageUri = selectedImageUri,
+                    )
                 }
             )
 
