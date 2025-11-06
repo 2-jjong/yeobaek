@@ -17,15 +17,16 @@ public class UserMapper {
     /**
      * User 엔티티를 UserData DTO로 변환
      * @param user User 엔티티
+     * @param profileImageUrl 변환된 프로필 이미지 URL (presigned URL)
      * @return UserData DTO
      */
-    public UserData toUserData(User user) {
+    public UserData toUserData(User user, String profileImageUrl) {
         return UserData.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
                 .nickname(user.getNickname())
                 .userType(user.getUserType())
-                .profileImageUrl(user.getProfileImageUrl())
+                .profileImageUrl(profileImageUrl)
                 .birthDate(user.getBirthDate().toString())
                 .gender(user.getGender())
                 .bookmarkCount(37) // TODO: 실제 북마크 수로 변경
@@ -36,15 +37,16 @@ public class UserMapper {
      * User 엔티티를 공개 프로필용 UserData DTO로 변환
      * 공개되는 정보: userId, nickname, userType, profileImageUrl만 포함
      * @param user User 엔티티
+     * @param profileImageUrl 변환된 프로필 이미지 URL (presigned URL)
      * @return 공개 프로필용 UserData DTO
      */
-    public UserData toPublicUserData(User user) {
+    public UserData toPublicUserData(User user, String profileImageUrl) {
         return UserData.builder()
                 .userId(user.getId())
                 .email(null)
                 .nickname(user.getNickname())
                 .userType(user.getUserType())
-                .profileImageUrl(user.getProfileImageUrl())
+                .profileImageUrl(profileImageUrl)
                 .birthDate(null)
                 .gender(null)
                 .bookmarkCount(null)

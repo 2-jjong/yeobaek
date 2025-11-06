@@ -5,6 +5,7 @@ import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
 import com.ssafy.yeobaek.user.dto.response.ArtistData;
 import com.ssafy.yeobaek.user.dto.response.CafeData;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
     private final UserMapper userMapper;
+    private final S3Service s3Service;
 
     /**
      * 이메일 중복 체크
@@ -72,8 +74,11 @@ public class UserServiceImpl implements UserService {
         User user = findById(userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
+        // S3 presigned URL 변환
+        String profileImageUrl = s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl());
+
         // 사용자 기본 정보 변환
-        UserData userData = userMapper.toUserData(user);
+        UserData userData = userMapper.toUserData(user, profileImageUrl);
 
         // UserType에 따라 추가 정보 생성
         ArtistData artistData = user.getUserType() == UserRole.ARTIST
@@ -102,8 +107,11 @@ public class UserServiceImpl implements UserService {
         User user = findById(userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
+        // S3 presigned URL 변환
+        String profileImageUrl = s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl());
+
         // 공개 프로필용 사용자 기본 정보 변환 (userId, nickname, userType, profileImageUrl만 공개)
-        UserData userData = userMapper.toPublicUserData(user);
+        UserData userData = userMapper.toPublicUserData(user, profileImageUrl);
 
         // UserType에 따라 추가 정보 생성 (artist와 cafe 정보는 전부 공개)
         ArtistData artistData = user.getUserType() == UserRole.ARTIST
