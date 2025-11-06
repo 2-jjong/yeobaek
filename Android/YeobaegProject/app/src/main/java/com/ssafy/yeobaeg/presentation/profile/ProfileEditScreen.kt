@@ -31,7 +31,9 @@ import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.main.LocalUserRole
 import com.ssafy.yeobaeg.ui.theme.*
+import kotlinx.coroutines.flow.StateFlow
 
 @Composable
 fun ProfileEditScreen(
@@ -44,7 +46,7 @@ fun ProfileEditScreen(
     var introduction by rememberSaveable { mutableStateOf(introduction) }
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
-    val userRole by viewModel.userRole.collectAsState()
+    val userRole = LocalUserRole.current
 
 
     // 갤러리에서 이미지 선택

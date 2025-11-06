@@ -23,7 +23,6 @@ class ProfileEditViewModel @Inject constructor(
     private val navigator: Navigator,
     private val authSessionManager: AuthSessionManager,
     ) : ViewModel() {
-    val userRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
 
     fun updateProfile(newNickname: String, newImage: String?, artistDes: String?) =
         viewModelScope.launch {
