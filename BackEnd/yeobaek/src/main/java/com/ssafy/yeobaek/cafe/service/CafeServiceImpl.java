@@ -115,7 +115,7 @@ public class CafeServiceImpl implements CafeService {
     /**
      * 나의 카페 조회
      * @param userId 유저 id
-     * @return 등록된 공간 목록
+     * @return 나의 카페 정보 및 공간 정보
      */
     @Override
     @Transactional

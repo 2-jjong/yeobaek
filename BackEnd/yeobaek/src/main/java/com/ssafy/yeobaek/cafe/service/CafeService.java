@@ -25,6 +25,10 @@ public interface CafeService {
      */
     List<Wall> createCafeWall(Long userId, List<CreateDisplayWallRequest> request);
 
-    @Transactional
+    /**
+     * 나의 카페 조회
+     * @param userId 유저 id
+     * @return 나의 카페 정보 및 공간 정보
+     */
     MyCafeData getMyCafe(Long userId);
 }
