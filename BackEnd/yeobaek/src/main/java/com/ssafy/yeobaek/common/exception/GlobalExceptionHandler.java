@@ -2,6 +2,7 @@ package com.ssafy.yeobaek.common.exception;
 
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -30,12 +31,26 @@ public class GlobalExceptionHandler {
             .body(ResponseDto.error(ResponseCode.FORBIDDEN));
     }
 
-    // Validation 예외 처리
+    // Validation 예외 처리 (@RequestBody + @Valid)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ResponseDto<Void>> handleValidationException(MethodArgumentNotValidException e) {
         // 첫 번째 에러 메시지 추출
         FieldError fieldError = e.getBindingResult().getFieldErrors().get(0);
         String errorMessage = fieldError.getDefaultMessage();
+
+        // 에러 메시지에 따라 적절한 ResponseCode 매핑
+        ResponseCode responseCode = ResponseCode.valueOf(errorMessage);
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ResponseDto.error(responseCode));
+    }
+
+    // Validation 예외 처리 (@RequestParam + @Validated)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ResponseDto<Void>> handleConstraintViolationException(ConstraintViolationException e) {
+        // 첫 번째 에러 메시지 추출
+        String errorMessage = e.getConstraintViolations().iterator().next().getMessage();
 
         // 에러 메시지에 따라 적절한 ResponseCode 매핑
         ResponseCode responseCode = ResponseCode.valueOf(errorMessage);
