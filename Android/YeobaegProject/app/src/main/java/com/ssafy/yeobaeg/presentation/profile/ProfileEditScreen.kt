@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.ui.theme.*
@@ -98,7 +99,7 @@ fun ProfileEditScreen(
             )
             Spacer(modifier = Modifier.height(40.dp))
 
-            if (userRole?.name == "ARTIST") {
+            if (userRole == UserRole.ARTIST) {
                 IntroductionInputSection(
                     introduction = introduction,
                     onIntroductionChange = { introduction = it }
