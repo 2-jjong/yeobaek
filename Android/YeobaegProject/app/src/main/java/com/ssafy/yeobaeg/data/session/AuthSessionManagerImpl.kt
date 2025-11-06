@@ -16,7 +16,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuthSessionManagerImpl @Inject constructor(
+class
+
+AuthSessionManagerImpl @Inject constructor(
     private val tokenDataSource: TokenDataSource
 ) : AuthSessionManager {
     
@@ -53,13 +55,5 @@ class AuthSessionManagerImpl @Inject constructor(
     
     override suspend fun emitTokenExpired() {
         _authEvents.emit(AuthEvent.TokenExpired)
-    }
-
-    override suspend fun emitLoginSuccess() {
-        _authEvents.emit(AuthEvent.LoginSuccess)
-    }
-
-    override suspend fun emitSignUpSuccess() {
-        _authEvents.emit(AuthEvent.SignUpSuccess)
     }
 }

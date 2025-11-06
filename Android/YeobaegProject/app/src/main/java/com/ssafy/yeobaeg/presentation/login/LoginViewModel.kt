@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -27,7 +28,8 @@ data class LoginUiState(
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val authSessionManager: AuthSessionManager,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val snackbarController: SnackBarController
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -74,8 +76,11 @@ class LoginViewModel @Inject constructor(
                         it.copy(isLoading = false, error = null)
                     }
 
-                    // 로그인 성공 이벤트 발행 (홈 화면에서 스낵바 표시)
-                    authSessionManager.emitLoginSuccess()
+                    // 홈 화면으로 이동
+                    navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+
+                    // 스낵바 표시
+                    snackbarController.showSuccess("로그인 성공!")
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -114,11 +119,11 @@ class LoginViewModel @Inject constructor(
                         it.copy(isLoading = false, error = null)
                     }
 
-                    // 먼저 홈 화면으로 이동
+                    // 홈 화면으로 이동
                     navigator.navigateAndClearBackStack(BottomNavScreen.Home)
 
-                    // 로그인 성공 이벤트 발행 (홈 화면에서 스낵바 표시)
-                    authSessionManager.emitLoginSuccess()
+                    // 스낵바 표시
+                    snackbarController.showSuccess("로그인 성공!")
                 }
                 .onFailure { error ->
                     _uiState.update {

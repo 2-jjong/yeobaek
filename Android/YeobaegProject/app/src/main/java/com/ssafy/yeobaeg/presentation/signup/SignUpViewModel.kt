@@ -6,6 +6,7 @@ import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.common.util.ValidationUtils
@@ -41,7 +42,8 @@ data class SignUpUiState(
 class SignUpViewModel @Inject constructor(
     private val navigator: Navigator,
     private val authRepository: AuthRepository,
-    private val authSessionManager: AuthSessionManager
+    private val authSessionManager: AuthSessionManager,
+    private val snackbarController: SnackBarController
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(SignUpUiState())
@@ -247,8 +249,10 @@ class SignUpViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(isLoading = false)
                 }
-                // 회원가입 성공 이벤트 발행
-                authSessionManager.emitSignUpSuccess()
+                // 로그인 화면으로 이동
+                navigator.navigateAndClearBackStack(FullScreen.Login)
+                // 성공 스낵바 표시
+                snackbarController.showSuccess("회원가입에 성공했습니다!")
             },
             onFailure = { exception ->
                 _uiState.update {
