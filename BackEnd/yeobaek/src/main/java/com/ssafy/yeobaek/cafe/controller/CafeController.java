@@ -8,6 +8,7 @@ import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.UserRole;
+import com.ssafy.yeobaek.common.enums.WallStatus;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -669,7 +670,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4041\", \"data\": null, \"message\": \"존재하지 않는 카페입니다\"}"
+                                    value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}"
                             )
                     )
             ),
@@ -679,7 +680,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -690,24 +691,17 @@ public class CafeController {
             @PathVariable Long cafeId
     ) {
         // Mock 데이터
-        List<CafeImage> images = List.of(
-                new CafeImage(1L, "https://example.com/cafe1.jpg", true, 1),
-                new CafeImage(2L, "https://example.com/cafe2.jpg", false, 2),
-                new CafeImage(3L, "https://example.com/cafe3.jpg", false, 3)
-        );
+        List<String> images = List.of("https://example.com/cafe1.jpg", "https://example.com/cafe2.jpg", "https://example.com/cafe3.jpg");
 
         ExhibitionInfo exhibition = new ExhibitionInfo(
                 1L, "여름의 여백", "https://example.com/artwork1.jpg",
                 "홍길동", "2024-01-01", "2024-03-31"
         );
 
-        List<SlotDetail> slots = List.of(
-                new SlotDetail(1L, "1번 벽", 200, 250, "RAIL", 15.0,
-                        "카페 입구 오른쪽 벽면", ExhibitionStatus.EXHIBITING, exhibition, "{}"),
-                new SlotDetail(2L, "2번 벽", 150, 200, "HOOK", 12.0,
-                        "창가 벽면", ExhibitionStatus.AVAILABLE, null, "{}"),
-                new SlotDetail(3L, "3번 벽", 180, 220, "RAIL", 15.0,
-                        "내부 중앙 벽면", ExhibitionStatus.SCHEDULED, null, "{}")
+        List<DisplaySlot> slots = List.of(
+                new DisplaySlot(1L, "1번 벽", 200.0, 250.0, WallStatus.AVAILABLE, 15.0, "카페 입구 오른쪽 벽면", exhibition),
+                new DisplaySlot(2L, "2번 벽", 200.0, 250.0, WallStatus.EXHIBITING, 15.0, "카페 입구 오른쪽 벽면", exhibition),
+                new DisplaySlot(3L, "3번 벽", 200.0, 250.0, WallStatus.UNAVAILABLE, 15.0, "카페 입구 오른쪽 벽면", exhibition)
         );
 
         RatingStatsData ratingStats = new RatingStatsData(42, 4.5);
