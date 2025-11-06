@@ -51,14 +51,24 @@ public class CafeServiceImpl implements CafeService {
     @Override
     @Transactional
     public void createCafe(Long userId, CreateCafeRequest request) {
+
+        // 1. 사용자 정보 확인
         User user = userService.findById(userId)
             .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 2. 중복 등록 확인
         if (cafeRepository.existsByCafeOwner(user)) {
             throw new CustomException(ResponseCode.CAFE_ALREADY_EXISTS);
         }
+
+        // 3. 주소를 좌표로 변환
         Coordinates coordinates = geocoderService.getCoordinates(request.getAddress());
+
+        // 4. 카페 엔티티 생성 및 저장
         Cafe cafe = cafeMapper.toEntity(request, user, coordinates);
         cafeRepository.save(cafe);
+
+        // 5. 카페 카테고리 저장
         List<CafeCategory> categories = cafeCategoryService.findCategoriesByIds(request.getCategoryIds());
         categories.forEach(cafeCategory -> {
             CafeCategoryTag cafeCategoryTag = CafeCategoryTag.builder()
@@ -77,17 +87,25 @@ public class CafeServiceImpl implements CafeService {
     @Override
     @Transactional
     public List<Wall> createCafeWall(Long userId, List<CreateDisplayWallRequest> request) {
+
+        // 1. 사용자 정보 확인 및 카페 조회
         User user = userService.findById(userId)
             .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
         Cafe cafe = cafeRepository.findByCafeOwner(user)
             .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
+
+        // 2. 중복 등록 확인
         if (displayWallRepository.existsByCafe(cafe)) {
             throw new CustomException(ResponseCode.WALL_ALREADY_EXISTS);
         }
+
+        // 3. 요청된 벽 정보들을 순회하며 저장
         List<Wall> createdWalls = new ArrayList<>();
         request.forEach(wallRequest -> {
             DisplayWall displayWall = cafeMapper.toDisplayWallEntity(wallRequest, cafe);
             displayWallRepository.save(displayWall);
+
+            // 4. 전시 가능한 벽인 경우, 슬롯 정보도 함께 저장
             if (wallRequest.getStatus()) {
                 DisplaySlot displaySlot = DisplaySlot.builder()
                     .id(displayWall.getId())
@@ -107,9 +125,15 @@ public class CafeServiceImpl implements CafeService {
     @Override
     @Transactional(readOnly = true)
     public MyCafeData getMyCafe(Long userId) {
+
+        // 1. 카페 조회
         Cafe cafe = cafeRepository.findByCafeOwnerId(userId)
             .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
+
+        // 2. 벽 + 슬롯 조회
         List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafe.getId());
+
+        // 3. DTO 변환하여 반환
         return cafeMapper.toMyCafeData(cafe, walls);
     }
 
