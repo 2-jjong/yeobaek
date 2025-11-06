@@ -28,6 +28,7 @@ import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
 import com.ssafy.yeobaeg.presentation.home.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
+import com.ssafy.yeobaeg.presentation.home.cafeowner.editslot.EditDisplaySlotScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.register.RegisterCafeScreen
 import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
@@ -147,6 +148,10 @@ fun NavGraph(
 
                     is FullScreen.ReviewManagementScreen-> NavEntry(key){
                         ReviewManagementScreen()
+                    }
+
+                    is FullScreen.EditDisplaySlotScreen -> NavEntry(key) {
+                        EditDisplaySlotScreen(key.slotId)
                     }
 
                     else -> throw IllegalArgumentException("Unknown route: $key")

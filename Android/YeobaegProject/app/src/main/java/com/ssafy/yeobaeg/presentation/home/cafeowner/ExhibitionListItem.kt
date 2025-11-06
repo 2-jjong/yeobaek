@@ -43,7 +43,7 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegLightYellow
 
 /** 상태 칩 */
 @Composable
-private fun StatusChip(status: SlotStatus) {
+fun StatusChip(status: SlotStatus) {
     val (bg, fg, label) = when (status) {
         SlotStatus.AVAILABLE -> Triple(YeobaegLightGreen, YeobaegDarkGreen, "전시 가능")
         SlotStatus.ONGOING -> Triple(YeobaegLightBlue, YeobaegDarkBlue, "전시 중")

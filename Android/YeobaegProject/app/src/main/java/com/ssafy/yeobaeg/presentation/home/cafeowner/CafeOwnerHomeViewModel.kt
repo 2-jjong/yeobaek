@@ -40,6 +40,12 @@ class CafeOwnerHomeViewModel @Inject constructor(
             FullScreen.RegisterCafe
         )
     }
+
+    fun navigateToSlot(slotId: Long) = viewModelScope.launch {
+        navigator.navigate(
+            FullScreen.EditDisplaySlotScreen(slotId)
+        )
+    }
 }
 
 val dummyCafeOwnerInfo = CafeOwnerInfo(

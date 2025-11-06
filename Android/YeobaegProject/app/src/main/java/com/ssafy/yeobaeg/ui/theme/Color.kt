@@ -43,3 +43,7 @@ val YeobaegDarkBlue = Color(0xFF2563EB)  // 파랑
 val YeobaegDarkYellow = Color(0xFFCA8A04)  // 노랑
 val YeobaegDarkRed = Color(0xFFB91C1C)  // 빨강
 
+val green  = Color(0xFF22C55E) // 기본 초록
+val blue   = Color(0xFF3B82F6) // 기본 파랑
+val yellow = Color(0xFFF59E0B) // 기본 노랑
+val red    = Color(0xFFEF4444) // 기본 빨강
