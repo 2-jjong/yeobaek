@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.chat.service;
 
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfoData;
 import com.ssafy.yeobaek.chat.entity.ChatRoom;
 import com.ssafy.yeobaek.chat.entity.ChatRoomMember;
 import com.ssafy.yeobaek.chat.mapper.ChatMapper;
@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -40,7 +39,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public ChatRoomSummary createChatRoom(Long userId, Long partnerId) {
+    public ChatRoomInfoData createChatRoom(Long userId, Long partnerId) {
 
         // 1. 유효성 검증
         if (userId.equals(partnerId)) throw new CustomException(ResponseCode.MESSAGE_SELF_SEND_NOT_ALLOWED);
@@ -67,7 +66,7 @@ public class ChatServiceImpl implements ChatService {
         // 4. 기존 채팅방이 있으면 해당 채팅방 정보 반환
         if (existingRoomOpt.isPresent()) {
             String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
-            return chatMapper.toChatRoomSummary(existingRoomOpt.get(), partner, partnerImageUrl);
+            return chatMapper.toChatRoomInfoData(existingRoomOpt.get(), partner, partnerImageUrl);
         }
 
         // 5. 새로운 채팅방 생성
@@ -92,6 +91,6 @@ public class ChatServiceImpl implements ChatService {
         // 7. 프로필 이미지 Url 발급
         String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
 
-        return chatMapper.toChatRoomSummary(newChatRoom, partner, partnerImageUrl);
+        return chatMapper.toChatRoomInfoData(newChatRoom, partner, partnerImageUrl);
     }
 }
