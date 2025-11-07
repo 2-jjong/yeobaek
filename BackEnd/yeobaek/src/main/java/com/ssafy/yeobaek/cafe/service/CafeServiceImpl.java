@@ -110,7 +110,7 @@ public class CafeServiceImpl implements CafeService {
             // 4. 전시 가능한 벽인 경우, 슬롯 정보도 함께 저장
             if (wallRequest.getStatus()) {
                 DisplaySlot displaySlot = DisplaySlot.builder()
-                        .id(displayWall.getId())
+                        .wall(displayWall)
                         .build();
                 displaySlotRepository.save(displaySlot);
             }
