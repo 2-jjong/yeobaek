@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.cafe.service;
 
+import com.ssafy.yeobaek.cafe.dto.request.UpdateSlotRequest;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
@@ -259,5 +260,42 @@ public class CafeServiceImpl implements CafeService {
         cafeRepository.save(cafe);
 
         return cafeDetailData;
+    }
+
+    /**
+     * 슬롯 정보 수정
+     * @param userId 유저 id
+     * @param cafeId 카페 id
+     * @param slotId 슬롯 id
+     * @param request 슬롯 수정 정보
+     * @return 슬롯 정보
+     */
+    @Override
+    @Transactional
+    public Slot updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request) {
+
+        // 1. 슬롯 조회
+        DisplaySlot slot = displaySlotRepository.findById(slotId)
+                .orElseThrow(() -> new CustomException(ResponseCode.SLOT_NOT_FOUND));
+
+        // 2. 슬롯 소유 카페 확인 및 권한 검사
+        Cafe cafe = slot.getWall().getCafe();
+        if (!cafe.getCafeOwner().getId().equals(userId)) {
+            throw new CustomException(ResponseCode.CAFE_FORBIDDEN_UPDATE_DELETE);
+        }
+
+        // 3. 슬롯 정보 업데이트
+        if (request.getCommissionRate() != null) {
+            slot.setCommissionRate(request.getCommissionRate());
+        }
+        if (request.getRequirements() != null) {
+            slot.setRequirements(request.getRequirements());
+        }
+
+        // 4. 수정된 정보 저장
+        displaySlotRepository.save(slot);
+
+        // 5. DTO 반환
+        return cafeMapper.toDisplaySlot(slot);
     }
 }

@@ -1,5 +1,7 @@
 package com.ssafy.yeobaek.cafe.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.enums.WallStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,28 +13,30 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Slot {
-    @Schema(description = "슬롯 ID", example = "1")
-    private Long slotId;
 
-    @Schema(description = "슬롯 이름", example = "1번 벽")
-    private String slotName;
+    @Schema(description = "벽 ID", example = "1")
+    private Long wallId;
+
+    @Schema(description = "벽 이름", example = "1번 벽")
+    private String wallName;
 
     @Schema(description = "벽면 폭 (cm)", example = "200")
-    private Integer widthCm;
+    private Double width;
 
     @Schema(description = "벽면 높이 (cm)", example = "250")
-    private Integer heightCm;
+    private Double height;
 
-    @Schema(description = "설치 방식", example = "RAIL")
-    private String installationMethod;
+    @Schema(description = "전시 상태", example = "AVAILABLE")
+    private WallStatus status;
 
-    @Schema(description = "기본 수수료율", example = "15.0")
+    @Schema(description = "수수료율", example = "15.0")
     private Double commissionRate;
 
-    @Schema(description = "전시 위치 설명", example = "카페 입구 오른쪽 벽면")
-    private String locationDescription;
+    @Schema(description = "기타 요구 사항", example = "")
+    private String requirements;
 
-    @Schema(description = "AR 공간 스캔 데이터", example = "{}")
-    private String arScanData;
+    @Schema(description = "현재 전시 정보 (전시 중/예정인 경우만)")
+    private ExhibitionInfo currentExhibition;
 }

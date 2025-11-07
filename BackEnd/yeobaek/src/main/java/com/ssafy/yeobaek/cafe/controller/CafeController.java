@@ -420,7 +420,6 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}"),
                                     @ExampleObject(value = "{\"code\": \"CF4042\", \"message\": \"존재하지 않는 슬롯입니다\"}")
                             }
                     )
@@ -438,16 +437,18 @@ public class CafeController {
     })
     @PreAuthorize("hasRole('CAFE_OWNER')")
     @PatchMapping("/{cafeId}/slots/{slotId}")
-    public ResponseEntity<ResponseDto<DisplaySlot>> updateSlot(
+    public ResponseEntity<ResponseDto<Slot>> updateSlot(
             @Parameter(description = "수정할 카페 ID", required = true)
             @PathVariable Long cafeId,
-            @Parameter(description = "수정할 카페 ID", required = true)
+            @Parameter(description = "수정할 슬롯 ID", required = true)
             @PathVariable Long slotId,
             @Valid @RequestBody UpdateSlotRequest request
     ) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        Slot slot = cafeService.updateSlot(userId, cafeId, slotId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ResponseDto.success());
+                .body(ResponseDto.success(slot));
     }
 
     @Operation(summary = "카페 북마크 목록 조회", description = "현재 사용자가 북마크한 카페 목록을 조회합니다. 최신 북마크 순으로 정렬됩니다.")

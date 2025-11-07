@@ -94,7 +94,7 @@ public class CafeMapper {
         long collaboratingArtists = 15L;
 
         // 슬롯 정보
-        List<DisplaySlot> displaySlots = walls.stream()
+        List<Slot> slots = walls.stream()
                 .map(this::toDisplaySlot)
                 .collect(Collectors.toList());
 
@@ -107,13 +107,13 @@ public class CafeMapper {
                 totalSlots,
                 exhibitingSlots,
                 collaboratingArtists,
-                displaySlots
+                slots
         );
 
         return new MyCafeData(summary);
     }
 
-    private DisplaySlot toDisplaySlot(DisplayWall wall) {
+    private Slot toDisplaySlot(DisplayWall wall) {
 
         ExhibitionInfo exhibitionInfo = null;
         com.ssafy.yeobaek.cafe.entity.DisplaySlot slot = wall.getSlot();
@@ -130,7 +130,7 @@ public class CafeMapper {
             );
         }
 
-        return new DisplaySlot(
+        return new Slot(
                 wall.getId(),
                 wall.getWallName(),
                 wall.getWidthCm(),
@@ -177,7 +177,7 @@ public class CafeMapper {
     public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> walls, List<String> categories, List<String> images, String profileImage) {
 
         // 1. 벽 정보 -> 슬롯 상세 정보 DTO 목록으로 변환
-        List<DisplaySlot> slotDetails = walls.stream()
+        List<Slot> slotDetails = walls.stream()
                 .map(this::toDisplaySlot)
                 .collect(Collectors.toList());
 
@@ -206,5 +206,23 @@ public class CafeMapper {
         );
 
         return new CafeDetailData(cafeDetail);
+    }
+
+    /**
+     * DisplaySlot 엔티티를  DTO로 변환
+     * @param slot 슬롯 정보
+     * @return DisplaySlot DTO
+     */
+    public Slot toDisplaySlot(com.ssafy.yeobaek.cafe.entity.DisplaySlot slot){
+        return new Slot(
+                slot.getId(),
+                slot.getWall().getWallName(),
+                slot.getWall().getWidthCm(),
+                slot.getWall().getHeightCm(),
+                slot.getStatus().toWallStatus(),
+                slot.getCommissionRate(),
+                slot.getRequirements(),
+                null
+        );
     }
 }
