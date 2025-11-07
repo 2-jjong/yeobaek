@@ -1,8 +1,7 @@
 package com.ssafy.yeobaek.artwork.service;
 
-/**
- * 작품 북마크 관련 비즈니스 로직을 처리하는 서비스 인터페이스
- */
+import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
+
 public interface ArtworkBookmarkService {
 
     /**
@@ -12,4 +11,12 @@ public interface ArtworkBookmarkService {
      * @return 북마크 여부
      */
     boolean isBookmarked(Long userId, Long artworkId);
+
+    /**
+     * 작품 북마크 토글
+     * @param userId 사용자 ID
+     * @param artworkId 작품 ID
+     * @return BookmarkToggleData (현재 북마크 상태)
+     */
+    BookmarkToggleData toggleBookmark(Long userId, Long artworkId);
 }

@@ -3,11 +3,13 @@ package com.ssafy.yeobaek.artwork.controller;
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
+import com.ssafy.yeobaek.artwork.service.ArtworkBookmarkService;
 import com.ssafy.yeobaek.artwork.service.ArtworkService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
+import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
+import com.ssafy.yeobaek.common.validation.ValidEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,10 +19,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,10 +36,12 @@ import java.util.stream.IntStream;
 @RestController
 @RequestMapping("/api/v1/artworks")
 @RequiredArgsConstructor
+@Validated
 public class ArtworkController {
 
     private final ArtworkService artworkService;
     private final int MOCK_ARTWORK_COUNT = 20;
+    private final ArtworkBookmarkService artworkBookmarkService;
 
     @Operation(summary = "작품 등록", description = "작가가 피드 형식으로 작품을 등록합니다. 이미지는 최소 1장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
@@ -382,63 +390,205 @@ public class ArtworkController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "작가/작품 목록 조회", description = "작품 목록을 조회하거나 검색합니다. 키워드 검색, 필터링, 정렬 기능을 제공합니다.")
+    @Operation(
+            summary = "작가/작품 목록 조회 및 검색",
+            description = "작품 목록을 조회하거나 검색합니다. 키워드 검색, 필터링, 정렬 기능을 제공합니다.\n\n" +
+                    "**주요 기능:**\n" +
+                    "- 키워드가 있으면: 작가명과 작품명을 동시에 검색하여 결과 반환 (artists 필드 포함)\n" +
+                    "- 키워드가 없으면: 전체 작품 목록 조회 (artists 필드는 빈 배열)\n" +
+                    "- 카테고리 필터: 여러 카테고리 동시 선택 가능 (예: PORTRAIT, LANDSCAPE)\n" +
+                    "- 규격 필터: 작품의 가로/세로 크기로 필터링 (카페 사장만 사용 가능)\n" +
+                    "- 정렬: 최신순(LATEST) 또는 인기순(POPULARITY)\n" +
+                    "- 페이징: 기본 20개씩, 최대 50개까지\n\n" +
+                    "**권한:**\n" +
+                    "- 로그인 필수\n" +
+                    "- 규격 필터(가로/세로) 사용 시: 카페 사장만 가능"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "키워드 검색 (작가+작품)",
+                                            description = "키워드로 검색 시 작가 목록과 작품 목록 모두 반환",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artists\": [{\"userId\": 1, \"artistName\": \"홍길동\", \"profileImageUrl\": \"https://s3.presigned.url/artist1.jpg\", \"introduction\": \"현대 미술을 전공한 신진 작가입니다.\", \"artworkCount\": 15}, {\"userId\": 2, \"artistName\": \"김작가\", \"profileImageUrl\": \"https://s3.presigned.url/artist2.jpg\", \"introduction\": \"추상화 전문 작가입니다.\", \"artworkCount\": 8}], \"artworks\": [{\"artworkId\": 101, \"title\": \"여름의 여백\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork101.jpg\"}, {\"artworkId\": 102, \"title\": \"봄날의 꿈\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork102.jpg\"}, {\"artworkId\": 103, \"title\": \"가을의 정적\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork103.jpg\"}], \"pagination\": {\"page\": 0, \"size\": 20, \"totalElements\": 3, \"totalPages\": 1, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "전체 작품 목록 (키워드 없음)",
+                                            description = "키워드 없이 전체 작품 조회 시 작가 목록은 null",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artists\": [], \"artworks\": [{\"artworkId\": 1, \"title\": \"도시의 밤\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork1.jpg\"}, {\"artworkId\": 2, \"title\": \"산속의 오두막\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork2.jpg\"}, {\"artworkId\": 3, \"title\": \"추상의 세계\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork3.jpg\"}, {\"artworkId\": 4, \"title\": \"바다의 속삭임\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork4.jpg\"}, {\"artworkId\": 5, \"title\": \"황혼의 노래\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork5.jpg\"}], \"pagination\": {\"page\": 0, \"size\": 20, \"totalElements\": 150, \"totalPages\": 8, \"hasNext\": true}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "카테고리 필터 적용",
+                                            description = "특정 카테고리만 조회 (예: PAINTING)",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artists\": [], \"artworks\": [{\"artworkId\": 10, \"title\": \"꽃병과 과일\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork10.jpg\"}, {\"artworkId\": 11, \"title\": \"푸른 하늘\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork11.jpg\"}], \"pagination\": {\"page\": 0, \"size\": 20, \"totalElements\": 45, \"totalPages\": 3, \"hasNext\": true}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "인기순 정렬",
+                                            description = "인기순(조회수 + 북마크 수 * 9)으로 정렬된 결과",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artists\": [], \"artworks\": [{\"artworkId\": 50, \"title\": \"밤하늘의 별\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork50.jpg\"}, {\"artworkId\": 23, \"title\": \"새벽의 기도\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork23.jpg\"}], \"pagination\": {\"page\": 0, \"size\": 20, \"totalElements\": 150, \"totalPages\": 8, \"hasNext\": true}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "검색 결과 없음",
+                                            description = "검색 조건에 맞는 작품이 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artists\": [], \"artworks\": [], \"pagination\": {\"page\": 0, \"size\": 20, \"totalElements\": 0, \"totalPages\": 0, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
             ),
             @ApiResponse(
                     responseCode = "400",
                     description = "잘못된 요청",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"AW4007\", \"data\": null, \"message\": \"작품 규격 필터는 카페 사장만 사용할 수 있습니다\"}")
+                            examples = {
+                                    @ExampleObject(
+                                            name = "키워드 길이 초과",
+                                            description = "keyword가 100자를 초과한 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "카테고리 개수 초과",
+                                            description = "categories가 8개를 초과한 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "가로 크기 범위 오류",
+                                            description = "minWidth 또는 maxWidth가 1-500 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "세로 크기 범위 오류",
+                                            description = "minHeight 또는 maxHeight가 1-500 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "페이지 번호 오류",
+                                            description = "page가 0 미만인 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "페이지 크기 오류",
+                                            description = "size가 1-50 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 카테고리",
+                                            description = "존재하지 않는 카테고리 값이 입력된 경우",
+                                            value = "{\"code\": \"AW4006\", \"message\": \"유효하지 않은 카테고리입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "규격 필터 권한 없음",
+                                    description = "카페 사장이 아닌 사용자가 규격 필터(가로/세로) 사용 시",
+                                    value = "{\"code\": \"AW4007\", \"message\": \"작품 규격 필터는 카페 사장만 사용할 수 있습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "사용자를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "존재하지 않는 사용자",
+                                    description = "규격 필터 권한 확인 중 사용자 정보를 찾을 수 없는 경우",
+                                    value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"
+                            )
                     )
             ),
             @ApiResponse(
                     responseCode = "500",
-                    description = "서버 오류",
+                    description = "서버 내부 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
                     )
             )
     })
     @GetMapping
     public ResponseEntity<ResponseDto<ArtworkListData>> searchArtworks(
-            @Parameter(description = "작품명, 작가명 검색 키워드")
+            @Parameter(description = "작품명, 작가명 검색 키워드 (최대 100자)")
+            @Size(max = 100, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) String keyword,
-            @Parameter(description = "카테고리 필터 (다중 선택)")
-            @RequestParam(required = false) List<String> categories,
-            @Parameter(description = "작품 최소 가로 (cm)")
+
+            @Parameter(description = "카테고리 필터 (최대 8개까지 다중 선택)")
+            @Size(max = 8, message = "INVALID_INPUT_VALUE")
+            @RequestParam(required = false) List<ArtCategory> categories,
+
+            @Parameter(description = "작품 최소 가로 (1-500cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer minWidth,
-            @Parameter(description = "작품 최대 가로 (cm)")
+
+            @Parameter(description = "작품 최대 가로 (1-500cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer maxWidth,
-            @Parameter(description = "작품 최소 세로 (cm)")
+
+            @Parameter(description = "작품 최소 세로 (1-500cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer minHeight,
-            @Parameter(description = "작품 최대 세로 (cm)")
+
+            @Parameter(description = "작품 최대 세로 (1-500cm)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 500, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Integer maxHeight,
-            @Parameter(description = "정렬 기준 (POPULARITY: 인기순, LATEST: 최신 등록순)")
+
+            @Parameter(description = "정렬 기준 (LATEST: 최신 등록순, POPULARITY: 인기순)")
+            @ValidEnum(enumClass = ArtworkSortBy.class, message = "ARTWORK_INVALID_CATEGORY")
             @RequestParam(defaultValue = "LATEST") ArtworkSortBy sortBy,
+
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
+            @Min(value = 0, message = "INVALID_INPUT_VALUE")
             @RequestParam(defaultValue = "0") Integer page,
-            @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
+
+            @Parameter(description = "페이지 크기 (1-50, 기본값: 20)")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 50, message = "INVALID_INPUT_VALUE")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터
-        ArtistSummary artist1 = new ArtistSummary(
-                1L, "홍길동", "https://example.com/profile1.jpg",
-                "현대 미술을 전공한 신진 작가입니다.", 15
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArtworkListData data = artworkService.searchArtworks(
+                userId, keyword, categories,
+                minWidth, maxWidth, minHeight, maxHeight,
+                sortBy, page, size
         );
-
-        // Mock 데이터 - 20개로 증가
-        List<ArtworkSummary> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 200L); // 다른 ID로 시작
-
-        // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
-        Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
-        ArtworkListData data = new ArtworkListData(List.of(artist1), artworks, pagination);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -581,12 +731,17 @@ public class ArtworkController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "작품 북마크 토글", description = "작품을 북마크에 추가하거나 제거합니다 (토글 방식). 북마크가 없으면 추가하고, 이미 있으면 제거합니다.")
+    @Operation(summary = "작품 북마크 토글", description = "작품을 북마크에 추가하거나 제거합니다.\n\n" + " 북마크가 없으면 추가하고, 이미 있으면 제거합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": {\"isBookmarked\" : true}, \"message\": \"정상 처리\"}"
+                            )
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -594,8 +749,18 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
                             }
                     )
             ),
@@ -604,7 +769,16 @@ public class ArtworkController {
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}")
+                            examples = {
+                                    @ExampleObject(
+                                            name = "회원 정보 없음",
+                                            value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품 정보 없음",
+                                            value = "{\"code\": \"AW4041\", \"message\": \"존재하지 않는 작품입니다\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -612,7 +786,9 @@ public class ArtworkController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
                     )
             )
     })
@@ -621,8 +797,8 @@ public class ArtworkController {
             @Parameter(description = "북마크 토글할 작품 ID", required = true)
             @PathVariable Long artworkId
     ) {
-        // Mock 데이터: 북마크 추가됨
-        BookmarkToggleData data = new BookmarkToggleData(true);
+        Long userId = SecurityUtil.getCurrentUserId();
+        BookmarkToggleData data = artworkBookmarkService.toggleBookmark(userId, artworkId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -677,30 +853,14 @@ public class ArtworkController {
 
     private List<ArtworkSummary> createMockArtworks(int count, Long startId) {
         String[] titles = {"여름의 여백", "가을의 정적", "봄날의 꿈", "겨울의 침묵", "도시의 밤", "산속의 오두막", "추상의 세계", "바다의 속삭임", "황혼의 노래", "새벽의 기도", "꽃병과 과일", "푸른 하늘", "고요한 아침", "빛과 그림자", "시간의 흐름", "미지의 공간", "노을 진 풍경", "밤하늘의 별", "꿈속의 정원", "자유로운 영혼"};
-        String[] categories = {"풍경화", "인물화", "정물화", "장르화", "기타", "역사화"};
-        ExhibitionStatus[] statuses = {ExhibitionStatus.AVAILABLE, ExhibitionStatus.EXHIBITING};
-        String[] exhibitLocations = {null, "카페 여백", "아트카페", "오션뷰 카페", null};
 
         return IntStream.range(0, count)
                 .mapToObj(i -> {
                     long id = startId + i;
                     String title = titles[i % titles.length] + " #" + id;
-                    String image = "https://example.com/artwork" + (i + 1) + ".jpg";
-                    int price = 400000 + (i * 50000) % 500000;
-                    String category = categories[i % categories.length];
-                    int width = 60 + (i * 5) % 60;
-                    int height = 70 + (i * 5) % 50;
-                    ExhibitionStatus status = statuses[i % statuses.length];
-                    int views = 30 + (i * 10);
-                    String location = exhibitLocations[i % exhibitLocations.length];
-                    String artistName = (id % 3 == 0) ? "김작가" : "이작가";
-                    String artistProfile = "https://example.com/profile" + (id % 2 + 1) + ".jpg";
+                    String thumbnailUrl = "https://example.com/artwork" + (i + 1) + ".jpg";
 
-                    return new ArtworkSummary(
-                            id, title, image,
-                            artistName, artistProfile,
-                            price, category, width, height, status, views, location
-                    );
+                    return new ArtworkSummary(id, title, thumbnailUrl);
                 })
                 .toList();
     }

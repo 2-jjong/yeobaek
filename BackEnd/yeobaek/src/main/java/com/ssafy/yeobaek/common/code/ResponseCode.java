@@ -13,6 +13,7 @@ public enum ResponseCode {
 
     // 공통 에러 (400 Bad Request)
     MISSING_REQUIRED_FIELD("S4001", "필수 입력값이 누락되었습니다", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT_VALUE("S4002", "입력값이 유효하지 않습니다", HttpStatus.BAD_REQUEST),
 
     // 공통 에러 (401 Unauthorized)
     UNAUTHORIZED("S4011", "인증이 필요합니다", HttpStatus.UNAUTHORIZED),
@@ -70,18 +71,19 @@ public enum ResponseCode {
 
     // 카페 관련 에러 (400 Bad Request)
     CAFE_INVALID_IMAGES_LENGTH("CF4001", "카페 이미지는 최소 3장 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
+    CAFE_WALL_INVALID_NAME_LENGTH("CF4002", "카페 벽 이름은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_PRIMARY_IMAGE_ONLY_ONE("CF4003", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_DESCRIPTION_LENGTH("CF4005", "카페 소개는 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_COMMISSION_RATE("CF4006", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_HOURS_FORMAT("CF4007", "영업시간 형식이 올바르지 않습니다 (HH:mm)", HttpStatus.BAD_REQUEST),
     CAFE_LATITUDE_LONGITUDE_REQUIRED("CF4008", "거리순 정렬 시 위도/경도가 필요합니다", HttpStatus.BAD_REQUEST),
+    CAFE_INVALID_ADDRESS("CF4009", "좌표로 변환할 수 없는 주소입니다", HttpStatus.BAD_REQUEST),
 
     // 카페 관련 에러 (403 Forbidden)
     CAFE_FORBIDDEN_UPDATE_DELETE("CF4032", "본인의 카페만 수정/삭제할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_SLOT_FILTER_FORBIDDEN("CF4033", "슬롯 규격 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_COMMISSION_FILTER_FORBIDDEN("CF4034", "수수료율 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
-    CAFE_COMMISSION_SORT_FORBIDDEN("CF4035", "수수료율 정렬은 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
 
     // 카페 관련 에러 (404 Not Found)
     CAFE_NOT_FOUND("CF4041", "존재하지 않는 카페입니다", HttpStatus.NOT_FOUND),
@@ -92,6 +94,7 @@ public enum ResponseCode {
     CAFE_ALREADY_EXISTS("CF4091", "이미 등록된 카페가 있습니다", HttpStatus.CONFLICT),
     SLOT_EXHIBITING_SIZE_CHANGE("CF4092", "전시 중인 슬롯은 규격을 변경할 수 없습니다", HttpStatus.CONFLICT),
     SLOT_CANNOT_DELETE_EXHIBITING("CF4093", "전시 중이거나 전시 예정인 슬롯은 삭제할 수 없습니다", HttpStatus.CONFLICT),
+    WALL_ALREADY_EXISTS("CF4094", "이미 등록된 카페 공간이 있습니다", HttpStatus.CONFLICT),
 
     // Storage/S3 관련 에러 (400 Bad Request)
     INVALID_STORAGE_FOLDER("ST4001", "유효하지 않은 저장 폴더입니다", HttpStatus.BAD_REQUEST),
@@ -100,8 +103,19 @@ public enum ResponseCode {
     // 채팅 관련 에러 (400 Bad Request)
     MESSAGE_SELF_SEND_NOT_ALLOWED("MS4001", "자신에게 메시지를 보낼 수 없습니다", HttpStatus.BAD_REQUEST),
 
+    // 리뷰 관련 에러 (400 Bad Request)
+    REVIEW_INVALID_RATING("RV4001", "평점은 1~5 사이여야 합니다", HttpStatus.BAD_REQUEST),
+    REVIEW_INVALID_COMMENT_LENGTH("RV4002", "후기는 최대 100자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
+
+    // 리뷰 관련 에러 (409 Conflict)
+    REVIEW_ALREADY_EXISTS("RV4091", "이미 작성한 평가입니다", HttpStatus.CONFLICT),
+
+    // 전시 관련 에러 (404 Not Found)
+    EXHIBITION_NOT_FOUND("EX4041", "존재하지 않는 전시입니다", HttpStatus.NOT_FOUND),
+
     // 서버 에러 (500 Internal Server Error)
-    INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
+    INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+    GEOCODING_API_ERROR("S5001", "지오코더 API 서버에 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);
 
     private final String code;
     private final String message;

@@ -60,8 +60,22 @@ public class Cafe {
     private Integer bookmarkCount = 0;
 
     @ElementCollection
-    @CollectionTable(name = "cafe_image", joinColumns = @JoinColumn(name = "cafe_id"))
+    @CollectionTable(
+            name = "cafe_image",
+            joinColumns = @JoinColumn(name = "cafe_id"),
+            foreignKey = @ForeignKey(
+                    name = "fk_cafe_image_cafe_id",
+                    foreignKeyDefinition = "FOREIGN KEY (cafe_id) REFERENCES cafe(id)"
+            )
+    )
     @Column(name = "image_url")
     @OrderColumn(name = "display_order")
     private List<String> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cafe")
+    private List<DisplayWall> displayWalls = new ArrayList<>();
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
 }

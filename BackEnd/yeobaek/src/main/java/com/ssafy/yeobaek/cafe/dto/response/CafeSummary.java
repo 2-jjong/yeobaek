@@ -23,6 +23,12 @@ public class CafeSummary {
     @Schema(description = "카페 주소", example = "서울시 강남구 테헤란로 123")
     private String address;
 
+    @Schema(description = "위도", example = "37.5665")
+    private Double latitude;
+
+    @Schema(description = "경도", example = "126.9780")
+    private Double longitude;
+
     @Schema(description = "대표 이미지 URL", example = "https://example.com/cafe1.jpg")
     private String primaryImageUrl;
 
@@ -35,6 +41,6 @@ public class CafeSummary {
     @Schema(description = "거리 (km)", example = "1.5")
     private Double distance;
 
-    @Schema(description = "인테리어 스타일 목록", example = "[\"모던\", \"미니멀\"]")
+    @Schema(description = "인테리어 스타일 목록", example = "[ \"모던\", \"미니멀\" ]")
     private List<String> categories;
 }
