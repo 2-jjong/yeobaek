@@ -5,6 +5,8 @@ import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
 import com.ssafy.yeobaek.review.dto.request.CreateReviewRequest;
+import com.ssafy.yeobaek.review.dto.response.RatingStat;
+import com.ssafy.yeobaek.review.dto.response.ReviewStatistics;
 import com.ssafy.yeobaek.review.entity.Review;
 import com.ssafy.yeobaek.review.mapper.ReviewMapper;
 import com.ssafy.yeobaek.review.repository.ReviewRepository;
@@ -14,6 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -63,5 +70,82 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.save(review);
         log.info("리뷰 작성 완료 - 리뷰 ID: {}, 작성자: {}, 대상자: {}, 전시 ID: {}",
                 review.getId(), reviewer.getNickname(), reviewee.getNickname(), exhibition.getId());
+    }
+
+    /**
+     * 내가 받은 평가 통계 조회
+     * @param userId 사용자 ID
+     * @return 평가 통계
+     */
+    @Override
+    public ReviewStatistics getMyReviewStatistics(Long userId) {
+        return getReviewStatisticsByUserId(userId);
+    }
+
+    /**
+     * 특정 사용자가 받은 평가 통계 조회 (내부 메소드)
+     * @param userId 사용자 ID
+     * @return 평가 통계
+     */
+    private ReviewStatistics getReviewStatisticsByUserId(Long userId) {
+        log.info("평가 통계 조회 시작 - 사용자 ID: {}", userId);
+
+        // 사용자가 받은 모든 리뷰 조회
+        List<Review> reviews = reviewRepository.findAllByRevieweeId(userId);
+
+        // 통계 계산
+        ReviewStatistics statistics = calculateReviewStatistics(reviews);
+
+        log.info("평가 통계 조회 완료 - 사용자 ID: {}, 전체 리뷰 수: {}, 평균 평점: {}",
+                userId, statistics.getTotalReviewCount(), statistics.getTotalReviewScore());
+
+        return statistics;
+    }
+
+    /**
+     * 리뷰 목록으로부터 통계 정보를 계산
+     * @param reviews 리뷰 목록
+     * @return 평가 통계
+     */
+    private ReviewStatistics calculateReviewStatistics(List<Review> reviews) {
+        // 전체 리뷰 개수
+        int totalReviewCount = reviews.size();
+
+        // 평균 평점 계산
+        double totalReviewScore = 0.0;
+        if (totalReviewCount > 0) {
+            totalReviewScore = reviews.stream()
+                    .mapToInt(Review::getRating)
+                    .average()
+                    .orElse(0.0);
+        }
+
+        // 각 별점별 개수 집계
+        Map<Integer, Long> ratingCountMap = reviews.stream()
+                .collect(Collectors.groupingBy(Review::getRating, Collectors.counting()));
+
+        // 별점별 통계 생성 (1-5점)
+        List<RatingStat> ratingStats = IntStream.rangeClosed(1, 5)
+                .mapToObj(rating -> {
+                    long count = ratingCountMap.getOrDefault(rating, 0L);
+                    double percentage = totalReviewCount > 0
+                            ? (count * 100.0) / totalReviewCount
+                            : 0.0;
+
+                    // Mapper를 통해 DTO 변환
+                    return reviewMapper.toRatingStat(
+                            rating,
+                            (int) count,
+                            Math.round(percentage * 10.0) / 10.0
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // Mapper를 통해 최종 DTO 변환
+        return reviewMapper.toReviewStatistics(
+                totalReviewCount,
+                Math.round(totalReviewScore * 10.0) / 10.0,
+                ratingStats
+        );
     }
 }
