@@ -32,7 +32,7 @@ public class Slot {
     @Schema(description = "수수료율", example = "15.0")
     private Double commissionRate;
 
-    @Schema(description = "기타 요구 사항", example = "")
+    @Schema(description = "기타 요청 사항", example = "홍보용 작가 소개 카드 또는 작품 설명 자료를 함께 제공해주세요.")
     private String requirements;
 
     @Schema(description = "현재 전시 정보 (전시 중/예정인 경우만)")
