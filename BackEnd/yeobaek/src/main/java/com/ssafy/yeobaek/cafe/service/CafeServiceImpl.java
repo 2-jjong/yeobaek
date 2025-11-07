@@ -246,7 +246,7 @@ public class CafeServiceImpl implements CafeService {
 
         // 4. 카페 이미지 URL 변환
         List<String> images = s3Service.generatePresignedUrlsForDownload(cafe.getImages());
-        String profileImage = cafe.getCafeOwner().getProfileImageUrl() != null ? s3Service.generatePresignedUrlForDownload(cafe.getCafeOwner().getProfileImageUrl()) : null;
+        String profileImage = s3Service.generatePresignedUrlForDownload(cafe.getCafeOwner().getProfileImageUrl());
 
         // 5. DTO 변환
         CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images, profileImage);
