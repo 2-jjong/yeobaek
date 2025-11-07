@@ -12,21 +12,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateSlotRequest {
-    @Schema(description = "슬롯 이름", example = "1번 벽")
-    private String slotName;
 
-    @Schema(description = "벽면 폭 (cm)", example = "200")
-    private Integer widthCm;
+    @Schema(description = "수수료율", example = "10.0")
+    private Double commission;
 
-    @Schema(description = "벽면 높이 (cm)", example = "250")
-    private Integer heightCm;
-
-    @Schema(description = "설치 방식 (RAIL, HOOK, OTHER)", example = "RAIL")
-    private String installationMethod;
-
-    @Schema(description = "전시 위치 설명", example = "카페 입구 오른쪽 벽면")
-    private String locationDescription;
-
-    @Schema(description = "AR 공간 스캔 데이터", example = "{}")
-    private String arScanData;
+    @Schema(description = "기타 요구 사항", example = "홍보용 작가 소개 카드 또는 작품 설명 자료를 함께 제공해주세요.")
+    private String requirements;
 }
