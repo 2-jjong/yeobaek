@@ -190,7 +190,7 @@ public class CafeServiceImpl implements CafeService {
                 // 대표 이미지 URL 추출
                 String primaryImageUrl = cafe.getImages().isEmpty() ? null : cafe.getImages().get(0);
 
-                return new CafeSummary(cafe.getId(), cafe.getCafeName(), cafe.getAddress(), primaryImageUrl, availableSlotCount, totalSlotCount, distance, categories);
+                return new CafeSummary(cafe.getId(), cafe.getCafeName(), cafe.getAddress(), cafe.getLatitude(), cafe.getLongitude(), primaryImageUrl, availableSlotCount, totalSlotCount, distance, categories);
             })
             .sorted(Comparator.comparing(CafeSummary::getDistance)) // 거리순으로 정렬
             .collect(Collectors.toList());

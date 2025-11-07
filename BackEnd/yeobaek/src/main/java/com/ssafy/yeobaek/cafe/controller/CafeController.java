@@ -796,6 +796,8 @@ public class CafeController {
                 {"모던", "미니멀"}, {"빈티지", "클래식"}, {"인더스트리얼", "모던"},
                 {"북유럽", "미니멀"}, {"레트로", "빈티지"}
         };
+        double[] latitudes = {37.5665, 37.5796, 37.5559, 37.5323, 37.5490};
+        double[] longitudes = {126.9780, 126.9769, 126.9265, 126.9903, 127.0700};
 
 
         return IntStream.range(0, count)
@@ -803,6 +805,8 @@ public class CafeController {
                     long id = startId + i;
                     String name = names[i % names.length] + " #" + id;
                     String address = addresses[i % addresses.length];
+                    double lat = latitudes[i % latitudes.length];
+                    double lon = longitudes[i % longitudes.length];
                     String primaryImageUrl = "https://example.com/cafe" + (i + 1) + ".jpg";
                     int availableSlotCount = 1 + (i % 4);
                     int totalSlotCount = 3 + (i % 3);
@@ -810,7 +814,7 @@ public class CafeController {
                     List<String> categories = List.of(categoriesList[i % categoriesList.length]);
 
                     return new CafeSummary(
-                            id, name, address, primaryImageUrl,
+                            id, name, address, lat, lon, primaryImageUrl,
                             availableSlotCount, totalSlotCount, distance, categories
                     );
                 })
