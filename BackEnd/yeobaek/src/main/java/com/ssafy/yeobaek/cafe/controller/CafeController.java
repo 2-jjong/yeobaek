@@ -8,6 +8,7 @@ import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.UserRole;
+import com.ssafy.yeobaek.common.enums.WallStatus;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import io.swagger.v3.oas.annotations.Operation;
@@ -464,7 +465,10 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"S0000\",\"message\":\"정상 처리\",\"data\":{\"cafes\":[{\"cafeId\":1,\"cafeName\":\"카페 여백 #1\",\"address\":\"서울시 강남구 테헤란로 123\",\"latitude\":37.5665,\"longitude\":126.978,\"primaryImageUrl\":\"https://example.com/cafe1.jpg\",\"availableSlotCount\":2,\"totalSlotCount\":3,\"distance\":0.5,\"categories\":[\"모던\",\"미니멀\"]},{\"cafeId\":2,\"cafeName\":\"아트 카페 #2\",\"address\":\"서울시 종로구 인사동길 45\",\"latitude\":37.5796,\"longitude\":126.9769,\"primaryImageUrl\":\"https://example.com/cafe2.jpg\",\"availableSlotCount\":3,\"totalSlotCount\":4,\"distance\":1.2,\"categories\":[\"빈티지\",\"클래식\"]}],\"pagination\":{\"page\":0,\"size\":20,\"totalElements\":100,\"totalPages\":5,\"last\":false}}}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -675,7 +679,10 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"S0000\",\"data\":{\"cafeDetail\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"서울시 강남구 테헤란로 123\",\"description\":\"조용하고 아늑한 분위기의 카페입니다.\",\"contact\":\"02-1234-5678\",\"businessStartTime\":\"09:00\",\"businessEndTime\":\"22:00\",\"dailyVisitors\":\"100~200명\",\"viewCount\":150,\"isBookmarked\":false,\"categories\":[\"모던\",\"미니멀\"],\"images\":[{\"imageId\":1,\"imageUrl\":\"https://example.com/cafe1.jpg\",\"isPrimary\":true,\"order\":1},{\"imageId\":2,\"imageUrl\":\"https://example.com/cafe2.jpg\",\"isPrimary\":false,\"order\":2}],\"slots\":[{\"slotId\":1,\"wallName\":\"1번 벽\",\"width\":200,\"height\":250,\"type\":\"RAIL\",\"commissionRate\":15,\"requirements\":\"카페 입구 오른쪽 벽면\",\"status\":\"EXHIBITING\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}],\"owner\":{\"userId\":1,\"nickname\":\"카페사장\",\"profileImageUrl\":\"https://example.com/profile.jpg\",\"ratingStats\":{\"reviewCount\":42,\"averageRating\":4.5}}}},\"message\":\"정상 처리\"}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -684,7 +691,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4041\", \"data\": null, \"message\": \"존재하지 않는 카페입니다\"}"
+                                    value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}"
                             )
                     )
             ),
@@ -694,7 +701,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -704,41 +711,7 @@ public class CafeController {
             @Parameter(description = "조회할 카페 ID", required = true)
             @PathVariable Long cafeId
     ) {
-        // Mock 데이터
-        List<CafeImage> images = List.of(
-                new CafeImage(1L, "https://example.com/cafe1.jpg", true, 1),
-                new CafeImage(2L, "https://example.com/cafe2.jpg", false, 2),
-                new CafeImage(3L, "https://example.com/cafe3.jpg", false, 3)
-        );
-
-        ExhibitionInfo exhibition = new ExhibitionInfo(
-                1L, "여름의 여백", "https://example.com/artwork1.jpg",
-                "홍길동", "2024-01-01", "2024-03-31"
-        );
-
-        List<SlotDetail> slots = List.of(
-                new SlotDetail(1L, "1번 벽", 200, 250, "RAIL", 15.0,
-                        "카페 입구 오른쪽 벽면", ExhibitionStatus.EXHIBITING, exhibition, "{}"),
-                new SlotDetail(2L, "2번 벽", 150, 200, "HOOK", 12.0,
-                        "창가 벽면", ExhibitionStatus.AVAILABLE, null, "{}"),
-                new SlotDetail(3L, "3번 벽", 180, 220, "RAIL", 15.0,
-                        "내부 중앙 벽면", ExhibitionStatus.SCHEDULED, null, "{}")
-        );
-
-        RatingStatsData ratingStats = new RatingStatsData(42, 4.5);
-        CafeOwner owner = new CafeOwner(
-                1L, "카페사장", "https://example.com/profile.jpg", ratingStats
-        );
-
-        CafeDetail cafeDetail = new CafeDetail(
-                cafeId, "카페 여백", "서울시 강남구 테헤란로 123",
-                "조용하고 아늑한 분위기의 카페입니다.", "02-1234-5678",
-                "09:00", "22:00", "100~200명", 150, false,
-                List.of("모던", "미니멀"), images, slots, owner
-        );
-
-        CafeDetailData data = new CafeDetailData(cafeDetail);
-
+        CafeDetailData data = cafeService.getCafeDetail(cafeId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));

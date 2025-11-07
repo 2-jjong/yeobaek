@@ -3,6 +3,7 @@ package com.ssafy.yeobaek.cafe.service;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 
 import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
+import com.ssafy.yeobaek.cafe.dto.response.CafeDetailData;
 import com.ssafy.yeobaek.cafe.dto.response.MyCafeData;
 import com.ssafy.yeobaek.cafe.dto.response.CafeListData;
 import com.ssafy.yeobaek.cafe.dto.response.Wall;
@@ -54,4 +55,11 @@ public interface CafeService {
      */
     CafeListData searchCafes(Boolean isArtist, String keyword, Double myLatitude, Double myLongitude, Double centerLatitude, Double centerLongitude, Double radiusKm, Integer minWidth, Integer maxWidth,
         Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size);
+
+    /**
+     * 카페 상세 정보 조회
+     * @param cafeId 카페 id
+     * @return 카페 상세 정보
+     */
+    CafeDetailData getCafeDetail(Long cafeId);
 }

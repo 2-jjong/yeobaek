@@ -18,7 +18,6 @@ import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -32,6 +31,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CafeServiceImpl implements CafeService {
 
@@ -56,7 +56,7 @@ public class CafeServiceImpl implements CafeService {
 
         // 1. 사용자 정보 확인
         User user = userService.findById(userId)
-            .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
         // 2. 중복 등록 확인
         if (cafeRepository.existsByCafeOwner(user)) {
@@ -74,9 +74,9 @@ public class CafeServiceImpl implements CafeService {
         List<CafeCategory> categories = cafeCategoryService.findCategoriesByIds(request.getCategoryIds());
         categories.forEach(cafeCategory -> {
             CafeCategoryTag cafeCategoryTag = CafeCategoryTag.builder()
-                .cafe(cafe)
-                .category(cafeCategory)
-                .build();
+                    .cafe(cafe)
+                    .category(cafeCategory)
+                    .build();
             cafeCategoryTagRepository.save(cafeCategoryTag);
         });
     }
@@ -92,9 +92,9 @@ public class CafeServiceImpl implements CafeService {
 
         // 1. 사용자 정보 확인 및 카페 조회
         User user = userService.findById(userId)
-            .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
         Cafe cafe = cafeRepository.findByCafeOwner(user)
-            .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
 
         // 2. 중복 등록 확인
         if (displayWallRepository.existsByCafe(cafe)) {
@@ -110,8 +110,8 @@ public class CafeServiceImpl implements CafeService {
             // 4. 전시 가능한 벽인 경우, 슬롯 정보도 함께 저장
             if (wallRequest.getStatus()) {
                 DisplaySlot displaySlot = DisplaySlot.builder()
-                    .id(displayWall.getId())
-                    .build();
+                        .id(displayWall.getId())
+                        .build();
                 displaySlotRepository.save(displaySlot);
             }
             createdWalls.add(cafeMapper.toWallDto(displayWall));
@@ -125,12 +125,11 @@ public class CafeServiceImpl implements CafeService {
      * @return 나의 카페 정보 및 공간 정보
      */
     @Override
-    @Transactional(readOnly = true)
     public MyCafeData getMyCafe(Long userId) {
 
         // 1. 카페 조회
         Cafe cafe = cafeRepository.findByCafeOwnerId(userId)
-            .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
 
         // 2. 벽 + 슬롯 조회
         List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafe.getId());
@@ -138,6 +137,7 @@ public class CafeServiceImpl implements CafeService {
         // 3. DTO 변환하여 반환
         return cafeMapper.toMyCafeData(cafe, walls);
     }
+
 
     /**
      * 카페 목록 조회 및 검색
@@ -191,19 +191,19 @@ public class CafeServiceImpl implements CafeService {
 
         // 5. DTO 변환
         List<CafeSummary> summaries = cafePage.getContent().stream()
-            .map(cafe -> {
-                // 거리 계산 (사용자 위치 기준)
-                double distance = calculateDistance(myLatitude, myLongitude, cafe.getLatitude(), cafe.getLongitude());
+                .map(cafe -> {
+                    // 거리 계산 (사용자 위치 기준)
+                    double distance = calculateDistance(myLatitude, myLongitude, cafe.getLatitude(), cafe.getLongitude());
 
-                // 카테고리 목록 추출
-                List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), Collections.emptyList());
+                    // 카테고리 목록 추출
+                    List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), Collections.emptyList());
 
-                // 대표 이미지 URL 추출
-                String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
+                    // 대표 이미지 URL 추출
+                    String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
 
-                return cafeMapper.toCafeSummary(cafe, distance, categories, primaryImageUrl);
-            })
-            .collect(Collectors.toList());
+                    return cafeMapper.toCafeSummary(cafe, distance, categories, primaryImageUrl);
+                })
+                .collect(Collectors.toList());
 
         // 6. 페이지네이션 DTO 생성
         Pagination pagination = new Pagination(cafePage.getNumber(), cafePage.getSize(), cafePage.getTotalElements(), cafePage.getTotalPages(), cafePage.isLast());
@@ -221,5 +221,40 @@ public class CafeServiceImpl implements CafeService {
                         Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    /**
+     * 카페 상세 정보 조회
+     * @param cafeId 카페 id
+     * @return 카페 상세 정보
+     */
+    @Override
+    @Transactional
+    public CafeDetailData getCafeDetail(Long cafeId) {
+
+        // 1. Cafe 엔티티 조회
+        Cafe cafe = cafeRepository.findById(cafeId)
+            .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
+
+        // 2. 벽, 슬롯, 전시 정보 조회
+        List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafeId);
+
+        // 3. 카테고리 정보 조회
+        List<String> categories = cafeCategoryTagRepository.findAllByCafe(cafe).stream()
+            .map(tag -> tag.getCategory().getCategoryName())
+            .collect(Collectors.toList());
+
+        // 4. 카페 이미지 URL 변환
+        List<String> images = s3Service.generatePresignedUrlsForDownload(cafe.getImages());
+        String profileImage = s3Service.generatePresignedUrlForDownload(cafe.getCafeOwner().getProfileImageUrl());
+
+        // 5. DTO 변환
+        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images, profileImage);
+
+        // 6. 조회수 1 증가
+        cafe.increaseViewCount();
+        cafeRepository.save(cafe);
+
+        return cafeDetailData;
     }
 }
