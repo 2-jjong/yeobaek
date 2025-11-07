@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class CafeServiceImpl implements CafeService {
 
@@ -125,7 +126,6 @@ public class CafeServiceImpl implements CafeService {
      * @return 나의 카페 정보 및 공간 정보
      */
     @Override
-    @Transactional(readOnly = true)
     public MyCafeData getMyCafe(Long userId) {
 
         // 1. 카페 조회
@@ -155,7 +155,6 @@ public class CafeServiceImpl implements CafeService {
      * @return 카페 목록 데이터
      */
     @Override
-    @Transactional(readOnly = true)
     public CafeListData searchCafes(Boolean isArtist, String keyword, Double latitude, Double longitude, Integer minWidth, Integer maxWidth, Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size) {
 
         // 작가 전용 필터 권한 검사
@@ -229,7 +228,6 @@ public class CafeServiceImpl implements CafeService {
      * @return 카페 상세 정보
      */
     @Override
-    @Transactional(readOnly = true)
     public CafeDetailData getCafeDetail(Long cafeId) {
 
         // 1. Cafe 엔티티 조회
