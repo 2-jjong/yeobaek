@@ -333,6 +333,7 @@ public class ReviewController {
                     )
             )
     })
+    @PreAuthorize("hasAnyRole('ARTIST', 'CAFE_OWNER')")
     @GetMapping("/me")
     public ResponseEntity<ResponseDto<ReviewListResponse>> getMyReviews(
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
