@@ -2,7 +2,7 @@ package com.ssafy.yeobaeg.navigation
 
 import androidx.navigation3.runtime.NavKey
 import com.ssafy.yeobaeg.domain.model.DisplayWall
-import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import kotlinx.serialization.Serializable
 
 sealed interface Screen : NavKey
@@ -21,7 +21,7 @@ sealed interface FullScreen : Screen {
     data object SignUp : FullScreen
 
     @Serializable
-    data class  ProfileEdit(val userInfo: UserInfo): FullScreen
+    data class  ProfileEdit(val userInfo: UserInfo, val introduction:String?): FullScreen
 
     @Serializable
     data object SpaceScan : FullScreen
@@ -37,6 +37,12 @@ sealed interface FullScreen : Screen {
 
     @Serializable
     data object BookmarkList: FullScreen
+
+    @Serializable
+    data object ReviewManagementScreen: FullScreen
+
+    @Serializable
+    data class EditDisplaySlotScreen(val slotId: Long): FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {
@@ -54,7 +60,7 @@ sealed interface BottomNavScreen : Screen {
     data object Chat : BottomNavScreen
 
     @Serializable
-    data object Profile : BottomNavScreen
+    data class Profile(val userId: Long?) : BottomNavScreen
 
     @Serializable
     data class SpaceScanPreview(val displayWalls: List<DisplayWall>) : BottomNavScreen

@@ -1,12 +1,11 @@
 package com.ssafy.yeobaeg.presentation.login
 
-import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -29,7 +28,8 @@ data class LoginUiState(
 class LoginViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val authSessionManager: AuthSessionManager,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val snackbarController: SnackBarController
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -71,12 +71,16 @@ class LoginViewModel @Inject constructor(
                 .onSuccess { userRole ->
                     // AuthSessionManager에 유저 롤 저장
                     authSessionManager.updateUserRole(userRole)
-                    
+
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
                     }
-                  
+
+                    // 홈 화면으로 이동
                     navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+
+                    // 스낵바 표시
+                    snackbarController.showSuccess("로그인 성공!")
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -111,12 +115,15 @@ class LoginViewModel @Inject constructor(
                     // AuthSessionManager에 유저 롤 저장
                     authSessionManager.updateUserRole(userRole)
 
-                    
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
                     }
-                    
+
+                    // 홈 화면으로 이동
                     navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+
+                    // 스낵바 표시
+                    snackbarController.showSuccess("로그인 성공!")
                 }
                 .onFailure { error ->
                     _uiState.update {

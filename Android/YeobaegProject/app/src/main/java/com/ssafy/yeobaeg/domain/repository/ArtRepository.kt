@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.domain.repository
 import com.ssafy.yeobaeg.domain.model.art.ArtSearchResult
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
+import com.ssafy.yeobaeg.domain.model.art.PopularArtwork
 
 interface ArtRepository {
 
@@ -23,4 +24,6 @@ interface ArtRepository {
     suspend fun getArtworkDetail(artWorkId: Long): Result<ArtworkDetail>
 
     suspend fun toggleBookmark(artWorkId: Long): Result<Boolean>
+
+    suspend fun getPopularArtworks(size: Int = 10): Result<List<PopularArtwork>>
 }

@@ -19,7 +19,7 @@ data class CafeOwnerInfo(
 )
 
 data class CafeOwnerHomeUiState(
-    val cafeOwnerInfo: CafeOwnerInfo? = null,
+    val cafeOwnerInfo: CafeOwnerInfo? = dummyCafeOwnerInfo,
     val displaySlots: List<DisplaySlot> = dummyDisplaySlots,
     val displayWalls: List<DisplayWall> = dummyDisplayWalls,
     val selectedTab: CafeOwnerTab = CafeOwnerTab.PLAN

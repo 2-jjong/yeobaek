@@ -1,10 +1,10 @@
 package com.ssafy.yeobaeg.data.model.response
 
-import com.ssafy.yeobaeg.data.model.request.Image
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.model.art.ExhibitionSpot
 import kotlinx.serialization.Serializable
+import kotlin.collections.map
 
 @Serializable
 data class ArtworkDetailResponse(
@@ -19,7 +19,7 @@ data class ArtworkDetailData(
     val currentExhibition: CurrentExhibition,
     val description: String,
     val heightCm: Int,
-    val images: List<Image>,
+    val images: List<String>,
     val isBookmarked: Boolean,
     val price: Int,
     val productionYear: Int,
@@ -54,7 +54,7 @@ fun ArtworkDetailData.toDomain(): ArtworkDetail = ArtworkDetail(
     viewCount = viewCount,
     bookmarkCount = bookmarkCount,
     isBookmarked = isBookmarked,
-    images = images.map { it.imageUrl },
+    images = images,
     artist = ArtistSummary(
         artistId = artist.userId,
         artistName = artist.artistName,

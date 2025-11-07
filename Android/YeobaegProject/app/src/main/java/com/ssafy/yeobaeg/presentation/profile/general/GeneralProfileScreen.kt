@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,7 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.profile.cafe.ErrorContent
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
@@ -53,7 +54,9 @@ fun GeneralProfileScreen(
     generalViewModel: GeneralProfileViewModel = hiltViewModel(),
 ) {
     val generalUiState by generalViewModel.uiState.collectAsStateWithLifecycle()
-
+    LaunchedEffect(Unit) {
+        generalViewModel.loadGeneralProfile()
+    }
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             generalUiState.isLoading -> {
@@ -73,8 +76,14 @@ fun GeneralProfileScreen(
             else -> {
                 GeneralProfileContent(
                     userInfo = generalUiState.userInfo,
-                    onEditClick = {generalViewModel.navigateToEditProfile(generalUiState.userInfo)},
-                    onBookmarkClick = generalViewModel::navigateToBookmark
+                    onEditClick = {
+                        generalViewModel.navigateToEditProfile(
+                            generalUiState.userInfo,
+                            null
+                        )
+                    },
+                    onBookmarkClick = generalViewModel::navigateToBookmark,
+                    onLogoutClick = generalViewModel::logout
                 )
             }
         }
@@ -86,7 +95,8 @@ fun GeneralProfileScreen(
 fun GeneralProfileContent(
     userInfo: UserInfo,
     onEditClick: () -> Unit,
-    onBookmarkClick: () -> Unit
+    onBookmarkClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -112,7 +122,7 @@ fun GeneralProfileContent(
         Spacer(modifier = Modifier.weight(1f))
 
         // 로그아웃 버튼
-        LogoutButton()
+        LogoutButton(onClick = onLogoutClick)
     }
 }
 
@@ -209,9 +219,9 @@ fun MenuListSection(
 }
 
 @Composable
-fun LogoutButton() {
+fun LogoutButton(onClick: () -> Unit) {
     OutlinedButton(
-        onClick = { /* Handle logout */ },
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),

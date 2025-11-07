@@ -27,7 +27,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,17 +41,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.CafeInfo
-import com.ssafy.yeobaeg.domain.model.UserInfo
+import com.ssafy.yeobaeg.domain.model.profile.CafeInfo
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.presentation.profile.ProfileViewModel
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegGray
@@ -107,8 +101,10 @@ fun CafeOwnerProfileScreen(
                     CafeOwnerProfileContent(
                         userInfo = uiState.userInfo,
                         cafeInfo = uiState.cafeInfo,
-                        onEditClick = { cafeViewModel.navigateToEditProfile(uiState.userInfo) },
-                        onBookmarkClick = cafeViewModel::navigateToBookmark
+                        onEditClick = { cafeViewModel.navigateToEditProfile(uiState.userInfo,null) },
+                        onBookmarkClick = cafeViewModel::navigateToBookmark,
+                        onReviewClick = cafeViewModel::navigateToReviewManagement,
+                        onLogoutClick = cafeViewModel::logout
                     )
                 }
             }
@@ -121,7 +117,9 @@ fun CafeOwnerProfileContent(
     userInfo: UserInfo,
     cafeInfo: CafeInfo,
     onEditClick: () -> Unit,
-    onBookmarkClick: () -> Unit
+    onReviewClick: () -> Unit,
+    onBookmarkClick: () -> Unit,
+    onLogoutClick: () -> Unit
 ) {
     val scrollState = rememberScrollState()
 
@@ -146,10 +144,14 @@ fun CafeOwnerProfileContent(
         Spacer(modifier = Modifier.height(32.dp))
 
         // 설정 메뉴 부분
-        MenuListSection(onClick = onBookmarkClick, cafeInfo = cafeInfo)
+        MenuListSection(
+            onEditClick = onBookmarkClick,
+            onReviewClick = onReviewClick,
+            cafeInfo = cafeInfo
+        )
         Spacer(modifier = Modifier.height(32.dp))
         // 로그아웃 버튼
-        LogoutButton()
+        LogoutButton(onClick = onLogoutClick)
     }
 }
 
@@ -265,7 +267,8 @@ fun StoreInfoSection(cafeInfo: CafeInfo) {
 
 @Composable
 fun MenuListSection(
-    onClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onReviewClick: () -> Unit,
     cafeInfo: CafeInfo
 ) {
     Column {
@@ -273,7 +276,7 @@ fun MenuListSection(
             title = "좋아요 한 목록",
             badge = null,
             icon = R.drawable.ic_heart,
-            onClick = onClick
+            onClick = onEditClick
         )
 
         HorizontalDivider(
@@ -296,7 +299,8 @@ fun MenuListSection(
         MenuListItem(
             title = "리뷰 관리",
             badge = cafeInfo.ratingStats.totalReviews,
-            icon = R.drawable.ic_star
+            icon = R.drawable.ic_star,
+            onClick = onReviewClick
         )
 
         HorizontalDivider(
@@ -313,9 +317,9 @@ fun MenuListSection(
 }
 
 @Composable
-fun LogoutButton() {
+fun LogoutButton(onClick: () -> Unit) {
     OutlinedButton(
-        onClick = { /* Handle logout */ },
+        onClick = {onClick()},
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp),

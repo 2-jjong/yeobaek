@@ -5,24 +5,29 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
-import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafeImage
+import com.ssafy.yeobaeg.domain.model.storage.PresignedUrl
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
+import com.ssafy.yeobaeg.domain.repository.StorageRepository
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 const val STEP1 = 1
 const val STEP2 = 2
+const val STEP_ADDRESS = 0
 const val TOTAL_STEPS = 2
 
 @HiltViewModel
 class RegisterCafeViewModel @Inject constructor(
     private val cafeRepository: CafeRepository,
+    private val storageRepository: StorageRepository,
     private val navigator: Navigator
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RegisterCafeState())
@@ -33,11 +38,12 @@ class RegisterCafeViewModel @Inject constructor(
     }
 
     fun next() {
-        if(_uiState.value.step == TOTAL_STEPS) {
+        if (_uiState.value.step == TOTAL_STEPS) {
             registerCafe()
         }
         update { copy(step = if (step == STEP1) STEP2 else step) }
     }
+
     fun prev() = update { copy(step = if (step == STEP2) STEP1 else step) }
 
     fun toggleStyle(style: CafeInteriorStyle) = update {
@@ -48,11 +54,56 @@ class RegisterCafeViewModel @Inject constructor(
 
     fun selectVisitorsBand(band: VisitorsBand) = update { copy(visitorsBand = band) }
 
-    fun addImage(uri: String) = update { if (images.size >= 10) this else copy(images = images + uri) }
-    fun removeImage(uri: String) = update { copy(images = images - uri) }
+    fun addImage(addImageFiles: List<File>) {
+        update { if (imageFiles.size >= 10) this else copy(imageFiles = imageFiles + addImageFiles) }
+        uploadImage(addImageFiles)
+    }
+
+    fun removeImage(image: PresignedUrl) {
+        _uiState.update { it.copy(isLoading = false) }
+
+        viewModelScope.launch {
+            storageRepository.deleteImage(image.fileKey).onSuccess {
+                update { copy(uploadedImages = uploadedImages - image) }
+            }.onFailure {
+                Log.d("registerCafeViewModel removeImage", "실패")
+            }
+        }
+
+
+    }
+
+    private fun uploadImage(addImageFiles: List<File>) {
+        _uiState.update { it.copy(isLoading = true) }
+
+        viewModelScope.launch {
+            storageRepository.createPresignedUrl(folder = "CAFE", count = addImageFiles.size)
+                .onSuccess { data ->
+                    data.forEachIndexed { index, presignedUrl ->
+                        launch {
+                            storageRepository.uploadWithPresignedPut(
+                                file = addImageFiles[index],
+                                presignedUrl = presignedUrl.uploadUrl
+                            ).onSuccess {
+                                _uiState.update {
+                                    it.copy(
+                                        uploadedImages = _uiState.value.uploadedImages + presignedUrl,
+                                        isLoading = false
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+                .onFailure {
+                    Log.d("http s3 viewModel error", it.message!!)
+                    _uiState.update { it.copy(isLoading = false) }
+                }
+        }
+    }
 
     private fun navigateToCafeOwnerHome() = viewModelScope.launch {
-        navigator.navigate(BottomNavScreen.Home)
+        navigator.navigateBack()
     }
 
     private fun registerCafe() = viewModelScope.launch {
@@ -66,13 +117,7 @@ class RegisterCafeViewModel @Inject constructor(
             businessHoursEnd = s.closeTime,
             categories = s.selectedStyles.toList(),
             dailyVisitors = requireNotNull(s.visitorsBand),
-            images = s.images.toList().mapIndexed { index, url ->
-                RegisterCafeImage(
-                    imageUrl = url,
-                    isPrimary = index == 0,
-                    displayOrder = index
-                )
-            }
+            images = s.uploadedImages.map { it.fileKey }
         )
 
         runCatching { cafeRepository.registerCafe(cafe) }
@@ -86,6 +131,7 @@ class RegisterCafeViewModel @Inject constructor(
 }
 
 data class RegisterCafeState(
+    val isLoading: Boolean = false,
     val step: Int = STEP1,
     val name: String = "",
     val address: String = "",
@@ -93,15 +139,18 @@ data class RegisterCafeState(
     val phone: String = "",
     val openTime: String = "",
     val closeTime: String = "",
-    val images: Set<String> = emptySet(),
+    val imageFiles: List<File> = emptyList(),
+    val uploadedImages: List<PresignedUrl> = emptyList(),
     val selectedStyles: Set<CafeInteriorStyle> = emptySet(),
     val visitorsBand: VisitorsBand? = null
 ) {
-    val isStep1Valid get() =
-        name.isNotBlank() && address.isNotBlank() && phone.isNotBlank() &&
-                openTime.isNotBlank() && closeTime.isNotBlank() && images.size in 3..10
-    val isStep2Valid get() =
-        selectedStyles.isNotEmpty() && selectedStyles.size <= 3 && visitorsBand != null
+    val isStep1Valid
+        get() =
+            name.isNotBlank() && address.isNotBlank() && phone.isNotBlank() &&
+                    openTime.isNotBlank() && closeTime.isNotBlank() && imageFiles.size in 3..10
+    val isStep2Valid
+        get() =
+            selectedStyles.isNotEmpty() && selectedStyles.size <= 3 && visitorsBand != null
 }
 
 enum class CafeInteriorStyle(val label: String) {

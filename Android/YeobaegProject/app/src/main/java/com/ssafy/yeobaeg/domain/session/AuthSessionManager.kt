@@ -35,10 +35,19 @@ interface AuthSessionManager {
     suspend fun updateUserRole(role: UserRole?)
     
     /**
-     * 로그아웃 시 상태 초기화
+     * UserRole 상태 초기화
      */
     suspend fun clearUserState()
-    
+
+
+    /**
+     * 로그아웃 처리
+     * - UserRole 초기화
+     * - 저장된 JWT 토큰 삭제
+     */
+    suspend fun logout()
+
+
     /**
      * 토큰 만료 이벤트 발행
      */

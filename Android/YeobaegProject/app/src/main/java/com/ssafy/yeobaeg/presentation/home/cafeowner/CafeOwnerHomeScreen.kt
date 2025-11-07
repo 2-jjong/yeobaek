@@ -1,43 +1,23 @@
 package com.ssafy.yeobaeg.presentation.home.cafeowner
 
+import android.R.attr.label
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,14 +28,12 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.DisplayWall
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
+import com.ssafy.yeobaeg.presentation.common.util.noRippleClickable
+import com.ssafy.yeobaeg.ui.theme.*
 
 @Composable
 fun CafeOwnerHomeScreen(
@@ -68,7 +46,7 @@ fun CafeOwnerHomeScreen(
     val displayWalls = state.value.displayWalls
     val selectedTab = state.value.selectedTab
 
-    val colors = if (cafeOwnerInfo == null) RegisteredColors else UnregisteredColors
+    val colors = if (cafeOwnerInfo != null) RegisteredColors else UnregisteredColors
     CompositionLocalProvider(LocalCafeOwnerColors provides colors) {
         CafeOwnerHomeScreen(
             cafeOwnerInfo = cafeOwnerInfo,
@@ -78,7 +56,8 @@ fun CafeOwnerHomeScreen(
             onRegisterClick = viewModel::navigateToRegister,
             onTabSelected = { viewModel.selectTab(it) },
             onScanClick = viewModel::navigateToSpaceScan,
-            onSearchArtistClick = { /* TODO: 작가 찾기 클릭 처리 */ }
+            onSearchArtistClick = { },
+            onWallClick = viewModel::navigateToSlot
         )
     }
 }
@@ -92,7 +71,8 @@ private fun CafeOwnerHomeScreen(
     onRegisterClick: () -> Unit = {},
     onTabSelected: (CafeOwnerTab) -> Unit = {},
     onScanClick: () -> Unit = {},
-    onSearchArtistClick: () -> Unit = {}
+    onSearchArtistClick: () -> Unit = {},
+    onWallClick: (Long) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -149,7 +129,13 @@ private fun CafeOwnerHomeScreen(
                 )
                 Spacer(Modifier.height(8.dp))
 
-                CafeOwnerHomeContent(displaySlots, displayWalls, selectedTab, onTabSelected)
+                CafeOwnerHomeContent(
+                    slots = displaySlots,
+                    walls = displayWalls,
+                    tab = selectedTab,
+                    onTabSelected = onTabSelected,
+                    onWallClick = onWallClick
+                )
             }
         }
     }
@@ -226,19 +212,24 @@ fun CafeOwnerHomeActions(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CafeOwnerHomeContent(
     slots: List<DisplaySlot>,
     walls: List<DisplayWall>,
     tab: CafeOwnerTab,
-    onTabSelected: (CafeOwnerTab) -> Unit = { }
+    onTabSelected: (CafeOwnerTab) -> Unit = { },
+    onWallClick: (Long) -> Unit
 ) {
+    var sheetVisible by remember { mutableStateOf(false) }
+    var selected by remember { mutableStateOf<DisplaySlot?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        // 탭 헤더
         TabRow(
             selectedTabIndex = tab.ordinal,
             containerColor = Color.Transparent,
@@ -246,22 +237,22 @@ fun CafeOwnerHomeContent(
             divider = {}
         ) {
             CafeOwnerTab.entries.forEachIndexed { index, t ->
-                val selected = tab.ordinal == index
+                val selectedTab = tab.ordinal == index
                 Tab(
-                    selected = selected,
+                    selected = selectedTab,
                     onClick = { onTabSelected(t) },
                     text = {
                         Text(
                             text = t.label,
                             fontSize = 14.sp,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (selected) Color.White else YeobaegDarkGray
+                            fontWeight = if (selectedTab) FontWeight.Bold else FontWeight.Medium,
+                            color = if (selectedTab) Color.White else YeobaegDarkGray
                         )
                     },
                     modifier = Modifier
                         .padding(6.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(if (selected) YeobaegBrown else YeobaegLightGray)
+                        .background(if (selectedTab) YeobaegBrown else YeobaegLightGray)
                         .padding(horizontal = 12.dp)
                 )
             }
@@ -270,14 +261,46 @@ fun CafeOwnerHomeContent(
         Spacer(Modifier.height(16.dp))
 
         when (tab) {
-            CafeOwnerTab.PLAN -> FloorPlanSection(walls = walls)
+            CafeOwnerTab.PLAN -> FloorPlanSection(
+                walls = walls,
+                slots = slots,
+                onRowClick = {
+                    selected = it
+                    sheetVisible = true
+                }
+            )
             CafeOwnerTab.STATUS -> ExhibitionStatusSection(slots = slots)
         }
+    }
+
+    selected?.let { slot ->
+        SlotDetailSheet(
+            visible = sheetVisible,
+            sheetState = sheetState,
+            slot = slot,
+            onDismissRequest = {
+                sheetVisible = false
+                selected = null
+            },
+            onClickClose = {
+                sheetVisible = false
+                selected = null
+            },
+            onClickSetting = {
+                sheetVisible = false
+                selected?.let { onWallClick(it.wid) }
+                selected = null
+            }
+        )
     }
 }
 
 @Composable
-fun FloorPlanSection(walls: List<DisplayWall>) {
+fun FloorPlanSection(
+    walls: List<DisplayWall>,
+    slots: List<DisplaySlot>,
+    onRowClick: (DisplaySlot) -> Unit
+) {
     Spacer(Modifier.height(8.dp))
     FloorPlanPreview(
         initialWalls = walls,
@@ -286,6 +309,64 @@ fun FloorPlanSection(walls: List<DisplayWall>) {
             .height(400.dp),
         readOnly = true
     )
+
+    Spacer(Modifier.height(16.dp))
+    SlotAvailabilityList(slots = slots, onRowClick = onRowClick)
+}
+
+@Composable
+private fun SlotAvailabilityList(
+    slots: List<DisplaySlot>,
+    onRowClick: (DisplaySlot) -> Unit
+) {
+    Column(
+        modifier = Modifier.padding(vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        slots.forEach { SlotAvailabilityRow(slot = it, onRowClick = onRowClick) }
+    }
+}
+
+@Composable
+private fun SlotAvailabilityRow(
+    slot: DisplaySlot,
+    onRowClick: (DisplaySlot) -> Unit
+) {
+    val dot = when (slot.status) {
+        SlotStatus.AVAILABLE -> green
+        SlotStatus.ONGOING -> blue
+        SlotStatus.RESERVED -> yellow
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .border(1.dp, YeobaegLightGray.copy(alpha = 0.6f), RoundedCornerShape(12.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+            .noRippleClickable { onRowClick(slot) },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            Modifier
+                .size(10.dp)
+                .clip(CircleShape)
+                .background(dot)
+        )
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                slot.wName,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(slot.sizeText, fontSize = 13.sp, color = YeobaegGray)
+        }
+        StatusChip(slot.status)
+    }
 }
 
 @Composable
@@ -400,5 +481,51 @@ private fun PreviewCafeOwnerHomeScreen_Registered_Status() {
             displayWalls = dummyDisplayWalls,
             selectedTab = CafeOwnerTab.STATUS
         )
+    }
+}
+
+@Preview(showBackground = true, name = "슬롯 리스트")
+@Composable
+private fun PreviewSlotAvailabilityList() {
+    MaterialTheme {
+        Column(
+            modifier = Modifier
+                .background(Color.White)
+                .padding(16.dp)
+        ) {
+            SlotAvailabilityList(
+                slots = listOf(
+                    DisplaySlot(
+                        wid = 1L,
+                        wName = "입구 좌측 벽",
+                        width = 120f,
+                        height = 80f,
+                        status = SlotStatus.AVAILABLE,
+                        commission = 15f,
+                        requirements = "실내 조명 밝음",
+                        deadline = ""
+                    ),
+                    DisplaySlot(
+                        wid = 2L,
+                        wName = "메인 전시 공간",
+                        width = 150f,
+                        height = 100f,
+                        status = SlotStatus.ONGOING,
+                        artTitle = "푸른 밤의 꿈",
+                        artist = "김예술",
+                        deadline = "2024-12-31"
+                    ),
+                    DisplaySlot(
+                        wid = 3L,
+                        wName = "창가 벽면",
+                        width = 100f,
+                        height = 100f,
+                        status = SlotStatus.RESERVED,
+                        deadline = "2025-01-15"
+                    )
+                ),
+                onRowClick = {}
+            )
+        }
     }
 }

@@ -2,14 +2,18 @@ package com.ssafy.yeobaeg.presentation.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.domain.model.AuthEvent
 import com.ssafy.yeobaeg.domain.model.UserRole
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,22 +21,37 @@ import javax.inject.Inject
 internal class MainViewModel @Inject constructor(
     private val navigator: Navigator,
     private val authSessionManager: AuthSessionManager,
+    private val snackbarController: SnackBarController,
 ) : ViewModel() {
 
     val userRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
 
+    private val _snackbarMessage = MutableStateFlow<String?>(null)
+    val snackbarMessage: StateFlow<String?> = _snackbarMessage.asStateFlow()
+
     init {
-        // 토큰 만료 이벤트 구독
+        // SnackbarController 이벤트 구독
+        viewModelScope.launch {
+            snackbarController.snackbarEvents.collect { event ->
+                _snackbarMessage.update { event.message }
+            }
+        }
+
+        // 인증 상태 변화 이벤트 구독 (토큰 만료, 로그아웃 시 네비게이션)
         viewModelScope.launch {
             authSessionManager.authEvents.collect { event ->
                 when (event) {
-                    AuthEvent.TokenExpired -> {
-                        // 토큰이 만료되면 로그인 화면으로 이동
+                    AuthEvent.TokenExpired, AuthEvent.LoggedOut -> {
+                        // 토큰이 만료되거나 로그아웃하면 로그인 화면으로 이동
                         navigator.navigateAndClearBackStack(FullScreen.Login)
                     }
                 }
             }
         }
+    }
+
+    fun clearSnackbarMessage() {
+        _snackbarMessage.update { null }
     }
     fun navigateHome() = viewModelScope.launch {
         navigator.navigateAndClearBackStack(route = BottomNavScreen.Home)
@@ -58,7 +77,7 @@ internal class MainViewModel @Inject constructor(
 
     fun navigateProfile() = viewModelScope.launch {
         navigator.navigateAndClearBackStack(
-            route = BottomNavScreen.Profile
+            route = BottomNavScreen.Profile(null)
         )
     }
 }

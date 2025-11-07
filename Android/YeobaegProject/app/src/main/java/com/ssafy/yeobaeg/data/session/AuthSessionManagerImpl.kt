@@ -16,7 +16,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuthSessionManagerImpl @Inject constructor(
+class
+
+AuthSessionManagerImpl @Inject constructor(
     private val tokenDataSource: TokenDataSource
 ) : AuthSessionManager {
     
@@ -40,6 +42,15 @@ class AuthSessionManagerImpl @Inject constructor(
     
     override suspend fun clearUserState() {
         _currentUserRole.value = null
+    }
+    
+    override suspend fun logout() {
+        // 유저 롤 초기화
+        _currentUserRole.value = null
+        // 토큰 삭제
+        tokenDataSource.clearTokens()
+        _authEvents.emit(AuthEvent.LoggedOut)
+        Log.d("AuthSessionManager", "User logged out - role and tokens cleared")
     }
     
     override suspend fun emitTokenExpired() {

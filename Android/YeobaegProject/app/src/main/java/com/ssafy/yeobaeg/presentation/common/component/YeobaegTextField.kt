@@ -2,6 +2,9 @@ package com.ssafy.yeobaeg.presentation.common.component
 
 import android.R.attr.label
 import android.R.attr.singleLine
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -9,14 +12,18 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation.Companion.keyboardOptions
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -42,7 +49,9 @@ fun YeobaegTextField(
     singleLine: Boolean = true,
     minLine:Int = 1,
     maxLine:Int = if (singleLine) 1 else Int.MAX_VALUE,
+    readOnly: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    onFocusTextField: (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Column(modifier = modifier) {
@@ -69,7 +78,12 @@ fun YeobaegTextField(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 56.dp),
+                .heightIn(min = 56.dp)
+                .onFocusChanged { state ->
+                    if (state.isFocused) {
+                        onFocusTextField?.invoke()
+                    }
+                },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = YeobaegLightGray,
@@ -82,7 +96,8 @@ fun YeobaegTextField(
             minLines = minLine,
             maxLines = maxLine,
             trailingIcon = trailingIcon,
-            keyboardOptions = keyboardOptions
+            keyboardOptions = keyboardOptions,
+            readOnly = readOnly
         )
     }
 }

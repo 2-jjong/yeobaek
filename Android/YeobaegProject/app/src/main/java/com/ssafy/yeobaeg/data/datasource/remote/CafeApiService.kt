@@ -4,11 +4,12 @@ import com.ssafy.yeobaeg.data.model.BaseResponse
 import com.ssafy.yeobaeg.data.model.cafe.CafeDetailData
 import com.ssafy.yeobaeg.data.model.cafe.CafeListResponse
 import com.ssafy.yeobaeg.data.model.request.RegisterCafeRequest
+import com.ssafy.yeobaeg.data.model.response.PopularCafesData
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Path
 
 interface CafeApiService {
 
@@ -16,10 +17,15 @@ interface CafeApiService {
     suspend fun registerCafe(
         @Body request: RegisterCafeRequest
     ) : BaseResponse<String>
-    
+
+    @GET("cafes/popular")
+    suspend fun getPopularCafes(
+        @Query("size") size: Int = 10
+    ): BaseResponse<PopularCafesData>
+
     /**
      * 카페 목록 조회
-     * 
+     *
      * @param keyword 카페명 검색 키워드
      * @param latitude 위도 (필수)
      * @param longitude 경도 (필수)
@@ -46,10 +52,10 @@ interface CafeApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
     ): BaseResponse<CafeListResponse>
-    
+
     /**
      * 카페 상세 정보 조회
-     * 
+     *
      * @param cafeId 카페 ID
      */
     @GET("cafes/{cafeId}")
