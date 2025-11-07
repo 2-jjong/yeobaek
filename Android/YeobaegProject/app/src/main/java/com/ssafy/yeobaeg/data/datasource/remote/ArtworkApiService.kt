@@ -1,10 +1,12 @@
 package com.ssafy.yeobaeg.data.datasource.remote
 
 import com.ssafy.yeobaeg.data.model.BaseResponse
+import com.ssafy.yeobaeg.data.model.art.request.ArtworkRegisterRequest
 import com.ssafy.yeobaeg.data.model.response.ArtSearchResponse
 import com.ssafy.yeobaeg.data.model.response.ArtworkDetailResponse
 import com.ssafy.yeobaeg.data.model.response.PopularArtworksData
 import com.ssafy.yeobaeg.data.model.response.ToggleBookmarkResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -40,5 +42,10 @@ interface ArtworkApiService {
     suspend fun getPopularArtworks(
         @Query("size") size: Int = 10
     ): BaseResponse<PopularArtworksData>
+
+    @POST("artworks")
+    suspend fun registerArtwork(
+        @Body request: ArtworkRegisterRequest
+    ) : BaseResponse<String>
 }
 

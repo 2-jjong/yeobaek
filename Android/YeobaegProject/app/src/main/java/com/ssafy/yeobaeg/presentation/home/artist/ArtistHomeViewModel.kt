@@ -2,10 +2,15 @@ package com.ssafy.yeobaeg.presentation.home.artist
 
 import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.SlotStatus
+import com.ssafy.yeobaeg.domain.model.profile.UserInfo
+import com.ssafy.yeobaeg.navigation.FullScreen
+import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 
@@ -33,7 +38,7 @@ data class ArtistArtwork(
 // 실제로는 @HiltViewModel 로 상태 만들면 됨
 @HiltViewModel
 class ArtistHomeViewModel @Inject constructor(
-
+    private val navigator: Navigator,
 ) : ViewModel() {
 
     private var _uiState = MutableStateFlow(ArtistHomeState())
@@ -41,6 +46,10 @@ class ArtistHomeViewModel @Inject constructor(
 
     fun loadArtistData() {
 
+    }
+
+    fun navigateToRegisterArtwork() = viewModelScope.launch {
+        navigator.navigate(FullScreen.RegisterArtwork)
     }
 }
 
