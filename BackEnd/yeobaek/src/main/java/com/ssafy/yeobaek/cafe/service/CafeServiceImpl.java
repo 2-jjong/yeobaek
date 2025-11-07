@@ -229,6 +229,7 @@ public class CafeServiceImpl implements CafeService {
      * @return 카페 상세 정보
      */
     @Override
+    @Transactional
     public CafeDetailData getCafeDetail(Long cafeId) {
 
         // 1. Cafe 엔티티 조회
@@ -252,6 +253,7 @@ public class CafeServiceImpl implements CafeService {
 
         // 6. 조회수 1 증가
         cafe.increaseViewCount();
+        cafeRepository.save(cafe);
 
         return cafeDetailData;
     }
