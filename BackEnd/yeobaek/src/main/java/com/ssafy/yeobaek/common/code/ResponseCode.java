@@ -13,6 +13,7 @@ public enum ResponseCode {
 
     // 공통 에러 (400 Bad Request)
     MISSING_REQUIRED_FIELD("S4001", "필수 입력값이 누락되었습니다", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT_VALUE("S4002", "입력값이 유효하지 않습니다", HttpStatus.BAD_REQUEST),
 
     // 공통 에러 (401 Unauthorized)
     UNAUTHORIZED("S4011", "인증이 필요합니다", HttpStatus.UNAUTHORIZED),
@@ -98,6 +99,16 @@ public enum ResponseCode {
     // Storage/S3 관련 에러 (400 Bad Request)
     INVALID_STORAGE_FOLDER("ST4001", "유효하지 않은 저장 폴더입니다", HttpStatus.BAD_REQUEST),
     INVALID_FILE_COUNT("ST4002", "파일 개수는 1개 이상 10개 이하여야 합니다", HttpStatus.BAD_REQUEST),
+
+    // 리뷰 관련 에러 (400 Bad Request)
+    REVIEW_INVALID_RATING("RV4001", "평점은 1~5 사이여야 합니다", HttpStatus.BAD_REQUEST),
+    REVIEW_INVALID_COMMENT_LENGTH("RV4002", "후기는 최대 100자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
+
+    // 리뷰 관련 에러 (409 Conflict)
+    REVIEW_ALREADY_EXISTS("RV4091", "이미 작성한 평가입니다", HttpStatus.CONFLICT),
+
+    // 전시 관련 에러 (404 Not Found)
+    EXHIBITION_NOT_FOUND("EX4041", "존재하지 않는 전시입니다", HttpStatus.NOT_FOUND),
 
     // 서버 에러 (500 Internal Server Error)
     INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),

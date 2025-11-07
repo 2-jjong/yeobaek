@@ -36,9 +36,13 @@ public interface CafeService {
 
     /**
      * 카페 목록 조회 및 검색
+     * @param isArtist 작가 여부
      * @param keyword 검색어
-     * @param latitude 위도
-     * @param longitude 경도
+     * @param myLatitude 현재 위치 위도
+     * @param myLongitude 현재 위치 경도
+     * @param centerLatitude 지도 중심 위도
+     * @param centerLongitude 지도 중심 경도
+     * @param radiusKm 조회 반경
      * @param minWidth 최소 너비
      * @param maxWidth 최대 너비
      * @param minHeight 최소 높이
@@ -49,7 +53,7 @@ public interface CafeService {
      * @param size 사이즈
      * @return 카페 목록 데이터
      */
-    CafeListData searchCafes(Boolean isArtist, String keyword, Double latitude, Double longitude, Integer minWidth, Integer maxWidth,
+    CafeListData searchCafes(Boolean isArtist, String keyword, Double myLatitude, Double myLongitude, Double centerLatitude, Double centerLongitude, Double radiusKm, Integer minWidth, Integer maxWidth,
         Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size);
 
     /**

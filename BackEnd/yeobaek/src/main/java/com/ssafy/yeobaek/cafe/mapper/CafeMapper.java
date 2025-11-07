@@ -140,6 +140,31 @@ public class CafeMapper {
     }
 
     /**
+     * Cafe 엔티티를 CafeSummary DTO로 변환
+     * @param cafe 카페 엔티티
+     * @param distance 사용자 위치로부터의 거리
+     * @param categories 카페 카테고리 이름 리스트
+     * @return CafeSummary DTO
+     */
+    public CafeSummary toCafeSummary(Cafe cafe, Double distance, List<String> categories, String primaryImageUrl) {
+        int totalSlotCount = cafe.getDisplayWalls().size();
+        int availableSlotCount = (int) cafe.getDisplayWalls().stream().filter(DisplayWall::getStatus).count();
+
+        return new CafeSummary(
+                cafe.getId(),
+                cafe.getCafeName(),
+                cafe.getAddress(),
+                cafe.getLatitude(),
+                cafe.getLongitude(),
+                primaryImageUrl,
+                availableSlotCount,
+                totalSlotCount,
+                distance,
+                categories
+        );
+    }
+
+    /**
      * Cafe 엔티티와 관련 정보들을 카페 상세 정보 DTO로 변환
      * @param cafe 카페 정보
      * @param walls 카페 공간 정보
@@ -150,8 +175,8 @@ public class CafeMapper {
 
         // 1. 벽 정보 -> 슬롯 상세 정보 DTO 목록으로 변환
         List<DisplaySlot> slotDetails = walls.stream()
-            .map(this::toDisplaySlot)
-            .collect(Collectors.toList());
+                .map(this::toDisplaySlot)
+                .collect(Collectors.toList());
 
         // 2. 카페 사장 정보 DTO 생성
         User ownerUser = cafe.getCafeOwner();
@@ -161,20 +186,20 @@ public class CafeMapper {
 
         // 3. 최종 CafeDetail DTO 조립
         CafeDetail cafeDetail = new CafeDetail(
-            cafe.getId(),
-            cafe.getCafeName(),
-            cafe.getAddress(),
-            cafe.getDescription(),
-            cafe.getContact(),
-            cafe.getBusinessStartTime(),
-            cafe.getBusinessEndTime(),
-            cafe.getDailyVisitors(),
-            cafe.getViewCount(),
-            false, // TODO: 실제 북마크 여부 정보 연동 필요
-            categories,
-            images,
-            slotDetails,
-            owner
+                cafe.getId(),
+                cafe.getCafeName(),
+                cafe.getAddress(),
+                cafe.getDescription(),
+                cafe.getContact(),
+                cafe.getBusinessStartTime(),
+                cafe.getBusinessEndTime(),
+                cafe.getDailyVisitors(),
+                cafe.getViewCount(),
+                false, // TODO: 실제 북마크 여부 정보 연동 필요
+                categories,
+                images,
+                slotDetails,
+                owner
         );
 
         return new CafeDetailData(cafeDetail);

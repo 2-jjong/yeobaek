@@ -11,4 +11,6 @@ import java.util.List;
 public interface CafeCategoryTagRepository extends JpaRepository<CafeCategoryTag, Long> {
 
     List<CafeCategoryTag> findAllByCafe(Cafe cafe);
+    
+    List<CafeCategoryTag> findAllByCafe_IdIn(List<Long> cafeIds);
 }

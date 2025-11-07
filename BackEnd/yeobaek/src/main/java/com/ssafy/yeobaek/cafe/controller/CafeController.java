@@ -545,15 +545,30 @@ public class CafeController {
             @Size(max = 100, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) String keyword,
 
-            @Parameter(description = "위도", required = true)
+            @Parameter(description = "사용자 현재 위치 위도", required = true)
             @Min(value = -90, message = "INVALID_INPUT_VALUE")
             @Max(value = 90, message = "INVALID_INPUT_VALUE")
-            @RequestParam Double latitude,
+            @RequestParam Double myLatitude,
 
-            @Parameter(description = "경도", required = true)
+            @Parameter(description = "사용자 현재 위치 경도", required = true)
             @Min(value = -180, message = "INVALID_INPUT_VALUE")
             @Max(value = 180, message = "INVALID_INPUT_VALUE")
-            @RequestParam Double longitude,
+            @RequestParam Double myLongitude,
+
+            @Parameter(description = "지도 중심 위도", required = true)
+            @Min(value = -90, message = "INVALID_INPUT_VALUE")
+            @Max(value = 90, message = "INVALID_INPUT_VALUE")
+            @RequestParam Double centerLatitude,
+
+            @Parameter(description = "지도 중심 경도", required = true)
+            @Min(value = -180, message = "INVALID_INPUT_VALUE")
+            @Max(value = 180, message = "INVALID_INPUT_VALUE")
+            @RequestParam Double centerLongitude,
+
+            @Parameter(description = "조회 반경 (km)", required = true)
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 100, message = "INVALID_INPUT_VALUE")
+            @RequestParam Double radiusKm,
 
             @Parameter(description = "슬롯 최소 폭 (cm)")
             @Min(value = 1, message = "INVALID_INPUT_VALUE")
@@ -596,7 +611,7 @@ public class CafeController {
     ) {
         Boolean isArtist = SecurityUtil.getCurrentUserType().equals(UserRole.ARTIST);
 
-        CafeListData data = cafeService.searchCafes(isArtist, keyword, latitude, longitude, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission, page, size);
+        CafeListData data = cafeService.searchCafes(isArtist, keyword, myLatitude, myLongitude, centerLatitude, centerLongitude, radiusKm, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -763,6 +778,8 @@ public class CafeController {
                 {"모던", "미니멀"}, {"빈티지", "클래식"}, {"인더스트리얼", "모던"},
                 {"북유럽", "미니멀"}, {"레트로", "빈티지"}
         };
+        double[] latitudes = {37.5665, 37.5796, 37.5559, 37.5323, 37.5490};
+        double[] longitudes = {126.9780, 126.9769, 126.9265, 126.9903, 127.0700};
 
 
         return IntStream.range(0, count)
@@ -770,6 +787,8 @@ public class CafeController {
                     long id = startId + i;
                     String name = names[i % names.length] + " #" + id;
                     String address = addresses[i % addresses.length];
+                    double lat = latitudes[i % latitudes.length];
+                    double lon = longitudes[i % longitudes.length];
                     String primaryImageUrl = "https://example.com/cafe" + (i + 1) + ".jpg";
                     int availableSlotCount = 1 + (i % 4);
                     int totalSlotCount = 3 + (i % 3);
@@ -777,7 +796,7 @@ public class CafeController {
                     List<String> categories = List.of(categoriesList[i % categoriesList.length]);
 
                     return new CafeSummary(
-                            id, name, address, primaryImageUrl,
+                            id, name, address, lat, lon, primaryImageUrl,
                             availableSlotCount, totalSlotCount, distance, categories
                     );
                 })
