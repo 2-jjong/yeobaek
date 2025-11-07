@@ -139,9 +139,13 @@ public class CafeServiceImpl implements CafeService {
 
     /**
      * 카페 목록 조회 및 검색
+     * @param isArtist 작가 여부
      * @param keyword 검색어
-     * @param latitude 위도
-     * @param longitude 경도
+     * @param myLatitude 현재 위치 위도
+     * @param myLongitude 현재 위치 경도
+     * @param centerLatitude 지도 중심 위도
+     * @param centerLongitude 지도 중심 경도
+     * @param radiusKm 조회 반경
      * @param minWidth 최소 너비
      * @param maxWidth 최대 너비
      * @param minHeight 최소 높이
@@ -154,7 +158,7 @@ public class CafeServiceImpl implements CafeService {
      */
     @Override
     @Transactional(readOnly = true)
-    public CafeListData searchCafes(Boolean isArtist, String keyword, Double latitude, Double longitude, Integer minWidth, Integer maxWidth, Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size) {
+    public CafeListData searchCafes(Boolean isArtist, String keyword, Double myLatitude, Double myLongitude, Double centerLatitude, Double centerLongitude, Double radiusKm, Integer minWidth, Integer maxWidth, Integer minHeight, Integer maxHeight, Double minCommission, Double maxCommission, Integer page, Integer size) {
 
         // 작가 전용 필터 권한 검사
         if (!isArtist) {
@@ -167,7 +171,7 @@ public class CafeServiceImpl implements CafeService {
         }
 
         // 1. 필터 조건 생성
-        Specification<Cafe> spec = CafeSpecification.withFilters(keyword, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission);
+        Specification<Cafe> spec = CafeSpecification.withFilters(keyword, centerLatitude, centerLongitude, radiusKm, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission);
 
         // 2. 필터링된 모든 카페를 조회 (정렬 x)
         List<Cafe> filteredCafes = cafeRepository.findAll(spec);
@@ -176,7 +180,7 @@ public class CafeServiceImpl implements CafeService {
         List<CafeSummary> summaries = filteredCafes.stream()
             .map(cafe -> {
                 // 거리 계산
-                double distance = calculateDistance(latitude, longitude, cafe.getLatitude(), cafe.getLongitude());
+                double distance = calculateDistance(myLatitude, myLongitude, cafe.getLatitude(), cafe.getLongitude());
 
                 // 슬롯 개수 계산
                 int totalSlotCount = cafe.getDisplayWalls().size();

@@ -544,15 +544,30 @@ public class CafeController {
             @Size(max = 100, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) String keyword,
 
-            @Parameter(description = "위도", required = true)
+            @Parameter(description = "사용자 현재 위치 위도", required = true)
             @Min(value = -90, message = "INVALID_INPUT_VALUE")
             @Max(value = 90, message = "INVALID_INPUT_VALUE")
-            @RequestParam Double latitude,
+            @RequestParam Double myLatitude,
 
-            @Parameter(description = "경도", required = true)
+            @Parameter(description = "사용자 현재 위치 경도", required = true)
             @Min(value = -180, message = "INVALID_INPUT_VALUE")
             @Max(value = 180, message = "INVALID_INPUT_VALUE")
-            @RequestParam Double longitude,
+            @RequestParam Double myLongitude,
+
+            @Parameter(description = "지도 중심 위도", required = true)
+            @Min(value = -90, message = "INVALID_INPUT_VALUE")
+            @Max(value = 90, message = "INVALID_INPUT_VALUE")
+            @RequestParam Double centerLatitude,
+
+            @Parameter(description = "지도 중심 경도", required = true)
+            @Min(value = -180, message = "INVALID_INPUT_VALUE")
+            @Max(value = 180, message = "INVALID_INPUT_VALUE")
+            @RequestParam Double centerLongitude,
+
+            @Parameter(description = "조회 반경 (km)", required = true)
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 100, message = "INVALID_INPUT_VALUE")
+            @RequestParam Double radiusKm,
 
             @Parameter(description = "슬롯 최소 폭 (cm)")
             @Min(value = 1, message = "INVALID_INPUT_VALUE")
@@ -595,7 +610,7 @@ public class CafeController {
     ) {
         Boolean isArtist = SecurityUtil.getCurrentUserType().equals(UserRole.ARTIST);
 
-        CafeListData data = cafeService.searchCafes(isArtist, keyword, latitude, longitude, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission, page, size);
+        CafeListData data = cafeService.searchCafes(isArtist, keyword, myLatitude, myLongitude, centerLatitude, centerLongitude, radiusKm, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
