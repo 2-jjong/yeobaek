@@ -3,14 +3,12 @@ package com.ssafy.yeobaek.cafe.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ssafy.yeobaek.common.enums.WallStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Schema(description = "전시 슬롯 정보")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)

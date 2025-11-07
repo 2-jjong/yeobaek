@@ -368,7 +368,7 @@ public class CafeController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "카페 정보 수정", description = "등록된 카페 정보를 수정합니다. 모든 필드는 선택적으로 수정 가능합니다 (전송된 필드만 수정됨). 슬롯 정보는 별도 API로 관리합니다.")
+    @Operation(summary = "카페 정보 수정", description = "등록된 슬롯 정보를 수정합니다. 모든 필드는 선택적으로 수정 가능합니다 (전송된 필드만 수정됨). 카페 정보는 별도 API로 관리합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -377,7 +377,7 @@ public class CafeController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\":\"S0000\",\"data\":{\"wallId\":5,\"wallName\":\"벽 A\",\"width\":200,\"height\":150,\"status\":\"AVAILABLE\",\"commissionRate\":10,\"requirements\":\"홍보용 작가 소개 카드 또는 작품 설명 자료를 함께 제공해주세요.\"},\"message\":\"정상 처리\"}"
                             )
                     )
             ),
@@ -409,8 +409,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"),
-                                    @ExampleObject(value = "{\"code\": \"CF4032\", \"message\": \"본인의 카페만 수정/삭제할 수 있습니다\"}")
+                                    @ExampleObject(name = "일반 권한 없음", value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"),
+                                    @ExampleObject(name = "리소스 권한 없음", value = "{\"code\": \"CF4032\", \"message\": \"본인의 카페만 수정/삭제할 수 있습니다\"}")
                             }
                     )
             ),
@@ -420,7 +420,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(value = "{\"code\": \"CF4042\", \"message\": \"존재하지 않는 슬롯입니다\"}")
+                                    @ExampleObject(name = "존재하지 않는 슬롯", value = "{\"code\": \"CF4042\", \"message\": \"존재하지 않는 슬롯입니다\"}"),
+                                    @ExampleObject(name = "카페 내 슬롯 없음", value = "{\"code\": \"CF4044\", \"message\": \"해당 카페에 존재하지 않는 슬롯입니다\"}")
                             }
                     )
             ),

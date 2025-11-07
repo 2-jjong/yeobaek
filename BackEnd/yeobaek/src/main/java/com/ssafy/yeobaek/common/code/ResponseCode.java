@@ -89,6 +89,7 @@ public enum ResponseCode {
     CAFE_NOT_FOUND("CF4041", "존재하지 않는 카페입니다", HttpStatus.NOT_FOUND),
     SLOT_NOT_FOUND("CF4042", "존재하지 않는 슬롯입니다", HttpStatus.NOT_FOUND),
     CAFE_CATEGORY_NOT_FOUND("CF4043", "존재하지 않는 카테고리입니다", HttpStatus.NOT_FOUND),
+    SLOT_NOT_FOUND_IN_CAFE("CF4044", "해당 카페에 존재하지 않는 슬롯입니다", HttpStatus.NOT_FOUND),
 
     // 카페 관련 에러 (409 Conflict)
     CAFE_ALREADY_EXISTS("CF4091", "이미 등록된 카페가 있습니다", HttpStatus.CONFLICT),

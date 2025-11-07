@@ -5,6 +5,7 @@ import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
 import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
+import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.cafe.entity.DisplayWall;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.WallStatus;
@@ -213,16 +214,15 @@ public class CafeMapper {
      * @param slot 슬롯 정보
      * @return DisplaySlot DTO
      */
-    public Slot toDisplaySlot(com.ssafy.yeobaek.cafe.entity.DisplaySlot slot){
-        return new Slot(
-                slot.getId(),
-                slot.getWall().getWallName(),
-                slot.getWall().getWidthCm(),
-                slot.getWall().getHeightCm(),
-                slot.getStatus().toWallStatus(),
-                slot.getCommissionRate(),
-                slot.getRequirements(),
-                null
-        );
+    public Slot toDisplaySlot(DisplaySlot slot){
+        return Slot.builder()
+                .wallId(slot.getId())
+                .wallName(slot.getWall().getWallName())
+                .width(slot.getWall().getWidthCm())
+                .status(slot.getStatus().toWallStatus())
+                .height(slot.getWall().getHeightCm())
+                .commissionRate(slot.getCommissionRate())
+                .requirements(slot.getRequirements())
+                .build();
     }
 }

@@ -25,10 +25,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -278,13 +275,18 @@ public class CafeServiceImpl implements CafeService {
         DisplaySlot slot = displaySlotRepository.findById(slotId)
                 .orElseThrow(() -> new CustomException(ResponseCode.SLOT_NOT_FOUND));
 
-        // 2. 슬롯 소유 카페 확인 및 권한 검사
+        // 2. 슬롯이 속한 카페 확인
         Cafe cafe = slot.getWall().getCafe();
+        if (!Objects.equals(cafeId, cafe.getId())) {
+            throw new CustomException(ResponseCode.SLOT_NOT_FOUND_IN_CAFE);
+        }
+
+        // 3. 슬롯 소유 카페 확인 및 권한 검사
         if (!cafe.getCafeOwner().getId().equals(userId)) {
             throw new CustomException(ResponseCode.CAFE_FORBIDDEN_UPDATE_DELETE);
         }
 
-        // 3. 슬롯 정보 업데이트
+        // 4. 슬롯 정보 업데이트
         if (request.getCommissionRate() != null) {
             slot.setCommissionRate(request.getCommissionRate());
         }
@@ -292,10 +294,10 @@ public class CafeServiceImpl implements CafeService {
             slot.setRequirements(request.getRequirements());
         }
 
-        // 4. 수정된 정보 저장
+        // 5. 수정된 정보 저장
         displaySlotRepository.save(slot);
 
-        // 5. DTO 반환
+        // 6. DTO 반환
         return cafeMapper.toDisplaySlot(slot);
     }
 }
