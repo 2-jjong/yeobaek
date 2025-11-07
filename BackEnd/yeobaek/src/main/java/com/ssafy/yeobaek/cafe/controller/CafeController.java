@@ -714,6 +714,46 @@ public class CafeController {
                 .body(ResponseDto.success(data));
     }
 
+    @Operation(summary = "카페 카테고리 목록 조회", description = "카페 카테고리(인테리어 스타일) 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/categories")
+    public ResponseEntity<ResponseDto<CategoryListData>> getCategories() {
+        CategoryListData data = null;
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(data));
+    }
+
     private List<CafeSummary> createMockCafes(int count, Long startId, Double baseDistance) {
         String[] names = {"카페 여백", "아트 카페", "갤러리 카페", "모던 카페", "빈티지 카페",
                 "미니멀 카페", "북 카페", "오션뷰 카페", "숲속 카페", "루프탑 카페",
