@@ -2,13 +2,14 @@ package com.ssafy.yeobaeg.data.repository
 
 import android.util.Log
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
-import com.ssafy.yeobaeg.data.model.profile.ReviewStatistics
 import com.ssafy.yeobaeg.data.model.profile.UpdateProfileRequest
 import com.ssafy.yeobaeg.data.model.profile.toDomain
+import com.ssafy.yeobaeg.data.model.review.toDomain
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtwork
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafe
 import com.ssafy.yeobaeg.domain.model.profile.Profile
-import com.ssafy.yeobaeg.domain.model.profile.ReviewStats
+import com.ssafy.yeobaeg.domain.model.review.ReviewList
+import com.ssafy.yeobaeg.domain.model.review.ReviewStatistics
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import javax.inject.Inject
 
@@ -112,6 +113,46 @@ class ProfileRepositoryImpl @Inject constructor(
 
             val response = api.updateProfile(request)
             if (!response.isSuccessful) throw Exception("프로필 수정 실패: ${response.code()} ${response.message()}")
+        }
+    }
+
+    override suspend fun getMyReviewStatistics(): Result<ReviewStatistics> {
+        return try {
+            val response = api.getMyReviewStatistics()
+            if (response.isSuccessful) {
+                val statisticsDto = response.body()?.data
+                Log.d(TAG, "getMyReviewStatistics: $statisticsDto")
+                if (statisticsDto != null) {
+                    Result.success(statisticsDto.toDomain())
+                } else {
+                    Result.failure(Exception("Response body is null"))
+                }
+            } else {
+                Result.failure(Exception("Failed to get review statistics"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getMyReviewStatistics() error: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun getMyReviewList(page: Int, size: Int): Result<ReviewList> {
+        return try {
+            val response = api.getMyReviewList(page = page, size = size)
+            if (response.isSuccessful) {
+                val reviewListDto = response.body()?.data
+                Log.d(TAG, "getMyReviewList: $reviewListDto")
+                if (reviewListDto != null) {
+                    Result.success(reviewListDto.toDomain())
+                } else {
+                    Result.failure(Exception("Response body is null"))
+                }
+            } else {
+                Result.failure(Exception("Failed to get review list"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getMyReviewList() error: ${e.message}", e)
+            Result.failure(e)
         }
     }
 
