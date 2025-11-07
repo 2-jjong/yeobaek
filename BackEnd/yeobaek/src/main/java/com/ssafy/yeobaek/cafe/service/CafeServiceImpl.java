@@ -173,13 +173,13 @@ public class CafeServiceImpl implements CafeService {
         // 1. 필터 조건 생성
         Specification<Cafe> spec = CafeSpecification.withFilters(keyword, centerLatitude, centerLongitude, radiusKm, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission);
 
-        // 2. 필터링된 모든 카페를 조회 (정렬 x)
+        // 2. 필터링된 모든 카페를 조회 (정렬)
         List<Cafe> filteredCafes = cafeRepository.findAll(spec);
 
-        // 3. Java 코드 내에서 거리 계산 및 DTO 변환, 정렬
+        // 3. Java 코드 내에서 거리 계산 및 DTO 변환
         List<CafeSummary> summaries = filteredCafes.stream()
             .map(cafe -> {
-                // 거리 계산
+                // 거리 계산 (사용자 위치 기준)
                 double distance = calculateDistance(myLatitude, myLongitude, cafe.getLatitude(), cafe.getLongitude());
 
                 // 슬롯 개수 계산
@@ -196,7 +196,6 @@ public class CafeServiceImpl implements CafeService {
 
                 return new CafeSummary(cafe.getId(), cafe.getCafeName(), cafe.getAddress(), cafe.getLatitude(), cafe.getLongitude(), primaryImageUrl, availableSlotCount, totalSlotCount, distance, categories);
             })
-            .sorted(Comparator.comparing(CafeSummary::getDistance)) // 거리순으로 정렬
             .collect(Collectors.toList());
 
         // 4. 페이지네이션 처리

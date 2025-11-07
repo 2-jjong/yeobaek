@@ -113,6 +113,13 @@ public class CafeSpecification {
             // 중복 결과 방지를 위해 DISTINCT 적용
             query.distinct(true);
 
+            // 인기 점수 계산 및 정렬 (조회수 1 : 북마크수 9 비율)
+            Expression<Double> popularityScore = cb.function("SUM_FUNC", Double.class,
+                    cb.function("PROD", Double.class, root.get("viewCount"), cb.literal(0.1)),
+                    cb.function("PROD", Double.class, root.get("bookmarkCount"), cb.literal(0.9))
+            );
+            query.orderBy(cb.desc(popularityScore));
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
