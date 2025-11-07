@@ -33,4 +33,21 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * @return 리뷰 페이지
      */
     Page<Review> findAllByRevieweeId(Long revieweeId, Pageable pageable);
+
+    /**
+     * 특정 사용자가 작성한 리뷰 페이징 조회
+     * @param reviewerId 리뷰 작성자 ID
+     * @param pageable 페이징 정보
+     * @return 리뷰 페이지
+     */
+    Page<Review> findAllByReviewerId(Long reviewerId, Pageable pageable);
+
+    /**
+     * 특정 사용자가 작성한 특정 평점의 리뷰 페이징 조회
+     * @param reviewerId 리뷰 작성자 ID
+     * @param rating 평점
+     * @param pageable 페이징 정보
+     * @return 리뷰 페이지
+     */
+    Page<Review> findAllByReviewerIdAndRating(Long reviewerId, Integer rating, Pageable pageable);
 }

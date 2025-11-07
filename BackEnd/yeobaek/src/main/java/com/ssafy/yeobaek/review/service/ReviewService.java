@@ -3,6 +3,7 @@ package com.ssafy.yeobaek.review.service;
 import com.ssafy.yeobaek.review.dto.request.CreateReviewRequest;
 import com.ssafy.yeobaek.review.dto.response.ReviewListResponse;
 import com.ssafy.yeobaek.review.dto.response.ReviewStatistics;
+import com.ssafy.yeobaek.review.dto.response.WrittenReviewListResponse;
 
 public interface ReviewService {
 
@@ -44,4 +45,14 @@ public interface ReviewService {
      * @return 리뷰 목록 응답
      */
     ReviewListResponse getUserReviews(Long userId, int page, int size);
+
+    /**
+     * 내가 작성한 리뷰 목록 조회
+     * @param userId 사용자 ID
+     * @param rating 필터링할 평점 (null이면 전체)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 작성한 리뷰 목록 응답
+     */
+    WrittenReviewListResponse getMyWrittenReviews(Long userId, Integer rating, int page, int size);
 }
