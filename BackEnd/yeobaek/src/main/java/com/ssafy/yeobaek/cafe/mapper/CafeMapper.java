@@ -138,4 +138,29 @@ public class CafeMapper {
                 exhibitionInfo
         );
     }
+
+    /**
+     * Cafe 엔티티를 CafeSummary DTO로 변환
+     * @param cafe 카페 엔티티
+     * @param distance 사용자 위치로부터의 거리
+     * @param categories 카페 카테고리 이름 리스트
+     * @return CafeSummary DTO
+     */
+    public CafeSummary toCafeSummary(Cafe cafe, Double distance, List<String> categories, String primaryImageUrl) {
+        int totalSlotCount = cafe.getDisplayWalls().size();
+        int availableSlotCount = (int) cafe.getDisplayWalls().stream().filter(DisplayWall::getStatus).count();
+
+        return new CafeSummary(
+                cafe.getId(),
+                cafe.getCafeName(),
+                cafe.getAddress(),
+                cafe.getLatitude(),
+                cafe.getLongitude(),
+                primaryImageUrl,
+                availableSlotCount,
+                totalSlotCount,
+                distance,
+                categories
+        );
+    }
 }

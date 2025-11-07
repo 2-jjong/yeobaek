@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -174,43 +175,40 @@ public class CafeServiceImpl implements CafeService {
         // 1. 필터 조건 생성
         Specification<Cafe> spec = CafeSpecification.withFilters(keyword, centerLatitude, centerLongitude, radiusKm, minWidth, maxWidth, minHeight, maxHeight, minCommission, maxCommission);
 
-        // 2. 필터링된 모든 카페를 조회 (정렬)
-        List<Cafe> filteredCafes = cafeRepository.findAll(spec);
+        // 2. 페이지네이션 정보 생성
+        Pageable pageable = PageRequest.of(page, size);
 
-        // 3. Java 코드 내에서 거리 계산 및 DTO 변환
-        List<CafeSummary> summaries = filteredCafes.stream()
+        // 3. 필터링 및 페이지네이션된 카페 조회
+        Page<Cafe> cafePage = cafeRepository.findAll(spec, pageable);
+
+        // 4. 조회된 카페들의 카테고리 태그를 한 번에 조회하여 맵으로 구성 (N+1 문제 방지)
+        List<Long> cafeIds = cafePage.getContent().stream()
+                .map(Cafe::getId)
+                .collect(Collectors.toList());
+        Map<Long, List<String>> cafeCategoriesMap = cafeCategoryTagRepository.findAllByCafe_IdIn(cafeIds).stream()
+                .collect(Collectors.groupingBy(tag -> tag.getCafe().getId(),
+                        Collectors.mapping(tag -> tag.getCategory().getCategoryName(), Collectors.toList())));
+
+        // 5. DTO 변환
+        List<CafeSummary> summaries = cafePage.getContent().stream()
             .map(cafe -> {
                 // 거리 계산 (사용자 위치 기준)
                 double distance = calculateDistance(myLatitude, myLongitude, cafe.getLatitude(), cafe.getLongitude());
 
-                // 슬롯 개수 계산
-                int totalSlotCount = cafe.getDisplayWalls().size();
-                int availableSlotCount = (int) cafe.getDisplayWalls().stream().filter(DisplayWall::getStatus).count();
-
                 // 카테고리 목록 추출
-                List<String> categories = cafeCategoryTagRepository.findAllByCafe(cafe).stream()
-                    .map(tag -> tag.getCategory().getCategoryName())
-                    .collect(Collectors.toList());
+                List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), Collections.emptyList());
 
                 // 대표 이미지 URL 추출
                 String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
 
-                return new CafeSummary(cafe.getId(), cafe.getCafeName(), cafe.getAddress(), cafe.getLatitude(), cafe.getLongitude(), primaryImageUrl, availableSlotCount, totalSlotCount, distance, categories);
+                return cafeMapper.toCafeSummary(cafe, distance, categories, primaryImageUrl);
             })
             .collect(Collectors.toList());
 
-        // 4. 페이지네이션 처리
-        Pageable pageable = PageRequest.of(page, size);
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), summaries.size());
-        List<CafeSummary> pagedContent = (start > end) ? Collections.emptyList() : summaries.subList(start, end);
+        // 6. 페이지네이션 DTO 생성
+        Pagination pagination = new Pagination(cafePage.getNumber(), cafePage.getSize(), cafePage.getTotalElements(), cafePage.getTotalPages(), cafePage.isLast());
 
-        Page<CafeSummary> cafeSummaryPage = new PageImpl<>(pagedContent, pageable, summaries.size());
-
-        // 5. 최종 결과물 조합
-        Pagination pagination = new Pagination(cafeSummaryPage.getNumber(), cafeSummaryPage.getSize(), cafeSummaryPage.getTotalElements(), cafeSummaryPage.getTotalPages(), cafeSummaryPage.isLast());
-
-        return new CafeListData(cafeSummaryPage.getContent(), pagination);
+        return new CafeListData(summaries, pagination);
     }
 
     // Haversine 공식으로 두 지점 간의 거리를 계산 (km 단위)
@@ -224,5 +222,4 @@ public class CafeServiceImpl implements CafeService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
     }
-
 }
