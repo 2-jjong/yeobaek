@@ -10,10 +10,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,10 +32,11 @@ fun ArtworkImageUploadScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context= LocalContext.current
 
     ArtworkImageUploadContent(
         imageUris = uiState.imageUris,
-        onAddImage = { uri -> viewModel.addImage(uri) },
+        onAddImages = { uris -> viewModel.addImages(context, uris) },
         onRemoveImage = { uri -> viewModel.removeImage(uri) },
         onNext = onNext,
         modifier = modifier
@@ -44,7 +46,7 @@ fun ArtworkImageUploadScreen(
 @Composable
 fun ArtworkImageUploadContent(
     imageUris: List<Uri>,
-    onAddImage: (Uri) -> Unit,
+    onAddImages: (List<Uri>) -> Unit,
     onRemoveImage: (Uri) -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier
@@ -76,25 +78,28 @@ fun ArtworkImageUploadContent(
 
         Box(
             modifier = Modifier.fillMaxWidth(),
-            contentAlignment = Alignment.Center
         ) {
             ArtworkImageUploader(
                 images = imageUris,
-                onAddImage = onAddImage,
+                onAddImages = onAddImages,
                 onRemoveImage = onRemoveImage
             )
         }
 
         Spacer(Modifier.weight(1f))
-
-        YeobaegButton(
-            text = "다음",
-            onClick = onNext,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = imageUris.isNotEmpty()
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("최대 5장까지 업로드 가능합니다.", color = Color.Gray, fontSize = 12.sp)
+            Spacer(Modifier.height(20.dp))
+            YeobaegButton(
+                text = "다음",
+                onClick = onNext,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = imageUris.isNotEmpty()
+            )
+        }
     }
 }
+
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ArtworkImageUploadScreenPreview() {
@@ -106,7 +111,7 @@ fun ArtworkImageUploadScreenPreview() {
 
     ArtworkImageUploadContent(
         imageUris = dummyUris,
-        onAddImage = {},
+        onAddImages = {},
         onRemoveImage = {},
         onNext = {}
     )

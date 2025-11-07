@@ -142,13 +142,54 @@ class ArtworkRegisterViewModel @Inject constructor(
         _uiState.value = RegisterArtworkUiState()
     }
 
-    fun addImage(uri: Uri) {
-        val current = _uiState.value.imageUris.toMutableList()
-        if (uri !in current) {
-            current.add(uri)
-            _uiState.value = _uiState.value.copy(imageUris = current)
+    fun addImages(context: Context, uris: List<Uri>) {
+        viewModelScope.launch {
+            if (uris.isEmpty()) return@launch
+
+            _uiState.value = _uiState.value.copy(isLoading = true)
+
+            runCatching {
+                // Presigned URL 여러 개 요청
+                val presignedList = storageRepository
+                    .createPresignedUrl("IMAGES", uris.size)
+                    .getOrThrow()
+
+                // 병렬 업로드 (각 업로드 완료 시마다 UI 갱신)
+                uris.forEachIndexed { index, uri ->
+                    val presigned = presignedList[index]
+                    val file = uriToTempFile(context, uri)
+
+                    launch {
+                        runCatching {
+                            storageRepository.uploadWithPresignedPut(file, presigned.uploadUrl).getOrThrow()
+
+                            // 업로드 성공 시 개별 이미지 즉시 추가
+                            val updatedUris = _uiState.value.imageUris.toMutableList()
+                            val updatedKeys = _uiState.value.uploadedKeys.toMutableList()
+
+                            updatedUris.add(uri)
+                            updatedKeys.add(presigned.fileKey)
+
+                            _uiState.value = _uiState.value.copy(
+                                imageUris = updatedUris,
+                                uploadedKeys = updatedKeys
+                            )
+
+                            Log.d("ArtworkRegister", "S3 업로드 성공: ${presigned.fileKey}")
+                        }.onFailure {
+                            Log.e("ArtworkRegister", "S3 업로드 실패: ${it.message}")
+                        }
+                    }
+                }
+            }.onFailure {
+                Log.e("ArtworkRegister", "Presigned URL 요청 실패: ${it.message}")
+            }.also {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
         }
     }
+
+
 
     fun updateArtworkData(
         title: String? = null,
