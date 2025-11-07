@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -165,10 +164,10 @@ public class CafeServiceImpl implements CafeService {
         // 작가 전용 필터 권한 검사
         if (!isArtist) {
             if (minWidth != null || maxWidth != null || minHeight != null || maxHeight != null) {
-                throw new com.ssafy.yeobaek.common.exception.CustomException(com.ssafy.yeobaek.common.code.ResponseCode.CAFE_SLOT_FILTER_FORBIDDEN);
+                throw new CustomException(ResponseCode.CAFE_SLOT_FILTER_FORBIDDEN);
             }
             if (minCommission != null || maxCommission != null) {
-                throw new com.ssafy.yeobaek.common.exception.CustomException(com.ssafy.yeobaek.common.code.ResponseCode.CAFE_COMMISSION_FILTER_FORBIDDEN);
+                throw new CustomException(ResponseCode.CAFE_COMMISSION_FILTER_FORBIDDEN);
             }
         }
 
