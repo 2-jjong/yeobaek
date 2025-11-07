@@ -29,6 +29,7 @@ import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
+import com.ssafy.yeobaeg.presentation.home.artist.ArtworkRegisterScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.editslot.EditDisplaySlotScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.register.RegisterCafeScreen
@@ -143,7 +144,9 @@ fun NavGraph(
                         // Cafe Registration Screen Composable
                         RegisterCafeScreen()
                     }
-
+                    is FullScreen.RegisterArtwork -> NavEntry(key) {
+                        ArtworkRegisterScreen()
+                    }
                     is FullScreen.ArtworkDetail -> NavEntry(key) {
                         ArtworkDetailScreen(artworkId = key.artworkId)
                     }

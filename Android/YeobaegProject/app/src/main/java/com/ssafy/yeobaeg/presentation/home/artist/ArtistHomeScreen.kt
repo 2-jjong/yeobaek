@@ -44,7 +44,7 @@ fun ArtistHomeScreen(
 
     ArtistHomeScreen(
         state = state,
-        onUploadClick = {},
+        onUploadClick = viewModel::navigateToRegisterArtwork,
         onFindCafeClick = {},
         onWorkClick = {}
     )

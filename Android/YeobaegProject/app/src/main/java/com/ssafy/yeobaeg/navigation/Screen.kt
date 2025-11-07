@@ -30,6 +30,9 @@ sealed interface FullScreen : Screen {
     data object RegisterCafe: FullScreen
 
     @Serializable
+    data object RegisterArtwork: FullScreen
+
+    @Serializable
     data class ArtworkDetail(val artworkId: Long) : FullScreen
 
     @Serializable
