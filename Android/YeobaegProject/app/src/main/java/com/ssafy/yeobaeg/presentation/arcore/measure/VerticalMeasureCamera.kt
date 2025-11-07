@@ -277,7 +277,6 @@ fun VerticalMeasureCamera(
                 isVertical = true,
                 liveMeters = liveDistance,
                 lastSegmentMeters = segments.lastOrNull()?.lengthM?.takeIf { it > 0f },
-                totalMeters = null,
                 onUndo = {
                     if (segments.isNotEmpty()) {
                         val last = segments.removeAt(segments.lastIndex)

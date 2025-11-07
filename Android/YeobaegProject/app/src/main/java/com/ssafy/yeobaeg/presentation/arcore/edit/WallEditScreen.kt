@@ -19,8 +19,6 @@ import com.ssafy.yeobaeg.presentation.arcore.vertical.VerticalMeasureCamera
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 
-// WallEditScreen.kt 수정 (onFinished 콜백 타입 변경)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WallEditScreen(
@@ -51,7 +49,7 @@ fun WallEditScreen(
         ) {
             IconButton(
                 onClick =
-                    if (state.step == WallEditStep.SelectWall) onClose
+                    if (state.step == WallEditStep.SelectWall) viewModel::prevOrBackToSelect
                     else viewModel::prevOrBackToSelect
             ) {
                 Icon(

@@ -81,7 +81,6 @@ fun HorizontalMeasureCamera(
     var frame by remember { mutableStateOf<Frame?>(null) }
     var lastPoint by remember { mutableStateOf<Position?>(null) }
     var liveDistance by remember { mutableStateOf<Float?>(null) }
-    var totalDistance by remember { mutableFloatStateOf(0f) }
     val segments = remember { mutableStateListOf<Seg>() }
     var centerHasPlane by remember { mutableStateOf(false) }
     var liveLine by remember { mutableStateOf<CylinderNode?>(null) }
@@ -95,7 +94,9 @@ fun HorizontalMeasureCamera(
     val state by viewModel.uiState.collectAsState()
 
     LaunchedEffect(viewSize) {
-        ready = if (viewSize.width > 0 && viewSize.height > 0) { awaitFrame(); true } else false
+        ready = if (viewSize.width > 0 && viewSize.height > 0) {
+            awaitFrame(); true
+        } else false
     }
 
     // Scene 정리 헬퍼
@@ -113,17 +114,18 @@ fun HorizontalMeasureCamera(
         segments.clear()
         lastPoint = null
         liveDistance = null
-        totalDistance = 0f
     }
+
     fun disposeWithSceneAlive() {
         if (isDisposing) return
         isDisposing = true
         ready = false
         clearInScene()
     }
+
     fun disposeOnComposeDisposeOnly() {
         liveLine = null; liveDot = null
-        segments.clear(); lastPoint = null; liveDistance = null; totalDistance = 0f
+        segments.clear(); lastPoint = null; liveDistance = null
         ready = false; isDisposing = true
     }
 
@@ -136,7 +138,9 @@ fun HorizontalMeasureCamera(
 
     MaterialTheme {
         Box(
-            Modifier.fillMaxSize().onSizeChanged { viewSize = it }
+            Modifier
+                .fillMaxSize()
+                .onSizeChanged { viewSize = it }
         ) {
             if (ready) {
                 key(sceneKey) {
@@ -148,14 +152,14 @@ fun HorizontalMeasureCamera(
                         childNodes = nodes,
                         sessionConfiguration = { s: Session, cfg: Config ->
                             cfg.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
-                            cfg.focusMode  = Config.FocusMode.AUTO
+                            cfg.focusMode = Config.FocusMode.AUTO
                             cfg.depthMode =
                                 if (s.isDepthModeSupported(Config.DepthMode.AUTOMATIC))
                                     Config.DepthMode.AUTOMATIC
                                 else Config.DepthMode.DISABLED
                             cfg.instantPlacementMode = Config.InstantPlacementMode.DISABLED
-                            cfg.lightEstimationMode  = Config.LightEstimationMode.ENVIRONMENTAL_HDR
-                            cfg.planeFindingMode     = Config.PlaneFindingMode.HORIZONTAL
+                            cfg.lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
+                            cfg.planeFindingMode = Config.PlaneFindingMode.HORIZONTAL
                         },
                         onSessionFailed = {
                             scope.launch {
@@ -173,7 +177,7 @@ fun HorizontalMeasureCamera(
                             if (cam.trackingState != TrackingState.TRACKING) {
                                 centerHasPlane = false
                                 liveLine?.isVisible = false
-                                liveDot?.isVisible  = false
+                                liveDot?.isVisible = false
                                 return@ARScene
                             }
                             val cx = viewSize.width * 0.5f
@@ -194,7 +198,10 @@ fun HorizontalMeasureCamera(
                             // live dot
                             if (centerWorld != null) {
                                 if (liveDot == null) {
-                                    liveDot = SphereNode(engine = engine, radius = 0.006f).apply { isShadowCaster = false }
+                                    liveDot = SphereNode(
+                                        engine = engine,
+                                        radius = 0.006f
+                                    ).apply { isShadowCaster = false }
                                     nodes += liveDot!!
                                 }
                                 liveDot!!.position = centerWorld
@@ -210,7 +217,11 @@ fun HorizontalMeasureCamera(
                             val b = centerWorld
                             if (a != null && b != null) {
                                 if (liveLine == null) {
-                                    liveLine = CylinderNode(engine = engine, radius = 0.006f, height = BASE_LINE_HEIGHT)
+                                    liveLine = CylinderNode(
+                                        engine = engine,
+                                        radius = 0.006f,
+                                        height = BASE_LINE_HEIGHT
+                                    )
                                         .apply { isShadowCaster = false }
                                     nodes += liveLine!!
                                 }
@@ -226,10 +237,16 @@ fun HorizontalMeasureCamera(
 
             if (ready && centerHasPlane) {
                 CenterReticle(Modifier.align(Alignment.Center), isVertical = false)
-                Box(Modifier.align(Alignment.TopCenter).padding(top = 12.dp)) {
+                Box(Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 12.dp)) {
                     Surface(color = Color(0x334CAF50), shape = MaterialTheme.shapes.small) {
-                        Text("바닥 감지됨", modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = Color(0xFF2E7D32), style = MaterialTheme.typography.labelLarge)
+                        Text(
+                            "바닥 감지됨",
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            color = Color(0xFF2E7D32),
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                 }
             }
@@ -255,23 +272,31 @@ fun HorizontalMeasureCamera(
                     val world = planeHit.posePosition()
 
                     // 최소 간격
-                    if (lastPoint != null && distance(lastPoint!!, world) < MIN_POINT_GAP_M) return@Button
+                    if (lastPoint != null && distance(
+                            lastPoint!!,
+                            world
+                        ) < MIN_POINT_GAP_M
+                    ) return@Button
 
                     viewModel.addCorner(world, planeHit.trackable as? Plane)
 
                     val anchor = planeHit.createAnchor() ?: return@Button
                     val anchorNode = AnchorNode(engine, anchor = anchor)
-                    val marker = SphereNode(engine = engine, radius = 0.01f).apply { isShadowCaster = false }
+                    val marker =
+                        SphereNode(engine = engine, radius = 0.01f).apply { isShadowCaster = false }
                     anchorNode.addChildNode(marker)
                     nodes += anchorNode
 
                     lastPoint?.let { prev ->
                         val len = distance(prev, world)
-                        val line = CylinderNode(engine = engine, radius = 0.003f, height = BASE_LINE_HEIGHT)
+                        val line = CylinderNode(
+                            engine = engine,
+                            radius = 0.003f,
+                            height = BASE_LINE_HEIGHT
+                        )
                             .apply { isShadowCaster = false }
                         updateCylinderBetweenGround(line, prev, world)
                         nodes += line
-                        totalDistance += len
                         segments += Seg(anchorNode, marker, line, len, world)
                     } ?: run {
                         segments += Seg(anchorNode, marker, null, 0f, world)
@@ -279,7 +304,9 @@ fun HorizontalMeasureCamera(
                     lastPoint = world
                 },
                 enabled = ready && centerHasPlane,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp)
             ) { Text("중앙에 포인트 추가") }
 
             // 도면 생성
@@ -292,7 +319,9 @@ fun HorizontalMeasureCamera(
                     }
                 },
                 enabled = ready && !state.isBuilding && state.cornersWorld.size >= 3,
-                modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.dp, bottom = 24.dp)
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 16.dp, bottom = 24.dp)
             ) { Text(if (state.isBuilding) "계산 중…" else "도면 생성") }
 
             // HUD
@@ -300,7 +329,6 @@ fun HorizontalMeasureCamera(
                 isVertical = false,
                 liveMeters = liveDistance,
                 lastSegmentMeters = segments.lastOrNull()?.lengthM?.takeIf { it > 0f },
-                totalMeters = totalDistance,
                 onUndo = {
                     if (segments.isNotEmpty()) {
                         val last = segments.removeAt(segments.lastIndex)
@@ -311,9 +339,7 @@ fun HorizontalMeasureCamera(
 
                         if (segments.isEmpty()) {
                             lastPoint = null
-                            totalDistance = 0f
                         } else {
-                            totalDistance -= last.lengthM
                             lastPoint = segments.last().world
                         }
                         viewModel.undoCorner()
@@ -332,30 +358,27 @@ fun DistanceHUD(
     isVertical: Boolean,
     liveMeters: Float?,
     lastSegmentMeters: Float?,
-    totalMeters: Float?,
     onUndo: () -> Unit,
     onClear: () -> Unit
 ) {
     val pad = 10.dp
-    Column(
-        Modifier.fillMaxWidth().padding(pad),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            TextButton(onClick = onUndo) { Text("되돌리기") }
-            TextButton(onClick = onClear) { Text("초기화") }
-        }
-        Spacer(Modifier.height(8.dp))
+    Row(Modifier
+        .fillMaxWidth()
+        .padding(pad), horizontalArrangement = Arrangement.SpaceBetween) {
+        TextButton(onClick = onUndo) { Text("되돌리기") }
         Surface(tonalElevation = 4.dp, shape = MaterialTheme.shapes.medium) {
             Column(Modifier.padding(12.dp)) {
                 val label = if (isVertical) "높이" else "실시간"
-                Text("$label: ${liveMeters?.let(::fmt) ?: "-"}", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    "$label: ${liveMeters?.let(::fmt) ?: "-"}",
+                    style = MaterialTheme.typography.titleMedium
+                )
                 lastSegmentMeters?.let {
                     Text("${if (isVertical) "벽 높이" else "마지막 구간"}: ${fmt(it)}")
                 }
-                totalMeters?.let { Text("총합: ${fmt(it)}") }
             }
         }
+        TextButton(onClick = onClear) { Text("초기화") }
     }
 }
 
@@ -363,7 +386,9 @@ fun DistanceHUD(
 fun CenterReticle(modifier: Modifier, isVertical: Boolean) {
     val color = if (isVertical) Color(0xFF2196F3) else Color(0xFF4CAF50)
     Box(
-        modifier.size(22.dp).background(color.copy(alpha = 0.2f), CircleShape)
+        modifier
+            .size(22.dp)
+            .background(color.copy(alpha = 0.2f), CircleShape)
             .border(2.dp, color, CircleShape)
     )
 }
