@@ -6,7 +6,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface CafeRepository extends JpaRepository<Cafe, Long> {
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+
+public interface CafeRepository extends JpaRepository<Cafe, Long>, JpaSpecificationExecutor<Cafe> {
     boolean existsByCafeOwner(User user);
 
     Optional<Cafe> findByCafeOwner(User user);

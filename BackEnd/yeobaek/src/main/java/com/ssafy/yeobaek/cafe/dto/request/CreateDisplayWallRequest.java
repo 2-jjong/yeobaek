@@ -1,15 +1,12 @@
 package com.ssafy.yeobaek.cafe.dto.request;
 
 import com.ssafy.yeobaek.cafe.dto.Vec2;
-import com.ssafy.yeobaek.common.validation.ValidCategoryIds;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Schema(description = "카페 공간 등록 요청")
 @Getter
@@ -30,6 +27,18 @@ public class CreateDisplayWallRequest {
 	@Schema(description = "끝점")
 	@NotNull(message = "MISSING_REQUIRED_FIELD")
 	private Vec2 end;
+
+	@Schema(description = "벽 너비 (cm)", example = "200.0")
+	@NotNull(message = "MISSING_REQUIRED_FIELD")
+	@Min(value = 1, message = "INVALID_INPUT_VALUE")
+	@Max(value = 500, message = "INVALID_INPUT_VALUE")
+	private Double width;
+
+	@Schema(description = "벽 높이 (cm)", example = "150.0")
+	@NotNull(message = "MISSING_REQUIRED_FIELD")
+	@Min(value = 1, message = "INVALID_INPUT_VALUE")
+	@Max(value = 500, message = "INVALID_INPUT_VALUE")
+	private Double height;
 
 	@Schema(description = "전시 가능 여부", example = "true")
 	@NotNull(message = "MISSING_REQUIRED_FIELD")

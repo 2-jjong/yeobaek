@@ -84,7 +84,6 @@ public enum ResponseCode {
     CAFE_FORBIDDEN_UPDATE_DELETE("CF4032", "본인의 카페만 수정/삭제할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_SLOT_FILTER_FORBIDDEN("CF4033", "슬롯 규격 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_COMMISSION_FILTER_FORBIDDEN("CF4034", "수수료율 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
-    CAFE_COMMISSION_SORT_FORBIDDEN("CF4035", "수수료율 정렬은 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
 
     // 카페 관련 에러 (404 Not Found)
     CAFE_NOT_FOUND("CF4041", "존재하지 않는 카페입니다", HttpStatus.NOT_FOUND),

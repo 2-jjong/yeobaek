@@ -48,10 +48,10 @@ public class CafeDetail {
     private List<String> categories;
 
     @Schema(description = "카페 이미지 목록")
-    private List<CafeImage> images;
+    private List<String> images;
 
     @Schema(description = "전시 슬롯 목록")
-    private List<SlotDetail> slots;
+    private List<DisplaySlot> slots;
 
     @Schema(description = "카페 사장 정보")
     private CafeOwner cafeOwner;

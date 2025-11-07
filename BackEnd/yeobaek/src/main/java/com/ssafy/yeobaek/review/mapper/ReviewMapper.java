@@ -1,14 +1,16 @@
 package com.ssafy.yeobaek.review.mapper;
 
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.review.dto.request.CreateReviewRequest;
-import com.ssafy.yeobaek.review.dto.response.RatingStat;
-import com.ssafy.yeobaek.review.dto.response.ReviewStatistics;
+import com.ssafy.yeobaek.review.dto.response.*;
 import com.ssafy.yeobaek.review.entity.Review;
 import com.ssafy.yeobaek.user.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Review 도메인 엔티티와 DTO 간의 변환을 담당하는 매퍼
@@ -61,6 +63,114 @@ public class ReviewMapper {
                 .rating(rating)
                 .count(count)
                 .percentage(percentage)
+                .build();
+    }
+
+    /**
+     * Review Page를 ReviewListResponse DTO로 변환
+     * @param reviewPage 리뷰 페이지
+     * @return 리뷰 목록 응답 DTO
+     */
+    public ReviewListResponse toReviewListResponse(Page<Review> reviewPage) {
+        List<ReviewDetail> reviews = reviewPage.getContent().stream()
+                .map(this::toReviewDetail)
+                .collect(Collectors.toList());
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(reviewPage.getNumber())
+                .pageSize(reviewPage.getSize())
+                .totalElements(reviewPage.getTotalElements())
+                .totalPages(reviewPage.getTotalPages())
+                .hasNext(reviewPage.hasNext())
+                .build();
+
+        return ReviewListResponse.builder()
+                .reviews(reviews)
+                .pagination(pagination)
+                .build();
+    }
+
+    /**
+     * Review Entity를 ReviewDetail DTO로 변환
+     * @param review 리뷰 엔티티
+     * @return 리뷰 상세 DTO
+     */
+    private ReviewDetail toReviewDetail(Review review) {
+        return ReviewDetail.builder()
+                .reviewId(review.getId())
+                .reviewer(toReviewer(review.getReviewer()))
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .exhibitionStartDate(null) // TODO: Exhibition에 startDate 필드 추가 시 수정 필요
+                .exhibitionEndDate(null)   // TODO: Exhibition에 endDate 필드 추가 시 수정 필요
+                .createdAt(review.getCreatedAt().toLocalDate())
+                .build();
+    }
+
+    /**
+     * User Entity를 Reviewer DTO로 변환
+     * @param user 사용자 엔티티
+     * @return 평가자 DTO
+     */
+    private Reviewer toReviewer(User user) {
+        return Reviewer.builder()
+                .name(user.getNickname())
+                .profileImageUrl(user.getProfileImageUrl())
+                .role(user.getUserType().name())
+                .build();
+    }
+
+    /**
+     * Review Page를 WrittenReviewListResponse DTO로 변환 (작성한 리뷰)
+     * @param reviewPage 리뷰 페이지
+     * @return 작성한 리뷰 목록 응답 DTO
+     */
+    public WrittenReviewListResponse toWrittenReviewListResponse(Page<Review> reviewPage) {
+        List<WrittenReviewDetail> reviews = reviewPage.getContent().stream()
+                .map(this::toWrittenReviewDetail)
+                .collect(Collectors.toList());
+
+        Pagination pagination = Pagination.builder()
+                .currentPage(reviewPage.getNumber())
+                .pageSize(reviewPage.getSize())
+                .totalElements(reviewPage.getTotalElements())
+                .totalPages(reviewPage.getTotalPages())
+                .hasNext(reviewPage.hasNext())
+                .build();
+
+        return WrittenReviewListResponse.builder()
+                .reviews(reviews)
+                .pagination(pagination)
+                .build();
+    }
+
+    /**
+     * Review Entity를 WrittenReviewDetail DTO로 변환 (작성한 리뷰)
+     * @param review 리뷰 엔티티
+     * @return 작성한 리뷰 상세 DTO
+     */
+    private WrittenReviewDetail toWrittenReviewDetail(Review review) {
+        return WrittenReviewDetail.builder()
+                .reviewId(review.getId())
+                .reviewee(toReviewee(review.getReviewee()))
+                .rating(review.getRating())
+                .comment(review.getComment())
+                .exhibitionStartDate(null) // TODO: Exhibition에 startDate 필드 추가 시 수정 필요
+                .exhibitionEndDate(null)   // TODO: Exhibition에 endDate 필드 추가 시 수정 필요
+                .createdAt(review.getCreatedAt().toLocalDate())
+                .build();
+    }
+
+    /**
+     * User Entity를 Reviewee DTO로 변환
+     * @param user 사용자 엔티티
+     * @return 평가 대상자 DTO
+     */
+    private Reviewee toReviewee(User user) {
+        return Reviewee.builder()
+                .name(user.getNickname())
+                .profileImageUrl(user.getProfileImageUrl())
+                .role(user.getUserType().name())
                 .build();
     }
 }

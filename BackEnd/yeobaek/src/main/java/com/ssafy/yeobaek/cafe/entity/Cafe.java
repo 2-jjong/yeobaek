@@ -71,4 +71,11 @@ public class Cafe {
     @Column(name = "image_url")
     @OrderColumn(name = "display_order")
     private List<String> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "cafe")
+    private List<DisplayWall> displayWalls = new ArrayList<>();
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
 }
