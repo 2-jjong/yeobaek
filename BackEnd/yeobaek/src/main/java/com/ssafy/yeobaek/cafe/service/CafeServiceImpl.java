@@ -13,6 +13,7 @@ import com.ssafy.yeobaek.cafe.mapper.CafeMapper;
 import com.ssafy.yeobaek.cafe.repository.*;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class CafeServiceImpl implements CafeService {
     private final CafeMapper cafeMapper;
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
+    private final S3Service s3Service;
 
     /**
      * 카페 등록
@@ -192,7 +194,7 @@ public class CafeServiceImpl implements CafeService {
                     .collect(Collectors.toList());
 
                 // 대표 이미지 URL 추출
-                String primaryImageUrl = cafe.getImages().isEmpty() ? null : cafe.getImages().get(0);
+                String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
 
                 return new CafeSummary(cafe.getId(), cafe.getCafeName(), cafe.getAddress(), cafe.getLatitude(), cafe.getLongitude(), primaryImageUrl, availableSlotCount, totalSlotCount, distance, categories);
             })
