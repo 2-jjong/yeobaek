@@ -13,9 +13,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class CreateChatRoomRequest {
 
-    @Schema(description = "카페 id", example = "1")
-    private Long cafeId;
-
-    @Schema(description = "작품 id", example = "1")
-    private Long artworkId;
+    @Schema(description = "상대방 id", example = "1")
+    private Long partnerId;
 }

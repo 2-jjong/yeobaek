@@ -98,7 +98,7 @@ public enum ResponseCode {
     INVALID_FILE_COUNT("ST4002", "파일 개수는 1개 이상 10개 이하여야 합니다", HttpStatus.BAD_REQUEST),
 
     // 채팅 관련 에러 (400 Bad Request)
-    CHAT_INVALID_REQUEST("CH4001", "작품 ID 또는 카페 ID 중 하나만 필요합니다", HttpStatus.BAD_REQUEST),
+    MESSAGE_SELF_SEND_NOT_ALLOWED("MS4001", "자신에게 메시지를 보낼 수 없습니다", HttpStatus.BAD_REQUEST),
 
     // 서버 에러 (500 Internal Server Error)
     INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR);

@@ -1,7 +1,7 @@
 package com.ssafy.yeobaek.chat.controller;
 
 import com.ssafy.yeobaek.chat.dto.request.CreateChatRoomRequest;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoom;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
 import com.ssafy.yeobaek.chat.service.ChatService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
@@ -26,7 +26,7 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @Operation(summary = "채팅방 생성", description = "채팅방을 생성합니다.")
+    @Operation(summary = "채팅방 생성", description = "채팅방을 생성합니다. 이미 채팅방이 존재하는 경우 기존 채팅방을 반환합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "201",
@@ -45,6 +45,7 @@ public class ChatController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
+                                    @ExampleObject(name = "수신자 오류", value = "{\"code\": \"MS4001\", \"message\": \"자신에게 메시지를 보낼 수 없습니다\"}"),
                                     @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}")
                             }
                     )
@@ -65,8 +66,8 @@ public class ChatController {
                     description = "리소스를 찾을 수 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"code\": \"AU4041\", \"message\": \"존재하지 않는 회원입니다\"}")
-                            )
+                            examples = @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}")
+                    )
             ),
             @ApiResponse(
                     responseCode = "500",
@@ -80,11 +81,11 @@ public class ChatController {
             )
     })
     @PostMapping()
-    public ResponseEntity<ResponseDto<ChatRoom>> createChatRoom(@Valid @RequestBody CreateChatRoomRequest request) {
+    public ResponseEntity<ResponseDto<ChatRoomSummary>> createChatRoom(@Valid @RequestBody CreateChatRoomRequest request) {
         Long senderId = SecurityUtil.getCurrentUserId();
-        ChatRoom chatRoom = chatService.createChatRoom(senderId, request);
+        ChatRoomSummary chatRoomSummary = chatService.createChatRoom(senderId, request.getPartnerId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ResponseDto.created(chatRoom));
+                .body(ResponseDto.created(chatRoomSummary));
     }
 }

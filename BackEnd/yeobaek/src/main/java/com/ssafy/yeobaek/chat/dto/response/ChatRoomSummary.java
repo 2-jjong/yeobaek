@@ -9,7 +9,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatRoom {
+public class ChatRoomSummary {
+
     @Schema(description = "채팅방 ID", example = "1")
     private Long chatRoomId;
 
@@ -19,23 +20,11 @@ public class ChatRoom {
     @Schema(description = "상대방 이름 (작가명 또는 카페명)", example = "홍길동")
     private String partnerName;
 
-    @Schema(description = "상대방 ID", example = "1")
+    @Schema(description = "상대방 프로필 이미지 url", example = "https://example.com/image1.jpg")
+    private String partnerImageUrl;
+
+    @Schema(description = "상대방 역할", example = "ARTIST")
     private String partnerRole;
-
-    @Schema(description = "카페 ID", example = "1")
-    private Long cafeId;
-
-    @Schema(description = "카페명", example = "Brew & Canvas")
-    private String cafeName;
-
-    @Schema(description = "작품 ID", example = "1")
-    private Long artworkId;
-
-    @Schema(description = "작품명", example = "기억의 조각")
-    private String artworkTitle;
-
-    @Schema(description = "작품 썸네일 url", example = "https://example.com/artwork1.jpg")
-    private String artworkThumbnailUrl;
 
     @Schema(description = "읽지 않은 메시지 수", example = "3")
     private Long unreadCount;
