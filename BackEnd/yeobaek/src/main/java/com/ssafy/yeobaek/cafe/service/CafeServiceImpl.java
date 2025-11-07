@@ -168,7 +168,7 @@ public class CafeServiceImpl implements CafeService {
         // 작가 전용 필터 권한 검사
         if (!isArtist) {
             if (minWidth != null || maxWidth != null || minHeight != null || maxHeight != null) {
-                throw new CustomException(ResponseCode.CAFE_SLOT_FILTER_FORBIDDEN);
+                throw new CustomException(ResponseCode.SLOT_FILTER_FORBIDDEN);
             }
             if (minCommission != null || maxCommission != null) {
                 throw new CustomException(ResponseCode.CAFE_COMMISSION_FILTER_FORBIDDEN);
