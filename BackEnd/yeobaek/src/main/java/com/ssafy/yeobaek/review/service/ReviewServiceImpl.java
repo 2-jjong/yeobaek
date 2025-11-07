@@ -6,6 +6,7 @@ import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
 import com.ssafy.yeobaek.review.dto.request.CreateReviewRequest;
 import com.ssafy.yeobaek.review.dto.response.RatingStat;
+import com.ssafy.yeobaek.review.dto.response.ReviewListResponse;
 import com.ssafy.yeobaek.review.dto.response.ReviewStatistics;
 import com.ssafy.yeobaek.review.entity.Review;
 import com.ssafy.yeobaek.review.mapper.ReviewMapper;
@@ -14,6 +15,10 @@ import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -161,5 +166,58 @@ public class ReviewServiceImpl implements ReviewService {
                 Math.round(totalReviewScore * 10.0) / 10.0,
                 ratingStats
         );
+    }
+
+    /**
+     * 내가 받은 리뷰 목록 조회
+     * @param userId 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 리뷰 목록 응답
+     */
+    @Override
+    public ReviewListResponse getMyReviews(Long userId, int page, int size) {
+        return getReviewsByUserId(userId, page, size);
+    }
+
+    /**
+     * 특정 사용자가 받은 리뷰 목록 조회
+     * @param userId 조회할 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 리뷰 목록 응답
+     */
+    @Override
+    public ReviewListResponse getUserReviews(Long userId, int page, int size) {
+        // 사용자 존재 여부 확인
+        userService.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+
+        return getReviewsByUserId(userId, page, size);
+    }
+
+    /**
+     * 특정 사용자가 받은 리뷰 목록 조회 (내부 메소드)
+     * @param userId 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 리뷰 목록 응답
+     */
+    private ReviewListResponse getReviewsByUserId(Long userId, int page, int size) {
+        log.info("리뷰 목록 조회 시작 - 사용자 ID: {}, 페이지: {}, 크기: {}", userId, page, size);
+
+        // 페이징 정보 생성 (최신순 정렬)
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // 사용자가 받은 리뷰 페이징 조회
+        Page<Review> reviewPage = reviewRepository.findAllByRevieweeId(userId, pageable);
+
+        // Mapper를 통해 DTO 변환
+        ReviewListResponse response = reviewMapper.toReviewListResponse(reviewPage);
+
+        log.info("리뷰 목록 조회 완료 - 사용자 ID: {}, 조회된 리뷰 수: {}, 전체 리뷰 수: {}",
+                userId, reviewPage.getNumberOfElements(), reviewPage.getTotalElements());
+
+        return response;
     }
 }
