@@ -129,6 +129,6 @@ public class ReviewController {
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ResponseDto.success());
+                .body(ResponseDto.created());
     }
 }
