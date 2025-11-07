@@ -1,16 +1,12 @@
 package com.ssafy.yeobaeg.presentation.home.cafeowner
 
-import android.R.attr.label
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +25,7 @@ import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.DisplayWall
 import com.ssafy.yeobaeg.domain.model.SlotStatus
-import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
+import com.ssafy.yeobaeg.presentation.arcore.plan.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.util.noRippleClickable

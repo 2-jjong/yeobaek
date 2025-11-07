@@ -23,8 +23,8 @@ import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
-import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
-import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
+import com.ssafy.yeobaeg.presentation.arcore.edit.WallEditScreen
+import com.ssafy.yeobaeg.presentation.arcore.horizontal.HorizontalMeasureCamera
 import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtistHomeScreen
@@ -118,8 +118,8 @@ fun NavGraph(
                         ArtExploreScreen()
                     }
 
-                    is BottomNavScreen.SpaceScanPreview -> NavEntry(key) {
-                        FloorPlanPreview(key.displayWalls)
+                    is FullScreen.WallEdit -> NavEntry(key) {
+                        WallEditScreen(key.displayWalls)
                     }
 
                     is BottomNavScreen.Profile -> NavEntry(key) {
@@ -137,7 +137,7 @@ fun NavGraph(
                     }
 
                     is FullScreen.SpaceScan -> NavEntry(key) {
-                        ARMeasureScreen()
+                        HorizontalMeasureCamera()
                     }
 
                     is FullScreen.RegisterCafe -> NavEntry(key) {

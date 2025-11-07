@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.domain.model
 
+import com.ssafy.yeobaeg.presentation.arcore.common.fmt
 import kotlinx.serialization.Serializable
 enum class SlotStatus { AVAILABLE, ONGOING, RESERVED }
 
@@ -21,12 +22,17 @@ data class Vec2(val x: Float, val y: Float) {
 // 도면 조회 응답 dto
 @Serializable
 data class DisplayWall(
-    val id: Long? = null,
+    val id: Long,
     val wName: String = "",         // "벽 A", "벽 B" ...
     val start: Vec2,          // 로컬 XZ 시작점
     val end: Vec2,            // 로컬 XZ 끝점
+    val width: Float,
+    val height: Float,
     val status: WallStatus = WallStatus.POSSIBLE
-)
+) {
+    val widthText get() = fmt(width)
+    val heightText get() = fmt(height)
+}
 
 // 도면 생성 요청 dto
 data class CreateDisplayWallRequest(
