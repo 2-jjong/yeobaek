@@ -3,8 +3,10 @@ package com.ssafy.yeobaek.review.controller;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.review.dto.request.CreateReviewRequest;
+import com.ssafy.yeobaek.review.dto.response.ReviewStatistics;
 import com.ssafy.yeobaek.review.service.ReviewService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -29,7 +31,7 @@ public class ReviewController {
     @Operation(summary = "전시 리뷰 작성", description = "전시에 대한 리뷰(평점과 후기)를 작성합니다.")
     @ApiResponses(value = {
             @ApiResponse(
-                    responseCode = "200",
+                    responseCode = "201",
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
@@ -82,6 +84,16 @@ public class ReviewController {
                     )
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "존재하지 않는 리소스",
                     content = @Content(
@@ -130,5 +142,71 @@ public class ReviewController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.created());
+    }
+
+    @Operation(summary = "내가 받은 평가 통계 조회", description = "현재 로그인한 사용자가 받은 평가의 통계 정보를 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\", \"data\": {\"totalReviewCount\": 42, \"totalReviewScore\": 4.5, \"ratingStats\": [{\"rating\": 1, \"count\": 2, \"percentage\": 4.8}, {\"rating\": 2, \"count\": 3, \"percentage\": 7.1}, {\"rating\": 3, \"count\": 5, \"percentage\": 11.9}, {\"rating\": 4, \"count\": 10, \"percentage\": 23.8}, {\"rating\": 5, \"count\": 22, \"percentage\": 52.4}]}}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 내부 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @PreAuthorize("hasAnyRole('ARTIST', 'CAFE_OWNER')")
+    @GetMapping("/me/statistics")
+    public ResponseEntity<ResponseDto<ReviewStatistics>> getMyReviewStatistics() {
+        Long userId = SecurityUtil.getCurrentUserId();
+        ReviewStatistics statistics = reviewService.getMyReviewStatistics(userId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(statistics));
     }
 }
