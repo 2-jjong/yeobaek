@@ -54,6 +54,8 @@ public class CafeMapper {
                 .startY(request.getStart().getY())
                 .endX(request.getEnd().getX())
                 .endY(request.getEnd().getY())
+                .widthCm(request.getWidth())
+                .heightCm(request.getHeight())
                 .status(request.getStatus())
                 .build();
     }
