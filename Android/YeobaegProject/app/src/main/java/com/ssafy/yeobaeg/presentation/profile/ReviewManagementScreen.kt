@@ -57,14 +57,9 @@ fun ReviewManagementScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadReviewStatistics()
-    }
-
     ReviewManagementContent(
         uiState = uiState,
         onBackClick = viewModel::navigateBack,
-        onReload = viewModel::loadReviewStatistics
     )
 }
 
@@ -75,7 +70,6 @@ fun ReviewManagementScreen(
 fun ReviewManagementContent(
     uiState: ReviewStatsUiState,
     onBackClick: () -> Unit = {},
-    onReload: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf(0) }
     val tabs = listOf("받은 리뷰", "작성한 리뷰")
@@ -301,6 +295,5 @@ fun ReviewManagementScreenPreview() {
     ReviewManagementContent(
         uiState = fakeState,
         onBackClick = {},
-        onReload = {}
     )
 }

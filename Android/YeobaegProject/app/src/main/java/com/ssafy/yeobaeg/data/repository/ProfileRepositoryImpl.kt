@@ -115,18 +115,4 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getReviewStatistics(userId: Long): Result<ReviewStats> {
-        return runCatching {
-            val response = api.getReviewStatistics(userId)
-            if (!response.isSuccessful) {
-                throw Exception("리뷰 통계 조회 실패: ${response.code()} ${response.message()}")
-            }
-
-            val body = response.body()?.data
-                ?: throw Exception("Response body is null")
-
-            body.toDomain()
-        }
-    }
-
 }

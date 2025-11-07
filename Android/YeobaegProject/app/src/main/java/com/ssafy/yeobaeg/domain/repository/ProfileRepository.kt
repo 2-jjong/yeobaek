@@ -15,6 +15,5 @@ interface ProfileRepository {
         profileImageUrl: String?,
         introduction: String?,
     ):Result<Unit>
-    suspend fun getReviewStatistics(userId:Long):Result<ReviewStats>
 }
 
