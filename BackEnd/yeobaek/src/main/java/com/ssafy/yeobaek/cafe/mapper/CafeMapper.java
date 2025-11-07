@@ -82,7 +82,7 @@ public class CafeMapper {
      * @param walls 카페 공간 정보
      * @return MyCafeData DTO
      */
-    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> walls) {
+    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> walls, String primaryImage) {
 
         // 통계 계산
         long totalSlots = walls.size();
@@ -103,7 +103,7 @@ public class CafeMapper {
                 cafe.getId(),
                 cafe.getCafeName(),
                 cafe.getAddress(),
-                cafe.getImages().isEmpty() ? null : cafe.getImages().get(0),
+                primaryImage,
                 totalSlots,
                 exhibitingSlots,
                 collaboratingArtists,

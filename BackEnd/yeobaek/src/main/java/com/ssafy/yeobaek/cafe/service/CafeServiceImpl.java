@@ -134,8 +134,11 @@ public class CafeServiceImpl implements CafeService {
         // 2. 벽 + 슬롯 조회
         List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafe.getId());
 
-        // 3. DTO 변환하여 반환
-        return cafeMapper.toMyCafeData(cafe, walls);
+        // 3. 카페 이미지 URL 변환
+        String primaryImage = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
+
+        // 4. DTO 변환하여 반환
+        return cafeMapper.toMyCafeData(cafe, walls, primaryImage);
     }
 
 
