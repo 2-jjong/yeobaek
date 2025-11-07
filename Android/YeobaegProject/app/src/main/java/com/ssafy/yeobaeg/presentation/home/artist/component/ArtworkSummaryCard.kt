@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ssafy.yeobaeg.domain.model.ArtworkCategory
+import com.ssafy.yeobaeg.presentation.common.util.formatPriceInput
 import com.ssafy.yeobaeg.presentation.home.artist.ArtworkRegisterViewModel
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.jansilFont
@@ -31,11 +33,11 @@ fun ArtworkSummaryCard(viewModel: ArtworkRegisterViewModel = hiltViewModel()) {
             Text("등록 정보 확인", fontSize = 16.sp, color = YeobaegBrown, fontWeight = FontWeight.Medium)
             Spacer(Modifier.height(8.dp))
             SummaryRow("작품 제목", data.title)
-            SummaryRow("카테고리", data.category.name)
-            SummaryRow("가격", if (data.price > 0) "₩${data.price}" else "")
+            SummaryRow("카테고리", data.category.label)
+            SummaryRow("가격", if (data.price > 0) "₩${formatPriceInput(data.price.toString())}" else "")
             SummaryRow("크기", "${data.widthCm}cm × ${data.heightCm}cm")
             SummaryRow("무게", "${data.weightKg}kg")
-            SummaryRow("제작 연도", data.productionYear)
+            SummaryRow("제작 연도", "${data.productionYear}년")
             SummaryRow("이미지", "${uiState.imageUris.size}장")
         }
     }
