@@ -18,4 +18,11 @@ public interface ReviewService {
      * @return 평가 통계
      */
     ReviewStatistics getMyReviewStatistics(Long userId);
+
+    /**
+     * 특정 사용자가 받은 평가 통계 조회
+     * @param userId 조회할 사용자 ID
+     * @return 평가 통계
+     */
+    ReviewStatistics getUserReviewStatistics(Long userId);
 }
