@@ -14,5 +14,5 @@ data class CafeProfileResponse(
     val contact: String,
     val businessHoursStart:String,
     val businessHoursEnd: String,
-    val ratingStats: RatingStatsResponse
+    val ratingStats: ProfileRatingSummaryResponse
 )

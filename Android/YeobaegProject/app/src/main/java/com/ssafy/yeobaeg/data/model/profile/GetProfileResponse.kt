@@ -5,7 +5,7 @@ import com.ssafy.yeobaeg.domain.model.profile.CafeInfo
 import com.ssafy.yeobaeg.domain.model.profile.Profile
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.domain.model.UserRole
-import com.ssafy.yeobaeg.domain.model.profile.RatingStats
+import com.ssafy.yeobaeg.domain.model.profile.ProfileRatingSummary
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -50,5 +50,7 @@ fun ArtistProfileResponse.toDomain(): ArtistInfo = ArtistInfo(
     ratingStats = ratingStats.toDomain()
 )
 
-fun RatingStatsResponse.toDomain(): RatingStats = RatingStats(
+fun ProfileRatingSummaryResponse.toDomain(): ProfileRatingSummary = ProfileRatingSummary(
+    totalReviews = totalReviews,
+    averageRating = averageRating
 )

@@ -4,5 +4,5 @@ data class ArtistInfo(
     val introduction: String="",
     val artworkCount: Int=0,
     val exhibitingCount: Int=0,
-    val ratingStats: RatingStats= RatingStats()
+    val ratingStats: ProfileRatingSummary= ProfileRatingSummary()
 )
