@@ -1,8 +1,12 @@
 package com.ssafy.yeobaeg.data.repository
 
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
+import com.ssafy.yeobaeg.data.model.cafe.toDomain
 import com.ssafy.yeobaeg.data.model.request.toDto
 import com.ssafy.yeobaeg.data.model.response.toDomain
+import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
+import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
+import com.ssafy.yeobaeg.domain.model.cafe.CafeListResult
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 import com.ssafy.yeobaeg.domain.repository.CafeRepository

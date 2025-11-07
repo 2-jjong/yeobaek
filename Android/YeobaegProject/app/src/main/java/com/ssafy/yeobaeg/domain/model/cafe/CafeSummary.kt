@@ -4,7 +4,7 @@ data class CafeSummary(
     val cafeId: Long,
     val cafeName: String,
     val address: String,
-    val primaryImageUrl: String,
+    val primaryImageUrl: String?,
     val availableSlotCount: Int,
     val totalSlotCount: Int,
     val distance: Double?,
