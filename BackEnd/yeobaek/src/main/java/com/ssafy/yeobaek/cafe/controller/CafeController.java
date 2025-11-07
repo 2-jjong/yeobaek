@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
 import com.ssafy.yeobaek.artwork.dto.response.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
+import com.ssafy.yeobaek.cafe.service.CafeCategoryService;
 import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
@@ -36,6 +37,7 @@ public class CafeController {
     private final int MOCK_CAFE_COUNT = 20;
 
     private final CafeService cafeService;
+    private final CafeCategoryService cafeCategoryService;
 
     @Operation(summary = "카페 정보 등록", description = "카페 사장이 매장 상세 정보, 전시 슬롯, 전시 조건을 등록합니다. 회원가입 후 처음 카페 정보를 등록할 때 사용합니다. 이미지는 최소 3장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
@@ -721,7 +723,10 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": {\"categories\": [ {\"categoryId\": 1,\"categoryName\": \"모던\"}, {\"categoryId\": 2,\"categoryName\": \"빈티지\"}, {\"categoryId\": 3,\"categoryName\": \"인더스트리얼\"} ]}, \"message\": \"정상 처리\"}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -747,8 +752,8 @@ public class CafeController {
             )
     })
     @GetMapping("/categories")
-    public ResponseEntity<ResponseDto<CategoryListData>> getCategories() {
-        CategoryListData data = null;
+    public ResponseEntity<ResponseDto<CategoryListData>> getAllCafeCategories() {
+        CategoryListData data = cafeCategoryService.getAllCafeCategories();
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
