@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.cafe.service;
 
-import com.ssafy.yeobaek.artwork.dto.response.Pagination;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
 import com.ssafy.yeobaek.cafe.dto.response.*;

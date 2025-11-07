@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.cafe.dto.response;
 
-import com.ssafy.yeobaek.artwork.dto.response.Pagination;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

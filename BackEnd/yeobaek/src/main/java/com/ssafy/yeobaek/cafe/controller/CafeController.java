@@ -1,16 +1,13 @@
 package com.ssafy.yeobaek.cafe.controller;
 
 import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
-import com.ssafy.yeobaek.artwork.dto.response.Pagination;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.UserRole;
-import com.ssafy.yeobaek.common.enums.WallStatus;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
-import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
