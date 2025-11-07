@@ -18,6 +18,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegErrorDialog
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 
@@ -39,7 +40,8 @@ fun LoginScreen(
         onLoginTestUser1 = { viewModel.loginWithTestUser("user1@example.com", "Password123!") },
         onLoginTestUser2 = { viewModel.loginWithTestUser("user2@example.com", "Password123!") },
         onLoginTestUser3 = { viewModel.loginWithTestUser("user3@example.com", "Password123!") },
-        onNavigateSignUp = viewModel::navigateSignUp
+        onNavigateSignUp = viewModel::navigateSignUp,
+        onClearError = viewModel::clearError
     )
 }
 
@@ -57,6 +59,7 @@ fun LoginScreen(
     onLoginTestUser2: () -> Unit,
     onLoginTestUser3: () -> Unit,
     onNavigateSignUp: () -> Unit,
+    onClearError: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -185,14 +188,11 @@ fun LoginScreen(
             }
         }
 
-        ui.error?.let {
-            AlertDialog(
-                onDismissRequest = { },
-                title = { Text("오류") },
-                text = { Text(it) },
-                confirmButton = {
-                    TextButton(onClick = { }) { Text("확인") }
-                }
+        // 에러 다이얼로그
+        ui.error?.let { errorMessage ->
+            YeobaegErrorDialog(
+                message = errorMessage,
+                onConfirm = onClearError
             )
         }
     }
@@ -209,6 +209,7 @@ fun LoginScreenPreview() {
         onLoginTestUser1 = {},
         onLoginTestUser2 = {},
         onLoginTestUser3 = {},
-        onNavigateSignUp = {}
+        onNavigateSignUp = {},
+        onClearError = {}
     )
 }

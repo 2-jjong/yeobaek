@@ -2,13 +2,14 @@ package com.ssafy.yeobaeg.presentation.signup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.ArtType
 import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
-import com.ssafy.yeobaeg.navigation.BottomNavScreen
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.ValidationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,45 +28,88 @@ data class SignUpUiState(
     val birthDate: String = "",
     val gender: Gender? = null,
     val nickname: String = "",
-    val artType: ArtType? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val successMessage: String? = null
+    // 실시간 에러 메시지
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val passwordConfirmError: String? = null,
+    val birthDateError: String? = null,
+    val nicknameError: String? = null
 )
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     private val navigator: Navigator,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val authSessionManager: AuthSessionManager,
+    private val snackbarController: SnackBarController
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(SignUpUiState())
     val uiState: StateFlow<SignUpUiState> = _uiState.asStateFlow()
     
     fun updateEmail(email: String) {
-        _uiState.update { it.copy(email = email) }
-    }
-    
-    fun updatePassword(password: String) {
-        _uiState.update { it.copy(password = password) }
-    }
-    
-    fun updatePasswordConfirm(passwordConfirm: String) {
-        _uiState.update { it.copy(passwordConfirm = passwordConfirm) }
-    }
-    
-    fun selectUserRole(role: UserRole) {
-        val totalSteps = if (role == UserRole.ARTIST) 5 else 4
+        val errorMessage = if (email.isNotBlank()) {
+            ValidationUtils.getEmailErrorMessage(email)
+        } else null
+        
         _uiState.update { 
             it.copy(
-                userRole = role,
-                totalSteps = totalSteps
+                email = email,
+                emailError = errorMessage
             )
         }
     }
     
+    fun updatePassword(password: String) {
+        val passwordErrorMessage = if (password.isNotBlank()) {
+            ValidationUtils.getPasswordErrorMessage(password)
+        } else null
+        
+        val passwordConfirmErrorMessage = if (_uiState.value.passwordConfirm.isNotBlank()) {
+            ValidationUtils.getPasswordConfirmErrorMessage(password, _uiState.value.passwordConfirm)
+        } else null
+        
+        _uiState.update { 
+            it.copy(
+                password = password,
+                passwordError = passwordErrorMessage,
+                passwordConfirmError = passwordConfirmErrorMessage
+            )
+        }
+    }
+    
+    fun updatePasswordConfirm(passwordConfirm: String) {
+        val errorMessage = if (passwordConfirm.isNotBlank()) {
+            ValidationUtils.getPasswordConfirmErrorMessage(_uiState.value.password, passwordConfirm)
+        } else null
+        
+        _uiState.update { 
+            it.copy(
+                passwordConfirm = passwordConfirm,
+                passwordConfirmError = errorMessage
+            )
+        }
+    }
+    
+    fun selectUserRole(role: UserRole) {
+        _uiState.update { 
+            it.copy(userRole = role)
+        }
+    }
+    
     fun updateBirthDate(birthDate: String) {
-        _uiState.update { it.copy(birthDate = birthDate) }
+        val errorMessage = if (birthDate.isNotBlank()) {
+            ValidationUtils.getBirthDateErrorMessage(birthDate)
+        } else null
+        
+        _uiState.update { 
+            it.copy(
+                birthDate = birthDate,
+                birthDateError = errorMessage
+            )
+        }
     }
     
     fun selectGender(gender: Gender) {
@@ -73,11 +117,16 @@ class SignUpViewModel @Inject constructor(
     }
     
     fun updateNickname(nickname: String) {
-        _uiState.update { it.copy(nickname = nickname) }
-    }
-    
-    fun selectArtType(artType: ArtType) {
-        _uiState.update { it.copy(artType = artType) }
+        val errorMessage = if (nickname.isNotBlank()) {
+            ValidationUtils.getNicknameErrorMessage(nickname)
+        } else null
+        
+        _uiState.update { 
+            it.copy(
+                nickname = nickname,
+                nicknameError = errorMessage
+            )
+        }
     }
 
     fun onBack() {
@@ -88,14 +137,21 @@ class SignUpViewModel @Inject constructor(
 
     fun nextStep() {
         viewModelScope.launch {
-            if(_uiState.value.currentStep == 4) {
-                if(_uiState.value.userRole != UserRole.ARTIST) {
-                    // 회원가입 처리
-                    performSignUp()
-                    return@launch
-                }
-            } else if(_uiState.value.currentStep == 5) {
-                // 회원가입 처리
+            // 현재 단계 검증
+            val isValid = when (_uiState.value.currentStep) {
+                1 -> validateEmailPasswordStep()
+                2 -> validateRoleSelectionStep()
+                3 -> validateGenderAndAgeStep()
+                4 -> validateNicknameStep()
+                else -> false
+            }
+            
+            if (!isValid) {
+                return@launch
+            }
+            
+            // 4단계가 마지막 단계이므로 회원가입 처리
+            if (_uiState.value.currentStep == 4) {
                 performSignUp()
                 return@launch
             }
@@ -104,6 +160,54 @@ class SignUpViewModel @Inject constructor(
                 it.copy(currentStep = it.currentStep + 1)
             }
         }
+    }
+    
+    private fun validateEmailPasswordStep(): Boolean {
+        val state = _uiState.value
+        val emailError = ValidationUtils.getEmailErrorMessage(state.email)
+        val passwordError = ValidationUtils.getPasswordErrorMessage(state.password)
+        val passwordConfirmError = ValidationUtils.getPasswordConfirmErrorMessage(state.password, state.passwordConfirm)
+        
+        _uiState.update {
+            it.copy(
+                emailError = emailError,
+                passwordError = passwordError,
+                passwordConfirmError = passwordConfirmError
+            )
+        }
+        
+        return emailError == null && passwordError == null && passwordConfirmError == null
+    }
+    
+    private fun validateRoleSelectionStep(): Boolean {
+        return _uiState.value.userRole != null
+    }
+    
+    private fun validateGenderAndAgeStep(): Boolean {
+        val state = _uiState.value
+        val birthDateError = ValidationUtils.getBirthDateErrorMessage(state.birthDate)
+        
+        _uiState.update {
+            it.copy(birthDateError = birthDateError)
+        }
+        
+        if (state.gender == null) {
+            _uiState.update { it.copy(error = "성별을 선택해주세요") }
+            return false
+        }
+        
+        return birthDateError == null
+    }
+    
+    private fun validateNicknameStep(): Boolean {
+        val state = _uiState.value
+        val nicknameError = ValidationUtils.getNicknameErrorMessage(state.nickname)
+        
+        _uiState.update {
+            it.copy(nicknameError = nicknameError)
+        }
+        
+        return nicknameError == null
     }
     
     private suspend fun performSignUp() {
@@ -142,17 +246,16 @@ class SignUpViewModel @Inject constructor(
         
         result.fold(
             onSuccess = { message ->
-                _uiState.update { 
-                    it.copy(
-                        isLoading = false,
-                        successMessage = message
-                    )
+                _uiState.update {
+                    it.copy(isLoading = false)
                 }
-                // 홈 화면으로 이동
+                // 로그인 화면으로 이동
                 navigator.navigateAndClearBackStack(FullScreen.Login)
+                // 성공 스낵바 표시
+                snackbarController.showSuccess("회원가입에 성공했습니다!")
             },
             onFailure = { exception ->
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         isLoading = false,
                         error = exception.message ?: "회원가입에 실패했습니다"
@@ -174,10 +277,12 @@ class SignUpViewModel @Inject constructor(
     
     fun canProceedFromEmailPasswordStep(): Boolean {
         val state = _uiState.value
-        return state.email.isNotBlank() && 
-               state.password.isNotBlank() && 
-               state.password == state.passwordConfirm &&
-               state.password.length >= 6
+        return state.emailError == null && 
+               state.passwordError == null && 
+               state.passwordConfirmError == null &&
+               state.email.isNotBlank() &&
+               state.password.isNotBlank() &&
+               state.passwordConfirm.isNotBlank()
     }
     
     fun canProceedFromRoleSelectionStep(): Boolean {
@@ -186,14 +291,14 @@ class SignUpViewModel @Inject constructor(
     
     fun canProceedFromGenderAndAgeStep(): Boolean {
         val state = _uiState.value
-        return state.birthDate.isNotBlank() && state.gender != null
+        return state.birthDate.isNotBlank() && 
+               state.birthDateError == null &&
+               state.gender != null
     }
     
     fun canProceedFromNicknameStep(): Boolean {
-        return _uiState.value.nickname.isNotBlank()
-    }
-    fun canProceedFromArtTypeStep(): Boolean {
-        return _uiState.value.artType != null
+        val state = _uiState.value
+        return state.nickname.isNotBlank() && state.nicknameError == null
     }
     
     fun clearError() {

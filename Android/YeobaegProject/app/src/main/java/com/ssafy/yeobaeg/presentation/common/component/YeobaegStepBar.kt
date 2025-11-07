@@ -1,5 +1,7 @@
 package com.ssafy.yeobaeg.presentation.common.component
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -16,7 +19,18 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
 
 @Composable
 fun YeobaegStepBar(step: Int, totalStep: Int) {
-    val progress = step.toFloat() / totalStep.toFloat()
+    val targetProgress = step.toFloat() / totalStep.toFloat()
+    
+    // 애니메이션 추가
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = tween(
+            durationMillis = 600,
+            delayMillis = 0
+        ),
+        label = "progress_animation"
+    )
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -25,7 +39,7 @@ fun YeobaegStepBar(step: Int, totalStep: Int) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LinearProgressIndicator(
-            progress = { progress },
+            progress = { animatedProgress },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(8.dp),
