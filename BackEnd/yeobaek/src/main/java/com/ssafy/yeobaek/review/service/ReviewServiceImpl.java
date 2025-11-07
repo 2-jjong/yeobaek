@@ -83,6 +83,20 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     /**
+     * 특정 사용자가 받은 평가 통계 조회
+     * @param userId 조회할 사용자 ID
+     * @return 평가 통계
+     */
+    @Override
+    public ReviewStatistics getUserReviewStatistics(Long userId) {
+        // 사용자 존재 여부 확인
+        userService.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+
+        return getReviewStatisticsByUserId(userId);
+    }
+
+    /**
      * 특정 사용자가 받은 평가 통계 조회 (내부 메소드)
      * @param userId 사용자 ID
      * @return 평가 통계
@@ -100,20 +114,6 @@ public class ReviewServiceImpl implements ReviewService {
                 userId, statistics.getTotalReviewCount(), statistics.getTotalReviewScore());
 
         return statistics;
-    }
-
-    /**
-     * 특정 사용자가 받은 평가 통계 조회
-     * @param userId 조회할 사용자 ID
-     * @return 평가 통계
-     */
-    @Override
-    public ReviewStatistics getUserReviewStatistics(Long userId) {
-        // 사용자 존재 여부 확인
-        userService.findById(userId)
-                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
-
-        return getReviewStatisticsByUserId(userId);
     }
 
     /**
