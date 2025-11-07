@@ -1,4 +1,4 @@
-package com.ssafy.yeobaeg.presentation.home.artist
+package com.ssafy.yeobaeg.presentation.home.artist.component
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
@@ -12,7 +12,6 @@ import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedTextField
 import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
 import com.ssafy.yeobaeg.presentation.common.util.formatPriceInput
-import com.ssafy.yeobaeg.presentation.home.artist.component.ArtworkCategorySelector
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable

@@ -1,4 +1,4 @@
-package com.ssafy.yeobaeg.presentation.home.artist
+package com.ssafy.yeobaeg.presentation.home.artist.component
 
 import android.net.Uri
 import androidx.compose.foundation.layout.*
@@ -12,7 +12,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
-import com.ssafy.yeobaeg.presentation.home.artist.component.ArtworkImageUploader
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable

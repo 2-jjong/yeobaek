@@ -10,6 +10,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.util.formatPriceInput
+import com.ssafy.yeobaeg.presentation.home.artist.component.ArtworkBasicInfoContent
+import com.ssafy.yeobaeg.presentation.home.artist.component.ArtworkDescriptionContent
+import com.ssafy.yeobaeg.presentation.home.artist.component.ArtworkDetailInfoContent
+import com.ssafy.yeobaeg.presentation.home.artist.component.ArtworkImageUploadContent
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 
 @Composable
@@ -48,7 +52,7 @@ fun ArtworkRegisterScreen(
             2 -> ArtworkBasicInfoContent(
                 title = data.title,
                 category = data.category,
-                price = if (data.price == 0) "" else com.ssafy.yeobaeg.presentation.common.util.formatPriceInput(
+                price = if (data.price == 0) "" else formatPriceInput(
                     data.price.toString()
                 ),
                 onTitleChange = { viewModel.updateArtworkData(title = it) },

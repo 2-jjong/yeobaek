@@ -1,4 +1,4 @@
-package com.ssafy.yeobaeg.presentation.home.artist
+package com.ssafy.yeobaeg.presentation.home.artist.component
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
