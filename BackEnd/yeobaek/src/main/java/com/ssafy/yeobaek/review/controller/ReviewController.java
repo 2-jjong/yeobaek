@@ -16,16 +16,20 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "리뷰", description = "전시 리뷰 관리 API")
 @RestController
 @RequestMapping("/api/v1/reviews")
 @RequiredArgsConstructor
+@Validated
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -340,7 +344,9 @@ public class ReviewController {
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "20")
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 50, message = "INVALID_INPUT_VALUE") int size
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
         ReviewListResponse response = reviewService.getMyReviews(userId, page, size);
@@ -412,7 +418,9 @@ public class ReviewController {
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "20")
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 50, message = "INVALID_INPUT_VALUE") int size
     ) {
         ReviewListResponse response = reviewService.getUserReviews(userId, page, size);
 
@@ -480,11 +488,15 @@ public class ReviewController {
     @GetMapping("/me/written")
     public ResponseEntity<ResponseDto<WrittenReviewListResponse>> getMyWrittenReviews(
             @Parameter(description = "필터링할 평점 (1~5, null이면 전체)", example = "5")
-            @RequestParam(required = false) Integer rating,
+            @RequestParam(required = false)
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 5, message = "INVALID_INPUT_VALUE") Integer rating,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기", example = "20")
-            @RequestParam(defaultValue = "20") int size
+            @RequestParam(defaultValue = "20")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 50, message = "INVALID_INPUT_VALUE") int size
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
         WrittenReviewListResponse response = reviewService.getMyWrittenReviews(userId, rating, page, size);
