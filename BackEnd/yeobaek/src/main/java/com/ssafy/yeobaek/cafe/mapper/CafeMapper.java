@@ -146,7 +146,7 @@ public class CafeMapper {
      * @param categories 카페 카테고리 목록
      * @return CafeDetailData DTO
      */
-    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> walls, List<String> categories) {
+    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> walls, List<String> categories, List<String> images) {
 
         // 1. 벽 정보 -> 슬롯 상세 정보 DTO 목록으로 변환
         List<DisplaySlot> slotDetails = walls.stream()
@@ -172,7 +172,7 @@ public class CafeMapper {
             cafe.getViewCount(),
             false, // TODO: 실제 북마크 여부 정보 연동 필요
             categories,
-            cafe.getImages(),
+            images,
             slotDetails,
             owner
         );

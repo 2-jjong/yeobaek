@@ -13,6 +13,7 @@ import com.ssafy.yeobaek.cafe.mapper.CafeMapper;
 import com.ssafy.yeobaek.cafe.repository.*;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class CafeServiceImpl implements CafeService {
     private final CafeMapper cafeMapper;
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
+    private final S3Service s3Service;
 
     /**
      * 카페 등록
@@ -227,7 +229,7 @@ public class CafeServiceImpl implements CafeService {
      * @return 카페 상세 정보
      */
     @Override
-    @Transactional
+    @Transactional(readOnly = true)
     public CafeDetailData getCafeDetail(Long cafeId) {
 
         // 1. Cafe 엔티티 조회
@@ -242,13 +244,17 @@ public class CafeServiceImpl implements CafeService {
             .map(tag -> tag.getCategory().getCategoryName())
             .collect(Collectors.toList());
 
-        // 4. DTO 변환
-        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories);
+        // 4. 카페 이미지 URL 변환
+        List<String> images = s3Service.generatePresignedUrlsForDownload(cafe.getImages());
 
-        // 5. 조회수 1 증가
+        // 5. DTO 변환
+        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images);
+
+        // 6. 조회수 1 증가
         cafe.increaseViewCount();
 
         return cafeDetailData;
     }
+
 
 }
