@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,7 @@ public class CafeCategoryServiceImpl implements CafeCategoryService {
     @Override
     public CategoryListData getAllCafeCategories() {
         List<Category> categories = cafeCategoryRepository.findAll().stream()
+                .sorted(Comparator.comparing(CafeCategory::getId))
                 .map(cafeCategory -> new Category(cafeCategory.getId(), cafeCategory.getCategoryName()))
                 .collect(Collectors.toList());
         return new CategoryListData(categories);
