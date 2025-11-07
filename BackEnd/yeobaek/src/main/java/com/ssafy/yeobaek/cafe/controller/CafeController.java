@@ -465,7 +465,10 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"S0000\",\"message\":\"정상 처리\",\"data\":{\"cafes\":[{\"cafeId\":1,\"cafeName\":\"카페 여백 #1\",\"address\":\"서울시 강남구 테헤란로 123\",\"latitude\":37.5665,\"longitude\":126.978,\"primaryImageUrl\":\"https://example.com/cafe1.jpg\",\"availableSlotCount\":2,\"totalSlotCount\":3,\"distance\":0.5,\"categories\":[\"모던\",\"미니멀\"]},{\"cafeId\":2,\"cafeName\":\"아트 카페 #2\",\"address\":\"서울시 종로구 인사동길 45\",\"latitude\":37.5796,\"longitude\":126.9769,\"primaryImageUrl\":\"https://example.com/cafe2.jpg\",\"availableSlotCount\":3,\"totalSlotCount\":4,\"distance\":1.2,\"categories\":[\"빈티지\",\"클래식\"]}],\"pagination\":{\"page\":0,\"size\":20,\"totalElements\":100,\"totalPages\":5,\"last\":false}}}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -676,7 +679,10 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"S0000\",\"data\":{\"cafeDetail\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"서울시 강남구 테헤란로 123\",\"description\":\"조용하고 아늑한 분위기의 카페입니다.\",\"contact\":\"02-1234-5678\",\"businessStartTime\":\"09:00\",\"businessEndTime\":\"22:00\",\"dailyVisitors\":\"100~200명\",\"viewCount\":150,\"isBookmarked\":false,\"categories\":[\"모던\",\"미니멀\"],\"images\":[{\"imageId\":1,\"imageUrl\":\"https://example.com/cafe1.jpg\",\"isPrimary\":true,\"order\":1},{\"imageId\":2,\"imageUrl\":\"https://example.com/cafe2.jpg\",\"isPrimary\":false,\"order\":2}],\"slots\":[{\"slotId\":1,\"wallName\":\"1번 벽\",\"width\":200,\"height\":250,\"type\":\"RAIL\",\"commissionRate\":15,\"requirements\":\"카페 입구 오른쪽 벽면\",\"status\":\"EXHIBITING\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}],\"owner\":{\"userId\":1,\"nickname\":\"카페사장\",\"profileImageUrl\":\"https://example.com/profile.jpg\",\"ratingStats\":{\"reviewCount\":42,\"averageRating\":4.5}}}},\"message\":\"정상 처리\"}"
+                            )
                     )
             ),
             @ApiResponse(

@@ -18,7 +18,6 @@ import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -246,9 +245,10 @@ public class CafeServiceImpl implements CafeService {
 
         // 4. 카페 이미지 URL 변환
         List<String> images = s3Service.generatePresignedUrlsForDownload(cafe.getImages());
+        String profileImage = cafe.getCafeOwner().getProfileImageUrl() != null ? s3Service.generatePresignedUrlForDownload(cafe.getCafeOwner().getProfileImageUrl()) : null;
 
         // 5. DTO 변환
-        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images);
+        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images, profileImage);
 
         // 6. 조회수 1 증가
         cafe.increaseViewCount();

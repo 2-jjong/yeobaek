@@ -8,6 +8,7 @@ import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.DisplayWall;
 import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.WallStatus;
+import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -171,7 +172,7 @@ public class CafeMapper {
      * @param categories 카페 카테고리 목록
      * @return CafeDetailData DTO
      */
-    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> walls, List<String> categories, List<String> images) {
+    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> walls, List<String> categories, List<String> images, String profileImage) {
 
         // 1. 벽 정보 -> 슬롯 상세 정보 DTO 목록으로 변환
         List<DisplaySlot> slotDetails = walls.stream()
@@ -181,8 +182,8 @@ public class CafeMapper {
         // 2. 카페 사장 정보 DTO 생성
         User ownerUser = cafe.getCafeOwner();
         // TODO: 실제 작가 평점 정보 연동 필요
-        com.ssafy.yeobaek.user.dto.response.RatingStatsData ratingStats = new com.ssafy.yeobaek.user.dto.response.RatingStatsData(0, 0.0);
-        CafeOwner owner = new CafeOwner(ownerUser.getId(), ownerUser.getNickname(), ownerUser.getProfileImageUrl(), ratingStats);
+        RatingStatsData ratingStats = new RatingStatsData(0, 0.0);
+        CafeOwner owner = new CafeOwner(ownerUser.getId(), ownerUser.getNickname(), profileImage, ratingStats);
 
         // 3. 최종 CafeDetail DTO 조립
         CafeDetail cafeDetail = new CafeDetail(
