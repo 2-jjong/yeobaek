@@ -1,5 +1,7 @@
 package com.ssafy.yeobaek.chat.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -9,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChatRoomSummary {
 
     @Schema(description = "채팅방 ID", example = "1")
@@ -24,7 +27,7 @@ public class ChatRoomSummary {
     private String partnerImageUrl;
 
     @Schema(description = "상대방 역할", example = "ARTIST")
-    private String partnerRole;
+    private UserRole partnerRole;
 
     @Schema(description = "읽지 않은 메시지 수", example = "3")
     private Long unreadCount;

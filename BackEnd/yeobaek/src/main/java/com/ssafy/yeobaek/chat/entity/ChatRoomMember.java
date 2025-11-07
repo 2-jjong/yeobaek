@@ -30,7 +30,8 @@ public class ChatRoomMember {
     private ChatRoom chatRoom;
 
     @Column(name = "last_read_at", nullable = false)
-    private LocalDateTime lastReadAt;
+    @Builder.Default
+    private LocalDateTime lastReadAt = LocalDateTime.now();
 
     @Column(name = "left_at")
     private LocalDateTime leftAt;

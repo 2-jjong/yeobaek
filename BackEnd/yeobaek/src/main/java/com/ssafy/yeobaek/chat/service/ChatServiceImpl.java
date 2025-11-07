@@ -3,10 +3,12 @@ package com.ssafy.yeobaek.chat.service;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
 import com.ssafy.yeobaek.chat.entity.ChatRoom;
 import com.ssafy.yeobaek.chat.entity.ChatRoomMember;
+import com.ssafy.yeobaek.chat.mapper.ChatMapper;
 import com.ssafy.yeobaek.chat.repository.ChatRoomMemberRepository;
 import com.ssafy.yeobaek.chat.repository.ChatRoomRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +26,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
+    private final ChatMapper chatMapper;
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final UserService userService;
+    private final S3Service s3Service;
 
     /**
      * 채팅방 생성
@@ -62,32 +66,32 @@ public class ChatServiceImpl implements ChatService {
 
         // 4. 기존 채팅방이 있으면 해당 채팅방 정보 반환
         if (existingRoomOpt.isPresent()) {
-//            return chatMapper.toChatRoomDto(existingRoomOpt.get(), senderId);
+            String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
+            return chatMapper.toChatRoomSummary(existingRoomOpt.get(), partner, partnerImageUrl);
         }
 
         // 5. 새로운 채팅방 생성
-        ChatRoom newChatRoom = com.ssafy.yeobaek.chat.entity.ChatRoom.builder().build();
+        ChatRoom newChatRoom = ChatRoom.builder().build();
         chatRoomRepository.save(newChatRoom);
 
         // 6. 채팅방 멤버 생성
         ChatRoomMember senderMember = ChatRoomMember.builder()
                 .chatRoom(newChatRoom)
                 .user(user)
-                .lastReadAt(LocalDateTime.now())
                 .build();
 
         ChatRoomMember recipientMember = ChatRoomMember.builder()
                 .chatRoom(newChatRoom)
                 .user(partner)
-                .lastReadAt(LocalDateTime.now())
                 .build();
 
         chatRoomMemberRepository.saveAll(List.of(senderMember, recipientMember));
 
         newChatRoom.setMembers(List.of(senderMember, recipientMember));
 
-        return ChatRoomSummary.builder()
-                .chatRoomId(newChatRoom.getId())
-                .build();
+        // 7. 프로필 이미지 Url 발급
+        String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
+
+        return chatMapper.toChatRoomSummary(newChatRoom, partner, partnerImageUrl);
     }
 }
