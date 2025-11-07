@@ -3,41 +3,14 @@ package com.ssafy.yeobaeg.presentation.home.artist
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedTextField
 import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
 import com.ssafy.yeobaeg.ui.theme.jansilFont
-
-@Composable
-fun ArtworkDetailInfoScreen(
-    onNext: () -> Unit,
-    viewModel: ArtworkRegisterViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
-) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val data = uiState.artworkData
-
-    ArtworkDetailInfoContent(
-        width = if (data.widthCm == 0) "" else data.widthCm.toString(),
-        height = if (data.heightCm == 0) "" else data.heightCm.toString(),
-        weight = if (data.weightKg == 0.0) "" else data.weightKg.toString(),
-        year = data.productionYear,
-        onWidthChange = { viewModel.updateArtworkData(widthCm = it.toIntOrNull() ?: 0) },
-        onHeightChange = { viewModel.updateArtworkData(heightCm = it.toIntOrNull() ?: 0) },
-        onWeightChange = { viewModel.updateArtworkData(weightKg = it.toDoubleOrNull() ?: 0.0) },
-        onYearChange = { viewModel.updateArtworkData(productionYear = it) },
-        onNext = onNext,
-        modifier = modifier
-    )
-}
 
 @Composable
 fun ArtworkDetailInfoContent(
@@ -53,7 +26,10 @@ fun ArtworkDetailInfoContent(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.fillMaxSize().padding(16.dp).clearFocusOnTap()
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .clearFocusOnTap()
     ) {
         Text(
             text = "상세 정보",
@@ -104,7 +80,8 @@ fun ArtworkDetailInfoContent(
             text = "다음",
             onClick = onNext,
             modifier = Modifier.fillMaxWidth(),
-            enabled = width.isNotBlank() && height.isNotBlank() && weight.isNotBlank() && year.isNotBlank()
+            enabled = width.isNotBlank() && height.isNotBlank() &&
+                    weight.isNotBlank() && year.isNotBlank()
         )
     }
 }

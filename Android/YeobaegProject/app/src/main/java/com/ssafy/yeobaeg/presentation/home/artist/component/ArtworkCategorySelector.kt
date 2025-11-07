@@ -31,7 +31,7 @@ fun ArtworkCategorySelector(
             ArtworkCategory.STILL_LIFE
         ),
         listOf(
-            ArtworkCategory.HISTORICAL,
+            ArtworkCategory.HISTORY,
             ArtworkCategory.GENRE,
             ArtworkCategory.OTHER
         )

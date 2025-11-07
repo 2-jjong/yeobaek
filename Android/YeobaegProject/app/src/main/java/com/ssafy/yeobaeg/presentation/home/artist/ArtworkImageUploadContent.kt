@@ -1,47 +1,19 @@
 package com.ssafy.yeobaeg.presentation.home.artist
 
 import android.net.Uri
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.home.artist.component.ArtworkImageUploader
 import com.ssafy.yeobaeg.ui.theme.jansilFont
-
-@Composable
-fun ArtworkImageUploadScreen(
-    onNext: () -> Unit,
-    viewModel: ArtworkRegisterViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
-) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val context= LocalContext.current
-
-    ArtworkImageUploadContent(
-        imageUris = uiState.imageUris,
-        onAddImages = { uris -> viewModel.addImages(context, uris) },
-        onRemoveImage = { uri -> viewModel.removeImage(uri) },
-        onNext = onNext,
-        modifier = modifier
-    )
-}
 
 @Composable
 fun ArtworkImageUploadContent(
@@ -76,9 +48,7 @@ fun ArtworkImageUploadContent(
 
         Spacer(Modifier.height(70.dp))
 
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
+        Box(modifier = Modifier.fillMaxWidth()) {
             ArtworkImageUploader(
                 images = imageUris,
                 onAddImages = onAddImages,
@@ -102,11 +72,10 @@ fun ArtworkImageUploadContent(
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
-fun ArtworkImageUploadScreenPreview() {
+fun ArtworkImageUploadContentPreview() {
     val dummyUris = listOf(
         Uri.parse("https://example.com/sample1.jpg"),
-        Uri.parse("https://example.com/sample2.jpg"),
-        Uri.parse("https://example.com/sample3.jpg")
+        Uri.parse("https://example.com/sample2.jpg")
     )
 
     ArtworkImageUploadContent(
