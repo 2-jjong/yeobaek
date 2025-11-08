@@ -15,5 +15,5 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryListData {
     @Schema(description = "카페 카테고리 목록")
-    private List<Category> categoryList;
+    private List<Category> categories;
 }
