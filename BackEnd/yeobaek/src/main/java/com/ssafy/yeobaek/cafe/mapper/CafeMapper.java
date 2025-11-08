@@ -73,7 +73,7 @@ public class CafeMapper {
                 displayWall.getWallName(),
                 new Vec2(displayWall.getStartX(), displayWall.getStartY()),
                 new Vec2(displayWall.getEndX(), displayWall.getEndY()),
-                displayWall.getStatus() ? displayWall.getSlot().getStatus().toWallStatus() : WallStatus.UNAVAILABLE
+                displayWall.getStatus() ? WallStatus.AVAILABLE : WallStatus.UNAVAILABLE
         );
     }
 
