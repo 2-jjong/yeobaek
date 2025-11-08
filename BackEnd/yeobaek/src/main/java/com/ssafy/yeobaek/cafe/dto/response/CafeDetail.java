@@ -50,9 +50,6 @@ public class CafeDetail {
     @Schema(description = "카페 이미지 목록")
     private List<String> images;
 
-    @Schema(description = "전시 벽 목록")
-    private List<Wall> displayWalls;
-
     @Schema(description = "전시 슬롯 목록")
     private List<Slot> displaySlots;
 

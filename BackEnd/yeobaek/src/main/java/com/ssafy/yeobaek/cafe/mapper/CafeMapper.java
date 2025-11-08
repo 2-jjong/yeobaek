@@ -94,15 +94,9 @@ public class CafeMapper {
         // 협업 작가 수 (임시)
         long collaboratingArtists = 15L;
 
-        // 벽 정보
-        List<Wall> walls = displayWalls.stream()
-                .map(this::toWallDto)
-                .toList();
-
         // 슬롯 정보
         List<Slot> slots = displayWalls.stream()
-                .filter(w -> w.getSlot() != null)
-                .map(w -> toSlotDto(w.getSlot()))
+                .map(this::toSlotDto)
                 .collect(Collectors.toList());
 
         // 내 카페 정보
@@ -114,7 +108,6 @@ public class CafeMapper {
                 totalSlots,
                 exhibitingSlots,
                 collaboratingArtists,
-                walls,
                 slots
         );
 
@@ -155,24 +148,18 @@ public class CafeMapper {
      */
     public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage) {
 
-        // 1. 벽 정보
-        List<Wall> walls = displayWalls.stream()
-                .map(this::toWallDto)
-                .toList();
-
-        // 2. 슬롯 정보
+        // 1. 슬롯 정보
         List<Slot> slots = displayWalls.stream()
-                .filter(w -> w.getSlot() != null)
-                .map(w -> toSlotDto(w.getSlot()))
+                .map(this::toSlotDto)
                 .toList();
 
-        // 3. 카페 사장 정보 DTO 생성
+        // 2. 카페 사장 정보 DTO 생성
         User ownerUser = cafe.getCafeOwner();
         // TODO: 실제 작가 평점 정보 연동 필요
         RatingStatsData ratingStats = new RatingStatsData(0, 0.0);
         CafeOwner owner = new CafeOwner(ownerUser.getId(), ownerUser.getNickname(), profileImage, ratingStats);
 
-        // 4. 최종 CafeDetail DTO 조립
+        // 3. 최종 CafeDetail DTO 조립
         CafeDetail cafeDetail = new CafeDetail(
                 cafe.getId(),
                 cafe.getCafeName(),
@@ -186,7 +173,6 @@ public class CafeMapper {
                 false, // TODO: 실제 북마크 여부 정보 연동 필요
                 categories,
                 images,
-                walls,
                 slots,
                 owner
         );
@@ -195,16 +181,17 @@ public class CafeMapper {
     }
 
     /**
-     * DisplaySlot 엔티티를 DTO로 변환
-     * @param displaySlot 슬롯 정보
+     * DisplayWall 엔티티를 슬롯 DTO로 변환
+     * @param displayWall 벽 정보
      * @return Slot DTO
      */
-    public Slot toSlotDto(DisplaySlot displaySlot){
+    public Slot toSlotDto(DisplayWall displayWall){
 
         ExhibitionInfo exhibitionInfo = null;
+        DisplaySlot displaySlot = displayWall.getSlot();
 
-        if (displaySlot.getStatus() == ExhibitionStatus.EXHIBITING
-                || displaySlot.getStatus() == ExhibitionStatus.SCHEDULED) {
+        if (displaySlot != null && (displaySlot.getStatus() == ExhibitionStatus.EXHIBITING
+                || displaySlot.getStatus() == ExhibitionStatus.SCHEDULED)) {
             exhibitionInfo = new ExhibitionInfo(
                     1L,
                     "여름의 여백",
@@ -216,13 +203,15 @@ public class CafeMapper {
         }
 
         return Slot.builder()
-                .wallId(displaySlot.getId())
-                .wallName(displaySlot.getWall().getWallName())
-                .width(displaySlot.getWall().getWidthCm())
-                .status(displaySlot.getStatus().toWallStatus())
-                .height(displaySlot.getWall().getHeightCm())
-                .commissionRate(displaySlot.getCommissionRate())
-                .requirements(displaySlot.getRequirements())
+                .wallId(displayWall.getId())
+                .wallName(displayWall.getWallName())
+                .start(new Vec2(displayWall.getStartX(), displayWall.getStartY()))
+                .end(new Vec2(displayWall.getEndX(), displayWall.getEndY()))
+                .width(displayWall.getWidthCm())
+                .height(displayWall.getHeightCm())
+                .status(displaySlot != null ? displaySlot.getStatus().toWallStatus() : WallStatus.UNAVAILABLE)
+                .commissionRate(displaySlot != null ? displaySlot.getCommissionRate() : null)
+                .requirements(displaySlot != null ? displaySlot.getRequirements() : null)
                 .currentExhibition(exhibitionInfo)
                 .build();
     }

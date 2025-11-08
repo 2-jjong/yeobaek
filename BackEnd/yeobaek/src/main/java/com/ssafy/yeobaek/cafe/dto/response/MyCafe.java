@@ -36,9 +36,6 @@ public class MyCafe {
     @Schema(description = "협업 작가 수", example = "15")
     private Long collaboratingArtists;
 
-    @Schema(description = "전시 벽 정보")
-    private List<Wall> displayWalls;
-
     @Schema(description = "전시 슬롯 정보")
     private List<Slot> displaySlots;
 }
