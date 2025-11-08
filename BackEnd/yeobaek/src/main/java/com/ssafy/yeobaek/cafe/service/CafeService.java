@@ -68,5 +68,5 @@ public interface CafeService {
      * @param request 슬롯 수정 정보
      * @return 슬롯 정보
      */
-    Slot updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request);
+    SlotData updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request);
 }

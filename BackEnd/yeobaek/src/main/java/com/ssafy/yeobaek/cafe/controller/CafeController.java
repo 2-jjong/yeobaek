@@ -312,8 +312,7 @@ public class CafeController {
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = {
                                     @ExampleObject(
-                                            name = "나의 카페 정보",
-                                            value = "{\"code\":\"S0000\",\"data\":{\"cafeSummary\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"경기도 안양시 동안구 관양동 1588-8\",\"primaryImageUrl\":\"string\",\"totalSlots\":3,\"exhibitingSlots\":1,\"collaboratingArtists\":15,\"displaySlots\":[{\"wallId\":1,\"wallName\":\"벽 A\",\"width\":0,\"height\":0,\"status\":\"AVAILABLE\",\"commissionRate\":0},{\"wallId\":2,\"wallName\":\"벽 B\",\"width\":0,\"height\":0,\"status\":\"UNAVAILABLE\"},{\"wallId\":3,\"wallName\":\"벽 C\",\"width\":208.3,\"height\":100.5,\"status\":\"EXHIBITING\",\"commissionRate\":10,\"requirements\":\"잘 부탁드립니다\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}]}},\"message\":\"정상 처리\"}"
+                                            value = "{\"code\":\"S0000\",\"data\":{\"myCafe\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"경기도 안양시 동안구 관양동 1588-8\",\"primaryImageUrl\":\"https://example.com/cafe1.jpg\",\"totalSlots\":3,\"exhibitingSlots\":1,\"collaboratingArtists\":15,\"displaySlots\":[{\"wallId\":1,\"wallName\":\"벽 A\",\"start\":{\"x\":1.2,\"y\":3.4},\"end\":{\"x\":1.2,\"y\":3.4},\"width\":120,\"height\":100,\"status\":\"AVAILABLE\",\"commissionRate\":0},{\"wallId\":2,\"wallName\":\"벽 B\",\"start\":{\"x\":1.2,\"y\":3.4},\"end\":{\"x\":1.2,\"y\":3.4},\"width\":0,\"height\":100,\"status\":\"UNAVAILABLE\"},{\"wallId\":3,\"wallName\":\"벽 C\",\"start\":{\"x\":87.4,\"y\":67.4},\"end\":{\"x\":45.7,\"y\":45.7},\"width\":208.3,\"height\":100.5,\"status\":\"EXHIBITING\",\"commissionRate\":10,\"requirements\":\"잘 부탁드립니다\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}]}},\"message\":\"정상 처리\"}\n"
                                     )
                             }
                     )
@@ -370,7 +369,7 @@ public class CafeController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "카페 정보 수정", description = "등록된 슬롯 정보를 수정합니다. 모든 필드는 선택적으로 수정 가능합니다 (전송된 필드만 수정됨). 카페 정보는 별도 API로 관리합니다.")
+    @Operation(summary = "슬롯 정보 수정", description = "등록된 슬롯 정보를 수정합니다. 모든 필드는 선택적으로 수정 가능합니다 (전송된 필드만 수정됨). 카페 정보는 별도 API로 관리합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -379,7 +378,7 @@ public class CafeController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\":\"S0000\",\"data\":{\"wallId\":5,\"wallName\":\"벽 A\",\"width\":200,\"height\":150,\"status\":\"AVAILABLE\",\"commissionRate\":10,\"requirements\":\"홍보용 작가 소개 카드 또는 작품 설명 자료를 함께 제공해주세요.\"},\"message\":\"정상 처리\"}"
+                                    value = "{\"code\":\"S0000\",\"data\":{\"slot\":{\"wallId\":5,\"wallName\":\"벽 A\",\"width\":200,\"height\":150,\"status\":\"AVAILABLE\",\"commissionRate\":10,\"requirements\":\"홍보용 작가 소개 카드 또는 작품 설명 자료를 함께 제공해주세요.\"}},\"message\":\"정상 처리\"}"
                             )
                     )
             ),
@@ -440,7 +439,7 @@ public class CafeController {
     })
     @PreAuthorize("hasRole('CAFE_OWNER')")
     @PatchMapping("/{cafeId}/slots/{slotId}")
-    public ResponseEntity<ResponseDto<Slot>> updateSlot(
+    public ResponseEntity<ResponseDto<SlotData>> updateSlot(
             @Parameter(description = "수정할 카페 ID", required = true)
             @PathVariable Long cafeId,
             @Parameter(description = "수정할 슬롯 ID", required = true)
@@ -448,7 +447,7 @@ public class CafeController {
             @Valid @RequestBody UpdateSlotRequest request
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
-        Slot slot = cafeService.updateSlot(userId, cafeId, slotId, request);
+        SlotData slot = cafeService.updateSlot(userId, cafeId, slotId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(slot));
@@ -764,7 +763,7 @@ public class CafeController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\":\"S0000\",\"data\":{\"cafeDetail\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"서울시 강남구 테헤란로 123\",\"description\":\"조용하고 아늑한 분위기의 카페입니다.\",\"contact\":\"02-1234-5678\",\"businessStartTime\":\"09:00\",\"businessEndTime\":\"22:00\",\"dailyVisitors\":\"100~200명\",\"viewCount\":150,\"isBookmarked\":false,\"categories\":[\"모던\",\"미니멀\"],\"images\":[{\"imageId\":1,\"imageUrl\":\"https://example.com/cafe1.jpg\",\"isPrimary\":true,\"order\":1},{\"imageId\":2,\"imageUrl\":\"https://example.com/cafe2.jpg\",\"isPrimary\":false,\"order\":2}],\"slots\":[{\"slotId\":1,\"wallName\":\"1번 벽\",\"width\":200,\"height\":250,\"type\":\"RAIL\",\"commissionRate\":15,\"requirements\":\"카페 입구 오른쪽 벽면\",\"status\":\"EXHIBITING\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}],\"owner\":{\"userId\":1,\"nickname\":\"카페사장\",\"profileImageUrl\":\"https://example.com/profile.jpg\",\"ratingStats\":{\"reviewCount\":42,\"averageRating\":4.5}}}},\"message\":\"정상 처리\"}"
+                                    value = "{\"code\":\"S0000\",\"data\":{\"cafeDetail\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"경기도 안양시 동안구 관양동 1588-8\",\"description\":\"조용하고 아늑한 분위기의 카페입니다.\",\"contact\":\"02-1234-5678\",\"businessHoursStart\":\"09:00\",\"businessHoursEnd\":\"22:00\",\"dailyVisitors\":\"100~200명\",\"viewCount\":9,\"isBookmarked\":false,\"categories\":[\"모던\",\"빈티지\"],\"images\":[\"https://example.com/cafe1.jpg\",\"https://example.com/cafe2.jpg\",\"https://example.com/cafe3.jpg\"],\"displaySlots\":[{\"wallId\":1,\"wallName\":\"벽 A\",\"start\":{\"x\":1.2,\"y\":3.4},\"end\":{\"x\":1.2,\"y\":3.4},\"width\":120,\"height\":100,\"status\":\"AVAILABLE\",\"commissionRate\":0},{\"wallId\":2,\"wallName\":\"벽 B\",\"start\":{\"x\":1.2,\"y\":3.4},\"end\":{\"x\":1.2,\"y\":3.4},\"width\":0,\"height\":100,\"status\":\"UNAVAILABLE\"},{\"wallId\":3,\"wallName\":\"벽 C\",\"start\":{\"x\":87.4,\"y\":67.4},\"end\":{\"x\":45.7,\"y\":45.7},\"width\":208.3,\"height\":100.5,\"status\":\"EXHIBITING\",\"commissionRate\":10,\"requirements\":\"잘 부탁드립니다\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}],\"cafeOwner\":{\"userId\":1,\"nickname\":\"김철수\",\"profileImageUrl\":\"https://example.com/image1.jpg\",\"ratingStats\":{\"totalReviews\":3,\"averageRating\":4.5}}}},\"message\":\"정상 처리\"}\n"
                             )
                     )
             ),
