@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Schema(description = "내 카페 정보")
+@Schema(description = "내 카페 조회 응답 데이터")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,6 +14,6 @@ import lombok.Setter;
 public class MyCafeData {
 
     @Schema(description = "내 카페 정보")
-    private MyCafe cafeSummary;
+    private MyCafe myCafe;
 
 }
