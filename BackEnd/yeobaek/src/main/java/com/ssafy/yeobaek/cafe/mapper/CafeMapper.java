@@ -101,7 +101,8 @@ public class CafeMapper {
 
         // 슬롯 정보
         List<Slot> slots = displayWalls.stream()
-                .map(this::toSlotDto)
+                .filter(w -> w.getSlot() != null)
+                .map(w -> toSlotDto(w.getSlot()))
                 .collect(Collectors.toList());
 
         // 내 카페 정보
@@ -118,40 +119,6 @@ public class CafeMapper {
         );
 
         return new MyCafeData(myCafe);
-    }
-
-    /**
-     * DisplayWall 엔티티를 슬롯 DTO로 변환
-     * @param wall 벽 정보
-     * @return Slot DTO
-     */
-    private Slot toSlotDto(DisplayWall wall) {
-
-        ExhibitionInfo exhibitionInfo = null;
-        DisplaySlot slot = wall.getSlot();
-
-        if (slot != null && (wall.getSlot().getStatus() == ExhibitionStatus.EXHIBITING
-                || wall.getSlot().getStatus() == ExhibitionStatus.SCHEDULED)) {
-            exhibitionInfo = new ExhibitionInfo(
-                    1L,
-                    "여름의 여백",
-                    "https://example.com/artwork1.jpg",
-                    "홍길동",
-                    "2024-01-01",
-                    "2024-03-31"
-            );
-        }
-
-        return new Slot(
-                wall.getId(),
-                wall.getWallName(),
-                wall.getWidthCm(),
-                wall.getHeightCm(),
-                slot != null ? slot.getStatus().toWallStatus() : WallStatus.UNAVAILABLE,
-                slot != null ? slot.getCommissionRate() : null,
-                slot != null ? slot.getRequirements() : null,
-                exhibitionInfo
-        );
     }
 
     /**
@@ -190,7 +157,8 @@ public class CafeMapper {
 
         // 1. 벽 정보 -> 슬롯 상세 정보 DTO 목록으로 변환
         List<Slot> slotDetails = walls.stream()
-                .map(this::toSlotDto)
+                .filter(w -> w.getSlot() != null)
+                .map(w -> toSlotDto(w.getSlot()))
                 .collect(Collectors.toList());
 
         // 2. 카페 사장 정보 DTO 생성
@@ -222,18 +190,34 @@ public class CafeMapper {
 
     /**
      * DisplaySlot 엔티티를 DTO로 변환
-     * @param slot 슬롯 정보
+     * @param displaySlot 슬롯 정보
      * @return Slot DTO
      */
-    public Slot toSlotDto(DisplaySlot slot){
+    public Slot toSlotDto(DisplaySlot displaySlot){
+
+        ExhibitionInfo exhibitionInfo = null;
+
+        if (displaySlot.getStatus() == ExhibitionStatus.EXHIBITING
+                || displaySlot.getStatus() == ExhibitionStatus.SCHEDULED) {
+            exhibitionInfo = new ExhibitionInfo(
+                    1L,
+                    "여름의 여백",
+                    "https://example.com/artwork1.jpg",
+                    "홍길동",
+                    "2024-01-01",
+                    "2024-03-31"
+            );
+        }
+
         return Slot.builder()
-                .wallId(slot.getId())
-                .wallName(slot.getWall().getWallName())
-                .width(slot.getWall().getWidthCm())
-                .status(slot.getStatus().toWallStatus())
-                .height(slot.getWall().getHeightCm())
-                .commissionRate(slot.getCommissionRate())
-                .requirements(slot.getRequirements())
+                .wallId(displaySlot.getId())
+                .wallName(displaySlot.getWall().getWallName())
+                .width(displaySlot.getWall().getWidthCm())
+                .status(displaySlot.getStatus().toWallStatus())
+                .height(displaySlot.getWall().getHeightCm())
+                .commissionRate(displaySlot.getCommissionRate())
+                .requirements(displaySlot.getRequirements())
+                .currentExhibition(exhibitionInfo)
                 .build();
     }
 }
