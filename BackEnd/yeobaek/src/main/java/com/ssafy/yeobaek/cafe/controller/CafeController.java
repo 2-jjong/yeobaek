@@ -4,6 +4,7 @@ import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
+import com.ssafy.yeobaek.cafe.service.CafeCategoryService;
 import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.UserRole;
@@ -38,6 +39,7 @@ public class CafeController {
     private final int MOCK_CAFE_COUNT = 20;
 
     private final CafeService cafeService;
+    private final CafeCategoryService cafeCategoryService;
 
     @Operation(summary = "카페 정보 등록", description = "카페 사장이 매장 상세 정보, 전시 슬롯, 전시 조건을 등록합니다. 회원가입 후 처음 카페 정보를 등록할 때 사용합니다. 이미지는 최소 3장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
@@ -221,7 +223,7 @@ public class CafeController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
+                                    value = "{\"code\":\"S0000\",\"data\":[{\"wallId\":5,\"wallName\":\"벽 A\",\"start\":{\"x\":1.2,\"y\":3.4},\"end\":{\"x\":1.2,\"y\":3.4},\"status\":\"AVAILABLE\"}],\"message\":\"정상 처리\"}"
                             )
                     )
             ),
@@ -311,7 +313,7 @@ public class CafeController {
                             examples = {
                                     @ExampleObject(
                                             name = "나의 카페 정보",
-                                            value = "{\"code\": \"S0000\", \"data\": {\"cafeSummary\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"경기도 안양시 동안구 관양동 1588-8\",\"primaryImageUrl\":\"string\",\"totalSlots\":3,\"exhibitingSlots\":1,\"collaboratingArtists\":15,\"displaySlots\":[{\"wallId\":1,\"wallName\":\"벽 A\",\"width\":0,\"height\":0,\"status\":\"AVAILABLE\",\"commissionRate\":0},{\"wallId\":2,\"wallName\":\"벽 B\",\"width\":0,\"height\":0,\"status\":\"UNAVAILABLE\"},{\"wallId\":3,\"wallName\":\"벽 C\",\"width\":208.3,\"height\":100.5,\"status\":\"EXHIBITING\",\"commissionRate\":10,\"requirements\":\"잘 부탁드립니다\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}]}}\n}, \"message\": \"정상 처리\"}"
+                                            value = "{\"code\":\"S0000\",\"data\":{\"cafeSummary\":{\"cafeId\":1,\"cafeName\":\"카페 여백\",\"address\":\"경기도 안양시 동안구 관양동 1588-8\",\"primaryImageUrl\":\"string\",\"totalSlots\":3,\"exhibitingSlots\":1,\"collaboratingArtists\":15,\"displaySlots\":[{\"wallId\":1,\"wallName\":\"벽 A\",\"width\":0,\"height\":0,\"status\":\"AVAILABLE\",\"commissionRate\":0},{\"wallId\":2,\"wallName\":\"벽 B\",\"width\":0,\"height\":0,\"status\":\"UNAVAILABLE\"},{\"wallId\":3,\"wallName\":\"벽 C\",\"width\":208.3,\"height\":100.5,\"status\":\"EXHIBITING\",\"commissionRate\":10,\"requirements\":\"잘 부탁드립니다\",\"currentExhibition\":{\"artworkId\":1,\"artworkTitle\":\"여름의 여백\",\"artworkImageUrl\":\"https://example.com/artwork1.jpg\",\"artistName\":\"홍길동\",\"exhibitionStartDate\":\"2024-01-01\",\"exhibitionEndDate\":\"2024-03-31\"}}]}},\"message\":\"정상 처리\"}"
                                     )
                             }
                     )
@@ -848,6 +850,49 @@ public class CafeController {
         // Mock 데이터: 북마크 추가됨
         BookmarkToggleData data = new BookmarkToggleData(true);
 
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(data));
+    }
+
+    @Operation(summary = "카페 카테고리 목록 조회", description = "카페 카테고리(인테리어 스타일) 목록을 조회합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": {\"categories\": [ {\"categoryId\": 1,\"categoryName\": \"모던\"}, {\"categoryId\": 2,\"categoryName\": \"빈티지\"}, {\"categoryId\": 3,\"categoryName\": \"인더스트리얼\"} ]}, \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/categories")
+    public ResponseEntity<ResponseDto<CategoryListData>> getAllCafeCategories() {
+        CategoryListData data = cafeCategoryService.getAllCafeCategories();
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
