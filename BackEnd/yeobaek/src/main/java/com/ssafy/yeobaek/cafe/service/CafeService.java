@@ -3,11 +3,8 @@ package com.ssafy.yeobaek.cafe.service;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 
 import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
-import com.ssafy.yeobaek.cafe.dto.response.CafeDetailData;
-import com.ssafy.yeobaek.cafe.dto.response.MyCafeData;
-import com.ssafy.yeobaek.cafe.dto.response.CafeListData;
-import com.ssafy.yeobaek.cafe.dto.response.Wall;
-import org.springframework.transaction.annotation.Transactional;
+import com.ssafy.yeobaek.cafe.dto.request.UpdateSlotRequest;
+import com.ssafy.yeobaek.cafe.dto.response.*;
 
 import java.util.List;
 
@@ -62,4 +59,14 @@ public interface CafeService {
      * @return 카페 상세 정보
      */
     CafeDetailData getCafeDetail(Long cafeId);
+
+    /**
+     * 슬롯 정보 수정
+     * @param userId 유저 id
+     * @param cafeId 카페 id
+     * @param slotId 슬롯 id
+     * @param request 슬롯 수정 정보
+     * @return 슬롯 정보
+     */
+    Slot updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request);
 }

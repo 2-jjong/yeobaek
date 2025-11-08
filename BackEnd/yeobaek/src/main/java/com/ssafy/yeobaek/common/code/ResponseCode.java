@@ -72,23 +72,24 @@ public enum ResponseCode {
     // 카페 관련 에러 (400 Bad Request)
     CAFE_INVALID_IMAGES_LENGTH("CF4001", "카페 이미지는 최소 3장 최대 10장까지 등록 가능합니다", HttpStatus.BAD_REQUEST),
     CAFE_WALL_INVALID_NAME_LENGTH("CF4002", "카페 벽 이름은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
-    CAFE_PRIMARY_IMAGE_ONLY_ONE("CF4003", "대표 이미지는 1개만 선택해야 합니다", HttpStatus.BAD_REQUEST),
+    SLOT_INVALID_REQUIREMENT_LENGTH("CF4003", "기타 요청사항은 500자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_NAME_LENGTH("CF4004", "매장명은 2~15자 이내여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_DESCRIPTION_LENGTH("CF4005", "카페 소개는 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
-    CAFE_INVALID_COMMISSION_RATE("CF4006", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
+    SLOT_INVALID_COMMISSION_RATE("CF4006", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_HOURS_FORMAT("CF4007", "영업시간 형식이 올바르지 않습니다 (HH:mm)", HttpStatus.BAD_REQUEST),
     CAFE_LATITUDE_LONGITUDE_REQUIRED("CF4008", "거리순 정렬 시 위도/경도가 필요합니다", HttpStatus.BAD_REQUEST),
     CAFE_INVALID_ADDRESS("CF4009", "좌표로 변환할 수 없는 주소입니다", HttpStatus.BAD_REQUEST),
 
     // 카페 관련 에러 (403 Forbidden)
     CAFE_FORBIDDEN_UPDATE_DELETE("CF4032", "본인의 카페만 수정/삭제할 수 있습니다", HttpStatus.FORBIDDEN),
-    CAFE_SLOT_FILTER_FORBIDDEN("CF4033", "슬롯 규격 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
+    SLOT_FILTER_FORBIDDEN("CF4033", "슬롯 규격 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
     CAFE_COMMISSION_FILTER_FORBIDDEN("CF4034", "수수료율 필터는 작가만 사용할 수 있습니다", HttpStatus.FORBIDDEN),
 
     // 카페 관련 에러 (404 Not Found)
     CAFE_NOT_FOUND("CF4041", "존재하지 않는 카페입니다", HttpStatus.NOT_FOUND),
     SLOT_NOT_FOUND("CF4042", "존재하지 않는 슬롯입니다", HttpStatus.NOT_FOUND),
     CAFE_CATEGORY_NOT_FOUND("CF4043", "존재하지 않는 카테고리입니다", HttpStatus.NOT_FOUND),
+    SLOT_NOT_FOUND_IN_CAFE("CF4044", "해당 카페에 존재하지 않는 슬롯입니다", HttpStatus.NOT_FOUND),
 
     // 카페 관련 에러 (409 Conflict)
     CAFE_ALREADY_EXISTS("CF4091", "이미 등록된 카페가 있습니다", HttpStatus.CONFLICT),

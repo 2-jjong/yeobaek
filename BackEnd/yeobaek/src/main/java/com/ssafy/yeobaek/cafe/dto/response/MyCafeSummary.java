@@ -37,5 +37,5 @@ public class MyCafeSummary {
     private Long collaboratingArtists;
 
     @Schema(description = "전시 슬롯 정보")
-    private List<DisplaySlot> displaySlots;
+    private List<Slot> displaySlots;
 }

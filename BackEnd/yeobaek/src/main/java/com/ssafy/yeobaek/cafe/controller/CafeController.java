@@ -1,16 +1,13 @@
 package com.ssafy.yeobaek.cafe.controller;
 
 import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
-import com.ssafy.yeobaek.artwork.dto.response.Pagination;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.service.CafeService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.UserRole;
-import com.ssafy.yeobaek.common.enums.WallStatus;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
-import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -371,6 +368,90 @@ public class CafeController {
                 .body(ResponseDto.success(data));
     }
 
+    @Operation(summary = "카페 정보 수정", description = "등록된 슬롯 정보를 수정합니다. 모든 필드는 선택적으로 수정 가능합니다 (전송된 필드만 수정됨). 카페 정보는 별도 API로 관리합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"S0000\",\"data\":{\"wallId\":5,\"wallName\":\"벽 A\",\"width\":200,\"height\":150,\"status\":\"AVAILABLE\",\"commissionRate\":10,\"requirements\":\"홍보용 작가 소개 카드 또는 작품 설명 자료를 함께 제공해주세요.\"},\"message\":\"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "요청사항 길이 오류", value = "{\"code\": \"CF4003\", \"message\": \"기타 요청사항은 500자 이내여야 합니다\"}"),
+                                    @ExampleObject(name = "수수료율 범위 오류", value = "{\"code\": \"CF4006\", \"message\": \"수수료율은 0~15 사이여야 합니다\"}"),
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "일반 권한 없음", value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"),
+                                    @ExampleObject(name = "리소스 권한 없음", value = "{\"code\": \"CF4032\", \"message\": \"본인의 카페만 수정/삭제할 수 있습니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "존재하지 않는 슬롯", value = "{\"code\": \"CF4042\", \"message\": \"존재하지 않는 슬롯입니다\"}"),
+                                    @ExampleObject(name = "카페 내 슬롯 없음", value = "{\"code\": \"CF4044\", \"message\": \"해당 카페에 존재하지 않는 슬롯입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @PreAuthorize("hasRole('CAFE_OWNER')")
+    @PatchMapping("/{cafeId}/slots/{slotId}")
+    public ResponseEntity<ResponseDto<Slot>> updateSlot(
+            @Parameter(description = "수정할 카페 ID", required = true)
+            @PathVariable Long cafeId,
+            @Parameter(description = "수정할 슬롯 ID", required = true)
+            @PathVariable Long slotId,
+            @Valid @RequestBody UpdateSlotRequest request
+    ) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        Slot slot = cafeService.updateSlot(userId, cafeId, slotId, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(slot));
+    }
+
     @Operation(summary = "카페 북마크 목록 조회", description = "현재 사용자가 북마크한 카페 목록을 조회합니다. 최신 북마크 순으로 정렬됩니다.")
     @ApiResponses(value = {
             @ApiResponse(
@@ -504,7 +585,7 @@ public class CafeController {
                                     ),
                                     @ExampleObject(
                                             name = "수수료율 범위 오류",
-                                            description = "minCommission 또는 maxCommission이 0-30 범위를 벗어난 경우",
+                                            description = "minCommission 또는 maxCommission이 0-15 범위를 벗어난 경우",
                                             value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
                                     ),
                                     @ExampleObject(
@@ -600,7 +681,7 @@ public class CafeController {
 
             @Parameter(description = "최대 수수료율 (%)")
             @Min(value = 0, message = "INVALID_INPUT_VALUE")
-            @Max(value = 30, message = "INVALID_INPUT_VALUE")
+            @Max(value = 15, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) Double maxCommission,
 
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")

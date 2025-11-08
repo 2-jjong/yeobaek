@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.cafe.service;
 
-import com.ssafy.yeobaek.artwork.dto.response.Pagination;
+import com.ssafy.yeobaek.cafe.dto.request.UpdateSlotRequest;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
 import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
 import com.ssafy.yeobaek.cafe.dto.response.*;
@@ -24,10 +25,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -134,8 +132,11 @@ public class CafeServiceImpl implements CafeService {
         // 2. 벽 + 슬롯 조회
         List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafe.getId());
 
-        // 3. DTO 변환하여 반환
-        return cafeMapper.toMyCafeData(cafe, walls);
+        // 3. 카페 이미지 URL 변환
+        String primaryImage = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
+
+        // 4. DTO 변환하여 반환
+        return cafeMapper.toMyCafeData(cafe, walls, primaryImage);
     }
 
 
@@ -165,7 +166,7 @@ public class CafeServiceImpl implements CafeService {
         // 작가 전용 필터 권한 검사
         if (!isArtist) {
             if (minWidth != null || maxWidth != null || minHeight != null || maxHeight != null) {
-                throw new CustomException(ResponseCode.CAFE_SLOT_FILTER_FORBIDDEN);
+                throw new CustomException(ResponseCode.SLOT_FILTER_FORBIDDEN);
             }
             if (minCommission != null || maxCommission != null) {
                 throw new CustomException(ResponseCode.CAFE_COMMISSION_FILTER_FORBIDDEN);
@@ -256,5 +257,47 @@ public class CafeServiceImpl implements CafeService {
         cafeRepository.save(cafe);
 
         return cafeDetailData;
+    }
+
+    /**
+     * 슬롯 정보 수정
+     * @param userId 유저 id
+     * @param cafeId 카페 id
+     * @param slotId 슬롯 id
+     * @param request 슬롯 수정 정보
+     * @return 슬롯 정보
+     */
+    @Override
+    @Transactional
+    public Slot updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request) {
+
+        // 1. 슬롯 조회
+        DisplaySlot slot = displaySlotRepository.findById(slotId)
+                .orElseThrow(() -> new CustomException(ResponseCode.SLOT_NOT_FOUND));
+
+        // 2. 슬롯이 속한 카페 확인
+        Cafe cafe = slot.getWall().getCafe();
+        if (!Objects.equals(cafeId, cafe.getId())) {
+            throw new CustomException(ResponseCode.SLOT_NOT_FOUND_IN_CAFE);
+        }
+
+        // 3. 슬롯 소유 카페 확인 및 권한 검사
+        if (!cafe.getCafeOwner().getId().equals(userId)) {
+            throw new CustomException(ResponseCode.CAFE_FORBIDDEN_UPDATE_DELETE);
+        }
+
+        // 4. 슬롯 정보 업데이트
+        if (request.getCommissionRate() != null) {
+            slot.setCommissionRate(request.getCommissionRate());
+        }
+        if (request.getRequirements() != null) {
+            slot.setRequirements(request.getRequirements());
+        }
+
+        // 5. 수정된 정보 저장
+        displaySlotRepository.save(slot);
+
+        // 6. DTO 반환
+        return cafeMapper.toDisplaySlot(slot);
     }
 }
