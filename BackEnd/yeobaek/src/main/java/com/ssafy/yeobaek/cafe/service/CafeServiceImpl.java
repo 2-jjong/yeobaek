@@ -269,7 +269,7 @@ public class CafeServiceImpl implements CafeService {
      */
     @Override
     @Transactional
-    public Slot updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request) {
+    public SlotData updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request) {
 
         // 1. 슬롯 조회
         DisplaySlot slot = displaySlotRepository.findById(slotId)
@@ -298,6 +298,6 @@ public class CafeServiceImpl implements CafeService {
         displaySlotRepository.save(slot);
 
         // 6. DTO 반환
-        return cafeMapper.toSlotDto(slot);
+        return cafeMapper.toSlotData(slot);
     }
 }

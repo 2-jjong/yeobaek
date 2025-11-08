@@ -226,4 +226,24 @@ public class CafeMapper {
                 .currentExhibition(exhibitionInfo)
                 .build();
     }
+
+    /**
+     * DisplaySlot 엔티티를 DTO로 변환
+     * @param displaySlot 슬롯 정보
+     * @return SlotData DTO
+     */
+    public SlotData toSlotData(DisplaySlot displaySlot){
+
+        Slot slot = Slot.builder()
+                .wallId(displaySlot.getId())
+                .wallName(displaySlot.getWall().getWallName())
+                .width(displaySlot.getWall().getWidthCm())
+                .status(displaySlot.getStatus().toWallStatus())
+                .height(displaySlot.getWall().getHeightCm())
+                .commissionRate(displaySlot.getCommissionRate())
+                .requirements(displaySlot.getRequirements())
+                .build();
+
+        return new SlotData(slot);
+    }
 }
