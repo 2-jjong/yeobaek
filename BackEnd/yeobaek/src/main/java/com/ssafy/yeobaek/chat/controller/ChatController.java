@@ -100,7 +100,7 @@ public class ChatController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = ""
+                                    value = "{\"code\":\"S0000\",\"data\":{\"chatRoom\":{\"chatRoomId\":1,\"partnerId\":2,\"partnerName\":\"홍길동\",\"partnerImageUrl\":\"https://example.com/image1\",\"partnerRole\":\"ARTIST\"},\"messages\":[{\"messageId\":1,\"senderType\":\"ME\",\"messageType\":\"TEXT\",\"content\":\"안녕하세요! 첫 메시지입니다.\",\"isRead\":false,\"createdAt\":\"2025-11-09T04:43:20\"},{\"messageId\":2,\"senderType\":\"ME\",\"messageType\":\"IMAGE\",\"content\":\"이건 이미지가 포함된 메시지예요.\",\"imageUrl\":\"https://example.com/img1.jpg\",\"isRead\":false,\"createdAt\":\"2025-11-09T04:43:20\"},{\"messageId\":3,\"senderType\":\"PARTNER\",\"messageType\":\"TEXT\",\"content\":\"안녕하세요! 반갑습니다 :)\",\"isRead\":true,\"createdAt\":\"2025-11-09T04:43:20\"},{\"messageId\":4,\"senderType\":\"ME\",\"messageType\":\"TEXT\",\"content\":\"전시 관련 문의드립니다.\",\"isRead\":false,\"createdAt\":\"2025-11-09T04:43:20\"},{\"messageId\":5,\"senderType\":\"PARTNER\",\"messageType\":\"TEXT\",\"content\":\"해당 전시는 다음 주부터 가능합니다.\",\"isRead\":false,\"createdAt\":\"2025-11-09T04:43:20\"}],\"pagination\":{\"currentPage\":0,\"pageSize\":20,\"totalElements\":5,\"totalPages\":1,\"hasNext\":true}},\"message\":\"정상 처리\"}\n"
                             )
                     )
             ),
@@ -122,6 +122,16 @@ public class ChatController {
                             examples = {
                                     @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
                                     @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "해당 채팅방에 권한 없음", value = "{\"code\": \"MS4031\", \"message\": \"자신이 속한 채팅방만 조회할 수 있습니다\"}")
                             }
                     )
             ),
@@ -150,11 +160,16 @@ public class ChatController {
     @GetMapping("/{chatRoomId}/messages")
     public ResponseEntity<ResponseDto<ChatRoomDetailData>> getChatRoomMessages(
             @Parameter(description = "채팅방 ID", required = true)
-            @PathVariable Long chatRoomId
+            @PathVariable Long chatRoomId,
+            @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
+            @RequestParam(defaultValue = "0") Integer page,
+            @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
+            @RequestParam(defaultValue = "20") Integer size
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
+        ChatRoomDetailData data = chatService.getChatRoomMessages(userId, chatRoomId, page, size);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ResponseDto.created());
+                .body(ResponseDto.success(data));
     }
 }
