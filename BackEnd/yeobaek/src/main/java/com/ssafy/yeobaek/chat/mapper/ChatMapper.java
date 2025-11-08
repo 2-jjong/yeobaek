@@ -1,8 +1,8 @@
 package com.ssafy.yeobaek.chat.mapper;
 
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfoData;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
 import com.ssafy.yeobaek.chat.entity.ChatRoom;
 import com.ssafy.yeobaek.chat.entity.Message;
 import com.ssafy.yeobaek.user.entity.User;
@@ -16,11 +16,11 @@ public class ChatMapper {
      * @param chatRoom 채팅방 정보
      * @param partner 상대방 정보
      * @param partnerImageUrl 상대방 프로필 이미지 url
-     * @return ChatRoomData dto
+     * @return ChatRoom dto
      */
-    public ChatRoomInfoData toChatRoomInfoData(ChatRoom chatRoom, User partner, String partnerImageUrl) {
+    public ChatRoomData toChatRoomData(ChatRoom chatRoom, User partner, String partnerImageUrl) {
 
-        ChatRoomInfo chatRoomInfo = new ChatRoomInfo(
+        ChatRoomSummary chatRoomSummary = new ChatRoomSummary(
                 chatRoom.getId(),
                 partner.getId(),
                 partner.getNickname(),
@@ -28,7 +28,7 @@ public class ChatMapper {
                 partner.getUserType()
         );
 
-        return new ChatRoomInfoData(chatRoomInfo);
+        return new ChatRoomData(chatRoomSummary);
     }
 
     /**
@@ -37,10 +37,10 @@ public class ChatMapper {
      * @param partner 상대방 정보
      * @param partnerImageUrl 상대방 프로필 이미지 url
      * @param lastMessage 마지막 메시지
-     * @return ChatRoomSummary dto
+     * @return ChatRoomInfo dto
      */
-    public ChatRoomSummary toChatRoomSummary(ChatRoom chatRoom, User partner, String partnerImageUrl, Message lastMessage) {
-        return ChatRoomSummary.builder()
+    public ChatRoomInfo toChatRoomInfo(ChatRoom chatRoom, User partner, String partnerImageUrl, Message lastMessage) {
+        return ChatRoomInfo.builder()
                 .chatRoomId(chatRoom.getId())
                 .partnerId(partner.getId())
                 .partnerName(partner.getNickname())

@@ -8,8 +8,8 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ChatRoomInfoData {
+public class ChatRoomData {
 
     @Schema(description = "채팅방 정보")
-    private ChatRoomInfo chatRoomInfo;
+    private ChatRoomSummary chatRoom;
 }

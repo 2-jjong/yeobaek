@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.chat.service;
 
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfoData;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 
 public interface ChatService {
 
@@ -10,5 +10,5 @@ public interface ChatService {
      * @param partnerId 상대방 ID
      * @return 생성된 채팅방 정보
      */
-    ChatRoomInfoData createChatRoom(Long userId, Long partnerId);
+    ChatRoomData createChatRoom(Long userId, Long partnerId);
 }

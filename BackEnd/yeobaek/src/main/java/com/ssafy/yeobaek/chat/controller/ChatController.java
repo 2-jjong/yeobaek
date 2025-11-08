@@ -1,7 +1,7 @@
 package com.ssafy.yeobaek.chat.controller;
 
 import com.ssafy.yeobaek.chat.dto.request.CreateChatRoomRequest;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfoData;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 import com.ssafy.yeobaek.chat.service.ChatService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
@@ -35,7 +35,7 @@ public class ChatController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\":\"S0000\",\"data\":{\"chatRoomInfo\":{\"chatRoomId\":1,\"partnerId\":1,\"partnerName\":\"홍길동\",\"partnerImageUrl\":\"https://example/image1.jpg\",\"partnerRole\":\"CAFE_OWNER\"}},\"message\":\"정상 처리\"}"
+                                    value = "{\"code\":\"S0000\",\"data\":{\"chatRoom\":{\"chatRoomId\":1,\"partnerId\":1,\"partnerName\":\"홍길동\",\"partnerImageUrl\":\"https://example/image1.jpg\",\"partnerRole\":\"CAFE_OWNER\"}},\"message\":\"정상 처리\"}"
                             )
                     )
             ),
@@ -81,9 +81,9 @@ public class ChatController {
             )
     })
     @PostMapping()
-    public ResponseEntity<ResponseDto<ChatRoomInfoData>> createChatRoom(@Valid @RequestBody CreateChatRoomRequest request) {
+    public ResponseEntity<ResponseDto<ChatRoomData>> createChatRoom(@Valid @RequestBody CreateChatRoomRequest request) {
         Long senderId = SecurityUtil.getCurrentUserId();
-        ChatRoomInfoData data = chatService.createChatRoom(senderId, request.getPartnerId());
+        ChatRoomData data = chatService.createChatRoom(senderId, request.getPartnerId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ResponseDto.created(data));
