@@ -101,6 +101,9 @@ public enum ResponseCode {
     INVALID_STORAGE_FOLDER("ST4001", "유효하지 않은 저장 폴더입니다", HttpStatus.BAD_REQUEST),
     INVALID_FILE_COUNT("ST4002", "파일 개수는 1개 이상 10개 이하여야 합니다", HttpStatus.BAD_REQUEST),
 
+    // 채팅 관련 에러 (400 Bad Request)
+    MESSAGE_SELF_SEND_NOT_ALLOWED("MS4001", "자신에게 메시지를 보낼 수 없습니다", HttpStatus.BAD_REQUEST),
+
     // 리뷰 관련 에러 (400 Bad Request)
     REVIEW_INVALID_RATING("RV4001", "평점은 1~5 사이여야 합니다", HttpStatus.BAD_REQUEST),
     REVIEW_INVALID_COMMENT_LENGTH("RV4002", "후기는 최대 100자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
