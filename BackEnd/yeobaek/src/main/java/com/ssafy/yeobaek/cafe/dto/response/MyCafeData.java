@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Schema(description = "내 카페 정보")
 @Getter
 @Setter
@@ -16,6 +14,6 @@ import java.util.List;
 public class MyCafeData {
 
     @Schema(description = "내 카페 정보")
-    private MyCafeSummary cafeSummary;
+    private MyCafe cafeSummary;
 
 }

@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MyCafeSummary {
+public class MyCafe {
 
     @Schema(description = "카페 ID", example = "1")
     private Long cafeId;
@@ -35,6 +35,9 @@ public class MyCafeSummary {
 
     @Schema(description = "협업 작가 수", example = "15")
     private Long collaboratingArtists;
+
+    @Schema(description = "전시 벽 정보")
+    private List<Wall> displayWalls;
 
     @Schema(description = "전시 슬롯 정보")
     private List<Slot> displaySlots;

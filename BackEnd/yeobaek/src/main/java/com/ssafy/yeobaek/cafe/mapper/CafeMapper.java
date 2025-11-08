@@ -26,7 +26,7 @@ public class CafeMapper {
      * @param coordinates 카페 위치 좌표
      * @return Cafe 엔티티
      */
-    public Cafe toEntity(CreateCafeRequest request, User owner, Coordinates coordinates) {
+    public Cafe toCafeEntity(CreateCafeRequest request, User owner, Coordinates coordinates) {
         return Cafe.builder()
                 .cafeOwner(owner)
                 .cafeName(request.getCafeName())
@@ -73,34 +73,39 @@ public class CafeMapper {
                 displayWall.getWallName(),
                 new Vec2(displayWall.getStartX(), displayWall.getStartY()),
                 new Vec2(displayWall.getEndX(), displayWall.getEndY()),
-                displayWall.getStatus() ? WallStatus.AVAILABLE : WallStatus.UNAVAILABLE
+                displayWall.getStatus() ? displayWall.getSlot().getStatus().toWallStatus() : WallStatus.UNAVAILABLE
         );
     }
 
     /**
      * Cafe 엔티티와 DisplayWall 엔티티 리스트를 내 카페 정보 DTO로 변환
      * @param cafe 카페 정보
-     * @param walls 카페 공간 정보
+     * @param displayWalls 카페 공간 정보
      * @return MyCafeData DTO
      */
-    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> walls, String primaryImage) {
+    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> displayWalls, String primaryImage) {
 
         // 통계 계산
-        long totalSlots = walls.size();
-        long exhibitingSlots = walls.stream()
+        long totalSlots = displayWalls.size();
+        long exhibitingSlots = displayWalls.stream()
                 .filter(w -> w.getSlot() != null && w.getSlot().getStatus() == ExhibitionStatus.EXHIBITING)
                 .count();
 
         // 협업 작가 수 (임시)
         long collaboratingArtists = 15L;
 
+        // 벽 정보
+        List<Wall> walls = displayWalls.stream()
+                .map(this::toWallDto)
+                .toList();
+
         // 슬롯 정보
-        List<Slot> slots = walls.stream()
-                .map(this::toDisplaySlot)
+        List<Slot> slots = displayWalls.stream()
+                .map(this::toSlotDto)
                 .collect(Collectors.toList());
 
-        // 요약 정보
-        MyCafeSummary summary = new MyCafeSummary(
+        // 내 카페 정보
+        MyCafe myCafe = new MyCafe(
                 cafe.getId(),
                 cafe.getCafeName(),
                 cafe.getAddress(),
@@ -108,16 +113,22 @@ public class CafeMapper {
                 totalSlots,
                 exhibitingSlots,
                 collaboratingArtists,
+                walls,
                 slots
         );
 
-        return new MyCafeData(summary);
+        return new MyCafeData(myCafe);
     }
 
-    private Slot toDisplaySlot(DisplayWall wall) {
+    /**
+     * DisplayWall 엔티티를 슬롯 DTO로 변환
+     * @param wall 벽 정보
+     * @return Slot DTO
+     */
+    private Slot toSlotDto(DisplayWall wall) {
 
         ExhibitionInfo exhibitionInfo = null;
-        com.ssafy.yeobaek.cafe.entity.DisplaySlot slot = wall.getSlot();
+        DisplaySlot slot = wall.getSlot();
 
         if (slot != null && (wall.getSlot().getStatus() == ExhibitionStatus.EXHIBITING
                 || wall.getSlot().getStatus() == ExhibitionStatus.SCHEDULED)) {
@@ -179,7 +190,7 @@ public class CafeMapper {
 
         // 1. 벽 정보 -> 슬롯 상세 정보 DTO 목록으로 변환
         List<Slot> slotDetails = walls.stream()
-                .map(this::toDisplaySlot)
+                .map(this::toSlotDto)
                 .collect(Collectors.toList());
 
         // 2. 카페 사장 정보 DTO 생성
@@ -210,11 +221,11 @@ public class CafeMapper {
     }
 
     /**
-     * DisplaySlot 엔티티를  DTO로 변환
+     * DisplaySlot 엔티티를 DTO로 변환
      * @param slot 슬롯 정보
-     * @return DisplaySlot DTO
+     * @return Slot DTO
      */
-    public Slot toDisplaySlot(DisplaySlot slot){
+    public Slot toSlotDto(DisplaySlot slot){
         return Slot.builder()
                 .wallId(slot.getId())
                 .wallName(slot.getWall().getWallName())
