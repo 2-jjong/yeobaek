@@ -176,7 +176,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public ChatMessage sendMessage(Long userId, ChatMessageRequest request) {
+    public void sendMessage(Long userId, ChatMessageRequest request) {
 
         // 1. 채팅방 유효성 검증
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
@@ -203,8 +203,6 @@ public class ChatServiceImpl implements ChatService {
         } catch (Exception e) {
             throw new CustomException(ResponseCode.MESSAGE_SEND_FAILED);
         }
-
-        return chatMessage;
     }
 
     /**
