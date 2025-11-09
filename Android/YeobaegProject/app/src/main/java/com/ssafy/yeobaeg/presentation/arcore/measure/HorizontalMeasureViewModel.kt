@@ -2,10 +2,9 @@ package com.ssafy.yeobaeg.presentation.arcore.horizontal
 
 import androidx.lifecycle.viewModelScope
 import com.google.ar.core.Pose
-import com.ssafy.yeobaeg.domain.model.DisplayWall
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.Vec2
-import com.ssafy.yeobaeg.domain.model.WallStatus
-import com.ssafy.yeobaeg.navigation.BottomNavScreen
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.arcore.measure.MeasureBaseViewModel
@@ -83,22 +82,22 @@ class HorizontalMeasureViewModel @Inject constructor(
         return if (sqrt(dx*dx + dy*dy) <= tol) poly.dropLast(1) + a else poly
     }
 
-    private fun buildWallsFromPolyline(poly: List<Vec2>): List<DisplayWall> {
+    private fun buildWallsFromPolyline(poly: List<Vec2>): List<DisplaySlot> {
         if (poly.size < 2) return emptyList()
-        val result = ArrayList<DisplayWall>(poly.size)
+        val result = ArrayList<DisplaySlot>(poly.size)
         for (i in 0 until poly.size) {
             val a = poly[i]; val b = poly[(i + 1) % poly.size]
             val dx = b.x - a.x; val dy = b.y - a.y
-            val len = sqrt(dx * dx + dy * dy)
+            val len = sqrt(dx * dx + dy * dy) * 100
             if (!len.isFinite() || len <= 1e-6f) continue
-            result += DisplayWall(
-                id = i + 1L,
+            result += DisplaySlot(
+                wid = i + 1L,
                 start = a,
                 end = b,
-                height = -1f,
+                height = 0f,
                 width = len,
                 wName = "벽 ${i + 1}",
-                status = WallStatus.POSSIBLE
+                status = SlotStatus.AVAILABLE
             )
         }
         return result

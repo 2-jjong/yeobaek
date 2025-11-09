@@ -108,7 +108,7 @@ fun NavGraph(
                     is BottomNavScreen.Home -> NavEntry(key) {
                         when (LocalUserRole.current) {
                             UserRole.CAFE_OWNER -> CafeOwnerHomeScreen()
-                            UserRole.ARTIST-> ArtistHomeScreen()
+                            UserRole.ARTIST -> ArtistHomeScreen()
                             UserRole.GENERAL, null -> GeneralHomeScreen()
                         }
                     }
@@ -126,7 +126,7 @@ fun NavGraph(
                         Log.d("NavGraph", "Current UserRole: ${LocalUserRole.current?.displayName}")
                         when (LocalUserRole.current) {
                             UserRole.CAFE_OWNER -> CafeOwnerProfileScreen()
-                            UserRole.ARTIST-> ArtistProfileScreen(key.userId)
+                            UserRole.ARTIST -> ArtistProfileScreen(key.userId)
                             UserRole.GENERAL, null -> GeneralProfileScreen()
                         }
 
@@ -144,9 +144,11 @@ fun NavGraph(
                         // Cafe Registration Screen Composable
                         RegisterCafeScreen()
                     }
+
                     is FullScreen.RegisterArtwork -> NavEntry(key) {
                         ArtworkRegisterScreen()
                     }
+
                     is FullScreen.ArtworkDetail -> NavEntry(key) {
                         ArtworkDetailScreen(artworkId = key.artworkId)
                     }
@@ -155,12 +157,17 @@ fun NavGraph(
                         BookmarkScreen()
                     }
 
-                    is FullScreen.ReviewManagementScreen-> NavEntry(key){
+                    is FullScreen.ReviewManagementScreen -> NavEntry(key) {
                         ReviewManagementScreen()
                     }
 
                     is FullScreen.EditDisplaySlotScreen -> NavEntry(key) {
-                        EditDisplaySlotScreen(key.slotId)
+                        EditDisplaySlotScreen(
+                            key.cafeId,
+                            key.slotId,
+                            key.commissionRate,
+                            key.requirements
+                        )
                     }
 
                     else -> throw IllegalArgumentException("Unknown route: $key")

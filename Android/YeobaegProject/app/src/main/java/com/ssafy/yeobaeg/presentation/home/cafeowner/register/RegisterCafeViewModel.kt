@@ -4,11 +4,13 @@ package com.ssafy.yeobaeg.presentation.home.cafeowner.register
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 import com.ssafy.yeobaeg.domain.model.storage.PresignedUrl
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.domain.repository.StorageRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +19,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
+import kotlin.collections.isNotEmpty
+import kotlin.collections.toList
+import kotlin.collections.toMutableSet
 
 const val STEP1 = 1
 const val STEP2 = 2
@@ -27,7 +32,8 @@ const val TOTAL_STEPS = 2
 class RegisterCafeViewModel @Inject constructor(
     private val cafeRepository: CafeRepository,
     private val storageRepository: StorageRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val snackBarController: SnackBarController
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RegisterCafeState())
     val uiState: StateFlow<RegisterCafeState> = _uiState.asStateFlow()
@@ -45,9 +51,9 @@ class RegisterCafeViewModel @Inject constructor(
 
     fun prev() = update { copy(step = if (step == STEP2) STEP1 else step) }
 
-    fun toggleStyle(style: CafeInteriorStyle) = update {
+    fun toggleStyle(category: CafeCategory) = update {
         val set = selectedStyles.toMutableSet()
-        if (style in set) set.remove(style) else if (set.size < 3) set.add(style)
+        if (category in set) set.remove(category) else if (set.size < 3) set.add(category)
         copy(selectedStyles = set)
     }
 
@@ -70,6 +76,14 @@ class RegisterCafeViewModel @Inject constructor(
         }
 
 
+    }
+
+    fun getCafeCategories() {
+        viewModelScope.launch {
+            cafeRepository.getCafeCategories().onSuccess { categories ->
+                _uiState.update { it.copy(cafeCategories = categories) }
+            }
+        }
     }
 
     private fun uploadImage(addImageFiles: List<File>) {
@@ -114,16 +128,18 @@ class RegisterCafeViewModel @Inject constructor(
             contact = s.phone,
             businessHoursStart = s.openTime,
             businessHoursEnd = s.closeTime,
-            categories = s.selectedStyles.toList(),
+            categoryIds = s.selectedStyles.map { it.categoryId },
             dailyVisitors = requireNotNull(s.visitorsBand),
             images = s.uploadedImages.map { it.fileKey }
         )
 
-        runCatching { cafeRepository.registerCafe(cafe) }
+        cafeRepository.registerCafe(cafe)
             .onSuccess {
+                snackBarController.showSuccess("카페 등록 완료")
                 navigateToCafeOwnerHome()
             }
             .onFailure {
+                snackBarController.showError(it.message ?: "오류")
                 Log.d("RegisterCafeViewModel http", "카페 등록 실패: ${it.message}")
             }
     }
@@ -140,7 +156,8 @@ data class RegisterCafeState(
     val closeTime: String = "",
     val imageFiles: List<File> = emptyList(),
     val uploadedImages: List<PresignedUrl> = emptyList(),
-    val selectedStyles: Set<CafeInteriorStyle> = emptySet(),
+    val selectedStyles: Set<CafeCategory> = emptySet(),
+    val cafeCategories: List<CafeCategory> = emptyList(),
     val visitorsBand: VisitorsBand? = null
 ) {
     val isStep1Valid
@@ -150,11 +167,6 @@ data class RegisterCafeState(
     val isStep2Valid
         get() =
             selectedStyles.isNotEmpty() && selectedStyles.size <= 3 && visitorsBand != null
-}
-
-enum class CafeInteriorStyle(val label: String) {
-    MODERN("모던"), VINTAGE("빈티지"), MINIMAL("미니멀"), INDUSTRIAL("인더스트리얼"),
-    CLASSIC("클래식"), RETRO("레트로"), SCANDINAVIAN("스칸디나비아"), NATURAL("네추럴");
 }
 
 enum class VisitorsBand(val label: String) {

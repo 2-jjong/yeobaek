@@ -37,6 +37,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.storage.PresignedUrl
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
@@ -73,6 +75,10 @@ fun RegisterCafeScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scroll = rememberScrollState()
+
+    LaunchedEffect(Unit) {
+        viewModel.getCafeCategories()
+    }
 
     Scaffold(
         topBar = {
@@ -308,7 +314,7 @@ private fun ImagePickerBox(
 @Composable
 private fun Step2Attributes(
     state: RegisterCafeState,
-    onToggleStyle: (CafeInteriorStyle) -> Unit,
+    onToggleStyle: (CafeCategory) -> Unit,
     onVisitors: (VisitorsBand) -> Unit
 ) {
     SectionHeader(
@@ -319,7 +325,8 @@ private fun Step2Attributes(
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(text = "인터리어 스타일 (다중 선택 가능, 최대 3개) *", fontSize = 14.sp)
 
-        val styles = CafeInteriorStyle.entries.toList()
+        val styles = state.cafeCategories
+
         styles.chunked(2).forEach { row ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -346,7 +353,7 @@ private fun Step2Attributes(
                                     .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = style.label, style = MaterialTheme.typography.bodyLarge)
+                                Text(text = style.categoryName, style = MaterialTheme.typography.bodyLarge)
                             }
                         }
                     )
@@ -479,11 +486,6 @@ private fun PreviewStep2Attributes_Filled() {
             Step2Attributes(
                 state = RegisterCafeState(
                     step = 2,
-                    selectedStyles = setOf(
-                        CafeInteriorStyle.MODERN,
-                        CafeInteriorStyle.MINIMAL,
-                        CafeInteriorStyle.INDUSTRIAL
-                    ),
                     visitorsBand = VisitorsBand.OVER_500
                 ),
                 onToggleStyle = {},

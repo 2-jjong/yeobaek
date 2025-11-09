@@ -370,11 +370,11 @@ fun DistanceHUD(
             Column(Modifier.padding(12.dp)) {
                 val label = if (isVertical) "높이" else "실시간"
                 Text(
-                    "$label: ${liveMeters?.let(::fmt) ?: "-"}",
+                    "$label: ${liveMeters?.let{fmt(it*100)} ?: "-"}",
                     style = MaterialTheme.typography.titleMedium
                 )
                 lastSegmentMeters?.let {
-                    Text("${if (isVertical) "벽 높이" else "마지막 구간"}: ${fmt(it)}")
+                    Text("${if (isVertical) "벽 높이" else "마지막 구간"}: ${fmt(it*100)}")
                 }
             }
         }

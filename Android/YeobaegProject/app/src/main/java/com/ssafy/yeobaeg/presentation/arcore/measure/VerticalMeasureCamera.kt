@@ -2,12 +2,24 @@ package com.ssafy.yeobaeg.presentation.arcore.vertical
 
 import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,7 +34,6 @@ import com.google.ar.core.Session
 import com.google.ar.core.TrackingState
 import com.ssafy.yeobaeg.presentation.arcore.common.detachAnchorSafe
 import com.ssafy.yeobaeg.presentation.arcore.common.distance
-import com.ssafy.yeobaeg.presentation.arcore.common.fmt
 import com.ssafy.yeobaeg.presentation.arcore.common.posePosition
 import com.ssafy.yeobaeg.presentation.arcore.common.removeNodeSafe
 import com.ssafy.yeobaeg.presentation.arcore.common.updateCylinderBetween3D
@@ -251,7 +262,7 @@ fun VerticalMeasureCamera(
                     if (segments.size == 2) {
                         val h = distance(segments[0].world, segments[1].world)
                         scope.launch {
-                            onMeasured(h)           // 1) 결과 전달
+                            onMeasured(h*100)           // 1) 결과 전달
                             disposeWithSceneAlive() // 2) Scene 정리
                             awaitFrame()            // 3) 프레임 반영
                             onCancel()              // 4) 부모에서 카메라 닫기 처리(showCamera=false 등)

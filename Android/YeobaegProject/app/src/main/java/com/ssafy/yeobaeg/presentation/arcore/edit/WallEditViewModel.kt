@@ -1,11 +1,14 @@
 package com.ssafy.yeobaeg.presentation.arcore.edit
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.DisplayWall
-import com.ssafy.yeobaeg.domain.model.WallStatus
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.SlotStatus
+import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +21,7 @@ enum class WallEditStep { SelectWall, MeasureHeight }
 
 data class WallEditUiState(
     val step: WallEditStep = WallEditStep.SelectWall,
-    val walls: List<DisplayWall> = emptyList(),
+    val walls: List<DisplaySlot> = emptyList(),
     val selectedWallIds: Set<Long> = emptySet(),
     val targetIds: List<Long> = emptyList(),
     val currentWallId: Long? = null,
@@ -30,41 +33,44 @@ data class WallEditUiState(
         get() {
             if (targetIds.isEmpty()) return false
             return targetIds.all { id ->
-                val wall = walls.firstOrNull { it.id == id }
+                val wall = walls.firstOrNull { it.wid == id }
                 wall?.height != null && wall.height > 0f
             }
         }
 
-    fun currentWallOrNull(): DisplayWall? =
-        currentWallId?.let { id -> walls.firstOrNull { it.id == id } }
+    fun currentWallOrNull(): DisplaySlot? =
+        currentWallId?.let { id -> walls.firstOrNull { it.wid == id } }
 }
 
 @HiltViewModel
 class WallEditViewModel @Inject constructor(
-    private val navigator: Navigator
+    private val cafeRepository: CafeRepository,
+    private val navigator: Navigator,
+    private val snackbarController: SnackBarController
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WallEditUiState())
     val uiState: StateFlow<WallEditUiState> = _uiState.asStateFlow()
 
-    fun setInitialWalls(walls: List<DisplayWall>) {
+    fun setInitialWalls(walls: List<DisplaySlot>) {
         _uiState.update { it.copy(walls = walls) }
+        Log.d("http test", _uiState.value.walls.get(0).width.toString())
     }
 
     fun onWallTapped(wallId: Long) {
         _uiState.update { s ->
-            val idx = s.walls.indexOfFirst { it.id == wallId }
+            val idx = s.walls.indexOfFirst { it.wid == wallId }
             if (idx < 0) return@update s
 
             val w = s.walls[idx]
             val toggled = when (w.status) {
-                WallStatus.NOT_POSSIBLE -> WallStatus.POSSIBLE
-                WallStatus.POSSIBLE, WallStatus.IN_USE, WallStatus.RESERVED -> WallStatus.NOT_POSSIBLE
+                SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
+                SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED -> SlotStatus.UNAVAILABLE
             }
 
             val nextWalls = s.walls.toMutableList().also { it[idx] = w.copy(status = toggled) }
             val nextSelected = s.selectedWallIds.toMutableSet().also {
-                if (toggled != WallStatus.NOT_POSSIBLE) it.add(wallId) else it.remove(wallId)
+                if (toggled != SlotStatus.UNAVAILABLE) it.add(wallId) else it.remove(wallId)
             }
             s.copy(walls = nextWalls, selectedWallIds = nextSelected)
         }
@@ -72,7 +78,7 @@ class WallEditViewModel @Inject constructor(
 
     fun updateWallName(wallId: Long, newName: String) {
         _uiState.update { s ->
-            val idx = s.walls.indexOfFirst { it.id == wallId }
+            val idx = s.walls.indexOfFirst { it.wid == wallId }
             if (idx < 0) s else {
                 val nextList = s.walls.toMutableList()
                 nextList[idx] = nextList[idx].copy(wName = newName)
@@ -83,8 +89,8 @@ class WallEditViewModel @Inject constructor(
 
     fun selectWall(wallId: Long) {
         _uiState.update { s ->
-            val w = s.walls.firstOrNull { it.id == wallId } ?: return@update s
-            if (w.status == WallStatus.NOT_POSSIBLE) return@update s
+            val w = s.walls.firstOrNull { it.wid == wallId } ?: return@update s
+            if (w.status == SlotStatus.UNAVAILABLE) return@update s
             s.copy(currentWallId = wallId)
         }
     }
@@ -92,8 +98,8 @@ class WallEditViewModel @Inject constructor(
     fun proceedToMeasure() {
         _uiState.update { s ->
             val selectableIds = s.walls
-                .filter { it.status != WallStatus.NOT_POSSIBLE }
-                .map { it.id }
+                .filter { it.status != SlotStatus.UNAVAILABLE }
+                .map { it.wid }
 
             val targets = if (s.selectedWallIds.isNotEmpty())
                 s.selectedWallIds.filter { it in selectableIds }
@@ -111,7 +117,7 @@ class WallEditViewModel @Inject constructor(
     /** ✅ 벽의 height 속성 업데이트 */
     fun saveMeasuredHeight(wallId: Long, heightM: Float) {
         _uiState.update { s ->
-            val idx = s.walls.indexOfFirst { it.id == wallId }
+            val idx = s.walls.indexOfFirst { it.wid == wallId }
             if (idx < 0) return@update s
 
             val nextWalls = s.walls.toMutableList()
@@ -129,7 +135,7 @@ class WallEditViewModel @Inject constructor(
             if (currentIdx < 0) {
                 // 현재 선택 없음 → 첫 번째 측정 안된 벽으로
                 val firstUnmeasured = s.targetIds.firstOrNull { id ->
-                    val wall = s.walls.firstOrNull { it.id == id }
+                    val wall = s.walls.firstOrNull { it.wid == id }
                     wall?.height == null || wall.height <= 0f
                 }
                 return@update s.copy(currentWallId = firstUnmeasured ?: s.targetIds.firstOrNull())
@@ -139,8 +145,8 @@ class WallEditViewModel @Inject constructor(
             var i = currentIdx + 1
             while (i < s.targetIds.size) {
                 val id = s.targetIds[i]
-                val w = s.walls.firstOrNull { it.id == id }
-                val selectable = w?.status != WallStatus.NOT_POSSIBLE
+                val w = s.walls.firstOrNull { it.wid == id }
+                val selectable = w?.status != SlotStatus.UNAVAILABLE
                 val unmeasured = w?.height == null || w.height <= 0f
 
                 if (selectable && unmeasured) {
@@ -153,8 +159,8 @@ class WallEditViewModel @Inject constructor(
             i = 0
             while (i < currentIdx) {
                 val id = s.targetIds[i]
-                val w = s.walls.firstOrNull { it.id == id }
-                val selectable = w?.status != WallStatus.NOT_POSSIBLE
+                val w = s.walls.firstOrNull { it.wid == id }
+                val selectable = w?.status != SlotStatus.UNAVAILABLE
                 val unmeasured = w?.height == null || w.height <= 0f
 
                 if (selectable && unmeasured) {
@@ -181,8 +187,8 @@ class WallEditViewModel @Inject constructor(
                 var i = idx - 1
                 while (i >= 0) {
                     val id = s.targetIds[i]
-                    val w = s.walls.firstOrNull { it.id == id }
-                    if (w?.status != WallStatus.NOT_POSSIBLE) {
+                    val w = s.walls.firstOrNull { it.wid == id }
+                    if (w?.status != SlotStatus.UNAVAILABLE) {
                         return@update s.copy(currentWallId = id)
                     }
                     i--
@@ -197,10 +203,15 @@ class WallEditViewModel @Inject constructor(
     }
 
     fun registerSlot() {
-        // _ui.value.walls 등록
+        Log.d("http test", _uiState.value.walls.get(0).width.toString())
 
         viewModelScope.launch {
-            navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+            cafeRepository.registerCafeWall(_uiState.value.walls).onSuccess {
+                snackbarController.showSuccess("등록 성공")
+                navigator.navigateAndClearBackStack(BottomNavScreen.Home)
+            }.onFailure {
+                snackbarController.showError(it.message ?: "오류")
+            }
         }
     }
 }

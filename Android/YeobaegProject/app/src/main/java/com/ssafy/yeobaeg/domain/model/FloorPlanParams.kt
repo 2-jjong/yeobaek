@@ -2,14 +2,21 @@ package com.ssafy.yeobaeg.domain.model
 
 import com.ssafy.yeobaeg.presentation.arcore.common.fmt
 import kotlinx.serialization.Serializable
-enum class SlotStatus { AVAILABLE, ONGOING, RESERVED }
 
-// 전시 상태
-enum class WallStatus {
-    NOT_POSSIBLE,   // 전시 불가능 (회색)
-    POSSIBLE,       // 전시 가능   (초록)
-    IN_USE,          // 전시 중     (빨강)
-    RESERVED        // 전시 예약   (노랑)
+enum class SlotStatus {
+    AVAILABLE, UNAVAILABLE, EXHIBITING, RESERVED;
+
+    companion object {
+        fun fromString(value: String): SlotStatus {
+            return when (value.uppercase()) {
+                "AVAILABLE" -> AVAILABLE
+                "UNAVAILABLE" -> UNAVAILABLE
+                "RESERVED" -> RESERVED
+                "EXHIBITING" -> EXHIBITING
+                else -> RESERVED // 기본값
+            }
+        }
+    }
 }
 
 @Serializable
@@ -19,28 +26,6 @@ data class Vec2(val x: Float, val y: Float) {
     operator fun times(s: Float) = Vec2(x * s, y * s)
 }
 
-// 도면 조회 응답 dto
-@Serializable
-data class DisplayWall(
-    val id: Long,
-    val wName: String = "",         // "벽 A", "벽 B" ...
-    val start: Vec2,          // 로컬 XZ 시작점
-    val end: Vec2,            // 로컬 XZ 끝점
-    val width: Float,
-    val height: Float,
-    val status: WallStatus = WallStatus.POSSIBLE
-) {
-    val widthText get() = fmt(width)
-    val heightText get() = fmt(height)
-}
-
-// 도면 생성 요청 dto
-data class CreateDisplayWallRequest(
-    val wName: String,         // "벽 A", "벽 B" ...
-    val start: Vec2,          // 로컬 XZ 시작점
-    val end: Vec2,            // 로컬 XZ 끝점
-    val status: Boolean      // 전시 가능 여부 true 이면 POSSIBLE, false 이면 NOT_POSSIBLE
-)
 
 // 도면 생성 응답 dto
 data class CreateDisplayWallResponse(
@@ -48,26 +33,37 @@ data class CreateDisplayWallResponse(
     val wName: String,         // "벽 A", "벽 B" ...
     val start: Vec2,          // 로컬 XZ 시작점
     val end: Vec2,            // 로컬 XZ 끝점
-    val status: WallStatus      // 전시 가능 여부 ("POSSIBLE", "NOT_POSSIBLE", "IN_USE", "RESERVED")
+    val status: SlotStatus      // 전시 가능 여부 ("POSSIBLE", "NOT_POSSIBLE", "IN_USE", "RESERVED")
 )
 
 // 전시 슬롯 조회 응답 dto
+@Serializable
 data class DisplaySlot(
     val wid: Long = 0L,
     val wName: String = "",
+    val start: Vec2 = Vec2(0f,0f),
+    val end: Vec2 = Vec2(0f,0f),
     val width: Float = 0f,
     val height: Float = 0f,
     val status: SlotStatus = SlotStatus.AVAILABLE,
     val commission: Float = 0f, // 수수료
     val requirements: String = "", // 기타 요구 사항
-    val deadline: String = "", // 전시 마감 일자
+    val exhibition: Exhibition? = null
+) {
+    val sizeText = "${width.toInt()}cm x ${height.toInt()}cm"
+    val widthText get() = fmt(width)
+    val heightText get() = fmt(height)
+}
+
+@Serializable
+data class Exhibition(
+    val startDate: String = "",
+    val endDate: String = "", // 전시 마감 일자
     val artId: Long = 0L,
     val artTitle: String = "",
     val artist: String = "",
     val artImgUrl: String = ""
-) {
-    val sizeText = "${width.toInt()}m x ${height.toInt()}m"
-}
+)
 
 // 전시 슬롯 생성 요청 dto
 data class CreateDisplaySlotRequest(
