@@ -99,17 +99,37 @@ public class ArtworkMapper {
     }
 
     /**
-     * Artwork 엔티티를 ArtworkSummary DTO로 변환
+     * Artwork 엔티티를 ArtworkSummary DTO로 변환 (기본 정보만)
      * @param artwork Artwork 엔티티
      * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
      * @return ArtworkSummary DTO
      */
     public ArtworkSummary toArtworkSummary(Artwork artwork, String thumbnailUrl) {
-        return new ArtworkSummary(
-                artwork.getId(),
-                artwork.getTitle(),
-                thumbnailUrl
-        );
+        return ArtworkSummary.builder()
+                .artworkId(artwork.getId())
+                .title(artwork.getTitle())
+                .thumbnailUrl(thumbnailUrl)
+                .build();
+    }
+
+    /**
+     * Artwork 엔티티를 ArtworkSummary DTO로 변환 (확장된 정보 포함)
+     * @param artwork Artwork 엔티티
+     * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
+     * @return ArtworkSummary DTO (모든 필드 포함)
+     */
+    public ArtworkSummary toArtworkSummaryWithDetails(Artwork artwork, String thumbnailUrl) {
+        return ArtworkSummary.builder()
+                .artworkId(artwork.getId())
+                .title(artwork.getTitle())
+                .thumbnailUrl(thumbnailUrl)
+                .price(artwork.getPrice())
+                .category(artwork.getArtCategory().name())
+                .widthCm(artwork.getWidthCm().intValue())
+                .heightCm(artwork.getHeightCm().intValue())
+                .exhibitionStatus(artwork.getExhibitionStatus().name())
+                .bookmarkCount(artwork.getBookmarkCount())
+                .build();
     }
 
     /**
@@ -149,6 +169,23 @@ public class ArtworkMapper {
                 artist.getIntroduction(),
                 artworkCount
         );
+    }
+
+    /**
+     * ArtworkListData DTO 생성
+     * @param artists 작가 목록
+     * @param artworks 작품 목록
+     * @param pagination 페이징 정보
+     * @return ArtworkListData DTO
+     */
+    public ArtworkListData toArtworkListData(List<ArtistSummary> artists,
+                                              List<ArtworkSummary> artworks,
+                                              Pagination pagination) {
+        return ArtworkListData.builder()
+                .artists(artists)
+                .artworks(artworks)
+                .pagination(pagination)
+                .build();
     }
 
     // TODO: Exhibition 엔티티 구현 후 아래 메서드 추가
