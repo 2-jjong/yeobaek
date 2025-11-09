@@ -152,14 +152,15 @@ public class ChatController {
     @GetMapping()
     public ResponseEntity<ResponseDto<ChatRoomListData>> getChatRoomList(
             @Parameter(description = "정렬 기준 (LATEST: 최신 등록순, UNREAD: 안읽음순)")
-            @RequestParam(defaultValue = "LATEST") ChatSortBy sortBy,
+            @ValidEnum(enumClass = ChatSortBy.class, message = "MESSAGE_INVALID_SORT")
+            @RequestParam(defaultValue = "LATEST") String sortBy,
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
             @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
-        ChatRoomListData data = chatService.getChatRoomList(userId, sortBy, page, size);
+        ChatRoomListData data = chatService.getChatRoomList(userId, ChatSortBy.fromString(sortBy), page, size);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
