@@ -122,6 +122,8 @@ val dummyDisplayWalls = listOf(
         wName = "입구 좌측 벽",
         start = Vec2(0f, 0f),
         end = Vec2(8f, 0f),
+        width = 10.0f,
+        height = 10.0f,
         status = WallStatus.POSSIBLE
     ),
     DisplayWall(
@@ -129,6 +131,8 @@ val dummyDisplayWalls = listOf(
         wName = "메인 전시 공간",
         start = Vec2(8f, 0f),
         end = Vec2(8f, 12f),
+        width = 10.0f,
+        height = 10.0f,
         status = WallStatus.IN_USE
     ),
     DisplayWall(
@@ -136,6 +140,8 @@ val dummyDisplayWalls = listOf(
         wName = "창가 벽면",
         start = Vec2(8f, 12f),
         end = Vec2(4f, 15f),
+        width = 10.0f,
+        height = 10.0f,
         status = WallStatus.RESERVED
     ),
     DisplayWall(
@@ -143,6 +149,8 @@ val dummyDisplayWalls = listOf(
         wName = "복도 우측",
         start = Vec2(4f, 15f),
         end = Vec2(0f, 12f),
+        width = 10.0f,
+        height = 10.0f,
         status = WallStatus.IN_USE
     ),
     DisplayWall(
@@ -150,6 +158,8 @@ val dummyDisplayWalls = listOf(
         wName = "후면 벽",
         start = Vec2(0f, 12f),
         end = Vec2(0f, 0f),
+        width = 10.0f,
+        height = 10.0f,
         status = WallStatus.POSSIBLE
     )
 )

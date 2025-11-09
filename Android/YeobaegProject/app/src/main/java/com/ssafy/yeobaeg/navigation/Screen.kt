@@ -43,6 +43,9 @@ sealed interface FullScreen : Screen {
 
     @Serializable
     data class EditDisplaySlotScreen(val slotId: Long): FullScreen
+
+    @Serializable
+    data class WallEdit(val displayWalls: List<DisplayWall>) : FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {
@@ -61,7 +64,4 @@ sealed interface BottomNavScreen : Screen {
 
     @Serializable
     data class Profile(val userId: Long?) : BottomNavScreen
-
-    @Serializable
-    data class SpaceScanPreview(val displayWalls: List<DisplayWall>) : BottomNavScreen
 }
