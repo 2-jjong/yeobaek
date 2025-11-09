@@ -17,7 +17,6 @@ public class ChatMessageRequest {
     private Long chatRoomId;
 
     @NotNull(message = "MISSING_REQUIRED_FIELD")
-    @ValidEnum(enumClass = MessageType.class, message = "MESSAGE_INVALID_TYPE")
     @Schema(description = "메시지 유형", example = "TEXT")
     private MessageType messageType;
 
