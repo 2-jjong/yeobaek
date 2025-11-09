@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.cafe.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.cafe.dto.Vec2;
 import com.ssafy.yeobaek.common.enums.WallStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -19,6 +20,12 @@ public class Slot {
 
     @Schema(description = "벽 이름", example = "1번 벽")
     private String wallName;
+
+    @Schema(description = "시작점")
+    private Vec2 start;
+
+    @Schema(description = "끝점")
+    private Vec2 end;
 
     @Schema(description = "벽면 폭 (cm)", example = "200")
     private Double width;

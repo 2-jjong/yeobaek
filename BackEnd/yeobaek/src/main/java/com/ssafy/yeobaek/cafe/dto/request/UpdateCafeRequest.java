@@ -39,5 +39,5 @@ public class UpdateCafeRequest {
     private List<String> categories;
 
     @Schema(description = "카페 이미지 목록 (최소 3장, 최대 10장)")
-    private List<CafeImageRequest> images;
+    private List<String> images;
 }

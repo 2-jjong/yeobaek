@@ -30,14 +30,13 @@ public class CreateDisplayWallRequest {
 
 	@Schema(description = "벽 너비 (cm)", example = "200.0")
 	@NotNull(message = "MISSING_REQUIRED_FIELD")
-	@Min(value = 1, message = "INVALID_INPUT_VALUE")
-	@Max(value = 500, message = "INVALID_INPUT_VALUE")
+	@Min(value = 0, message = "INVALID_INPUT_VALUE")
+	@Max(value = 5000, message = "INVALID_INPUT_VALUE")
 	private Double width;
 
 	@Schema(description = "벽 높이 (cm)", example = "150.0")
-	@NotNull(message = "MISSING_REQUIRED_FIELD")
-	@Min(value = 1, message = "INVALID_INPUT_VALUE")
-	@Max(value = 500, message = "INVALID_INPUT_VALUE")
+	@Min(value = 0, message = "INVALID_INPUT_VALUE")
+	@Max(value = 5000, message = "INVALID_INPUT_VALUE")
 	private Double height;
 
 	@Schema(description = "전시 가능 여부", example = "true")
