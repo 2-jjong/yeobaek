@@ -104,6 +104,12 @@ public enum ResponseCode {
     // 채팅 관련 에러 (400 Bad Request)
     MESSAGE_SELF_SEND_NOT_ALLOWED("MS4001", "자신에게 메시지를 보낼 수 없습니다", HttpStatus.BAD_REQUEST),
 
+    // 채팅 관련 에러 (403 Bad Forbidden)
+    MESSAGE_ROOM_FORBIDDEN("MS4031", "자신이 속한 채팅방만 조회할 수 있습니다", HttpStatus.FORBIDDEN),
+
+    // 채팅 관련 에러 (404 Not Found)
+    MESSAGE_ROOM_NOT_FOUND("MS4041", "존재하지 않는 채팅방입니다", HttpStatus.NOT_FOUND),
+
     // 리뷰 관련 에러 (400 Bad Request)
     REVIEW_INVALID_RATING("RV4001", "평점은 1~5 사이여야 합니다", HttpStatus.BAD_REQUEST),
     REVIEW_INVALID_COMMENT_LENGTH("RV4002", "후기는 최대 100자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),

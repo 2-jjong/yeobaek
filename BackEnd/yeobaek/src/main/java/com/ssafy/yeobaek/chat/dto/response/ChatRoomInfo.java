@@ -5,6 +5,8 @@ import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Schema(description = "채팅방 기본 정보")
 @Getter
 @Setter
@@ -36,5 +38,5 @@ public class ChatRoomInfo {
     private String lastMessage;
 
     @Schema(description = "마지막 메시지 일시", example = "2025-11-06 02:07:41")
-    private String lastMessageAt;
+    private LocalDateTime lastMessageAt;
 }
