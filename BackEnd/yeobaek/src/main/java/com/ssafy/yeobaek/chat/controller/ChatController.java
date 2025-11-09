@@ -3,9 +3,9 @@ package com.ssafy.yeobaek.chat.controller;
 import com.ssafy.yeobaek.chat.dto.request.CreateChatRoomRequest;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomDetailData;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomListData;
 import com.ssafy.yeobaek.chat.service.ChatService;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
-import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
 import com.ssafy.yeobaek.common.enums.ChatSortBy;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.common.validation.ValidEnum;
@@ -103,7 +103,7 @@ public class ChatController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = ""
+                                    value = "{\"code\":\"S0000\",\"data\":{\"chatRoom\":[{\"chatRoomId\":1,\"partnerId\":2,\"partnerName\":\"홍길동\",\"partnerImageUrl\":\"https://example.com/image1.jpg\",\"partnerRole\":\"ARTIST\",\"unreadCount\":3,\"lastMessage\":\"안녕하세요!\",\"lastMessageType\":\"TEXT\",\"lastMessageAt\":\"2025-11-09T10:00:00\"},{\"chatRoomId\":2,\"partnerId\":3,\"partnerName\":\"김철수\",\"partnerImageUrl\":\"https://example.com/image2.jpg\",\"partnerRole\":\"CAFE_OWNER\",\"unreadCount\":0,\"lastMessage\":\"네, 알겠습니다.\",\"lastMessageType\":\"TEXT\",\"lastMessageAt\":\"2025-11-09T09:30:00\"}],\"pagination\":{\"currentPage\":0,\"pageSize\":20,\"totalElements\":2,\"totalPages\":1,\"hasNext\":false}},\"message\":\"정상 처리\"}"
                             )
                     )
             ),
@@ -150,9 +150,8 @@ public class ChatController {
             )
     })
     @GetMapping()
-    public ResponseEntity<ResponseDto<ChatRoomDetailData>> getChatRoomList(
+    public ResponseEntity<ResponseDto<ChatRoomListData>> getChatRoomList(
             @Parameter(description = "정렬 기준 (LATEST: 최신 등록순, UNREAD: 안읽음순)")
-            @ValidEnum(enumClass = ArtworkSortBy.class, message = "MESSAGE_INVALID_SORT")
             @RequestParam(defaultValue = "LATEST") ChatSortBy sortBy,
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
             @RequestParam(defaultValue = "0") Integer page,
@@ -160,9 +159,10 @@ public class ChatController {
             @RequestParam(defaultValue = "20") Integer size
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
+        ChatRoomListData data = chatService.getChatRoomList(userId, sortBy, page, size);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ResponseDto.success());
+                .body(ResponseDto.success(data));
     }
 
     @Operation(summary = "특정 채팅방 메시지 조회", description = "특정 채팅방의 메시지 목록을 조회합니다. 과거 메시지부터 최신 메시지 순으로 정렬됩니다. 무한 스크롤 방식으로 페이징 처리됩니다.")

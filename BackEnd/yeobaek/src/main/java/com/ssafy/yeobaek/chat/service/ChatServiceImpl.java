@@ -15,6 +15,7 @@ import com.ssafy.yeobaek.chat.repository.ChatRoomRepository;
 import com.ssafy.yeobaek.chat.repository.MessageRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.Pagination;
+import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
@@ -33,6 +34,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import org.springframework.data.domain.PageImpl;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomListData;
+import com.ssafy.yeobaek.common.enums.ChatSortBy;
 
 @Service
 @Transactional(readOnly = true)
@@ -197,5 +205,73 @@ public class ChatServiceImpl implements ChatService {
         }
 
         return chatMessage;
+    }
+
+    /**
+     * 채팅방 목록 조회
+     * @param userId 사용자 ID
+     * @param sortBy 정렬 기준
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 채팅방 목록 정보
+     */
+    @Override
+    public ChatRoomListData getChatRoomList(Long userId, ChatSortBy sortBy, Integer page, Integer size) {
+
+        // 1. 사용자 조회
+        User currentUser = userService.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+
+        // 2. 사용자가 참여하고 있는 모든 채팅방 멤버 조회
+        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByUser(currentUser);
+
+        List<ChatRoomInfo> chatRoomInfoList = new ArrayList<>();
+
+        for (ChatRoomMember member : chatRoomMembers) {
+            ChatRoom chatRoom = member.getChatRoom();
+
+            // 3. 상대방 정보 조회
+            User partner = chatRoom.getMembers().stream()
+                    .map(ChatRoomMember::getUser)
+                    .filter(user -> !user.getId().equals(userId))
+                    .findFirst()
+                    .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+
+            String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
+
+            // 4. 마지막 메시지 조회
+            Optional<Message> lastMessageOpt = messageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom);
+
+            // 5. 읽지 않은 메시지 수 조회 (상대방이 보낸 메시지 중 내가 읽지 않은 것)
+            Long unreadCount = messageRepository.countByChatRoomAndUserNotAndIsReadFalse(chatRoom, currentUser);
+
+            // 6. ChatRoomInfo DTO 생성
+            ChatRoomInfo chatRoomInfo = chatMapper.toChatRoomInfo(chatRoom, partner, partnerImageUrl, lastMessageOpt, unreadCount);
+            chatRoomInfoList.add(chatRoomInfo);
+        }
+
+        // 7. 정렬
+        if (sortBy == ChatSortBy.LATEST) {
+            chatRoomInfoList.sort(Comparator.comparing(ChatRoomInfo::getLastMessageAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        } else if (sortBy == ChatSortBy.UNREAD) {
+            chatRoomInfoList.sort(Comparator.comparing(ChatRoomInfo::getUnreadCount, Comparator.reverseOrder())
+                    .thenComparing(ChatRoomInfo::getLastMessageAt, Comparator.nullsLast(Comparator.reverseOrder())));
+        }
+
+        // 8. 페이징
+        int start = (int) PageRequest.of(page, size).getOffset();
+        int end = Math.min((start + size), chatRoomInfoList.size());
+        Page<ChatRoomInfo> chatRoomInfoPage = new PageImpl<>(chatRoomInfoList.subList(start, end), PageRequest.of(page, size), chatRoomInfoList.size());
+
+        // 9. Pagination 정보 생성
+        Pagination pagination = new Pagination(
+                chatRoomInfoPage.getNumber(),
+                chatRoomInfoPage.getSize(),
+                chatRoomInfoPage.getTotalElements(),
+                chatRoomInfoPage.getTotalPages(),
+                chatRoomInfoPage.isLast()
+        );
+
+        return new ChatRoomListData(chatRoomInfoPage.getContent(), pagination);
     }
 }
