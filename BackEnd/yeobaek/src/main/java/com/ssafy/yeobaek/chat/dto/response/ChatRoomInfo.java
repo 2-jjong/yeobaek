@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.chat.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
@@ -36,6 +37,9 @@ public class ChatRoomInfo {
 
     @Schema(description = "마지막 메시지 내용", example = "안녕하세요")
     private String lastMessage;
+
+    @Schema(description = "마지막 메시지 유형", example = "TEXT")
+    private MessageType lastMessageType;
 
     @Schema(description = "마지막 메시지 일시", example = "2025-11-06 02:07:41")
     private LocalDateTime lastMessageAt;
