@@ -171,6 +171,23 @@ public class ArtworkMapper {
         );
     }
 
+    /**
+     * ArtworkListData DTO 생성
+     * @param artists 작가 목록
+     * @param artworks 작품 목록
+     * @param pagination 페이징 정보
+     * @return ArtworkListData DTO
+     */
+    public ArtworkListData toArtworkListData(List<ArtistSummary> artists,
+                                              List<ArtworkSummary> artworks,
+                                              Pagination pagination) {
+        return ArtworkListData.builder()
+                .artists(artists)
+                .artworks(artworks)
+                .pagination(pagination)
+                .build();
+    }
+
     // TODO: Exhibition 엔티티 구현 후 아래 메서드 추가
     // /**
     //  * Exhibition 엔티티를 Exhibition DTO로 변환
