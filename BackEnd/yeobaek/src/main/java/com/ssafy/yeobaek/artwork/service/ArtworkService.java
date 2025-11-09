@@ -53,4 +53,13 @@ public interface ArtworkService {
             Integer page,
             Integer size
     );
+
+    /**
+     * 특정 사용자의 작품 목록 조회
+     * @param userId 조회할 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 작품 목록 및 페이징 정보
+     */
+    ArtworkListData getUserArtworks(Long userId, Integer page, Integer size);
 }

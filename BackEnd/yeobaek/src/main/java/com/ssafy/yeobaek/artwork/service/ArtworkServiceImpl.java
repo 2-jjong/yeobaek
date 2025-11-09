@@ -158,7 +158,7 @@ public class ArtworkServiceImpl implements ArtworkService {
                 artworkPage.hasNext()
         );
 
-        return new ArtworkListData(artistSummaries, artworkSummaries, pagination);
+        return artworkMapper.toArtworkListData(artistSummaries, artworkSummaries, pagination);
     }
 
     /**
@@ -212,5 +212,49 @@ public class ArtworkServiceImpl implements ArtworkService {
                     return summary;
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 특정 사용자의 작품 목록 조회
+     * @param userId 조회할 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 작품 목록 및 페이징 정보
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ArtworkListData getUserArtworks(Long userId, Integer page, Integer size) {
+        // Artist 엔티티 조회
+        Artist artist = userService.getArtistReference(userId);
+
+        // Pageable 생성
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 작가별 작품 목록 조회 (페이징)
+        Page<Artwork> artworkPage = artworkRepository.findByArtist(artist, pageable);
+
+        // 작품을 ArtworkSummary로 변환
+        List<ArtworkSummary> artworkSummaries = artworkPage.getContent().stream()
+                .map(artwork -> {
+                    // 썸네일 URL 변환 (첫 번째 이미지 사용)
+                    String thumbnailUrl = null;
+                    if (artwork.getImages() != null && !artwork.getImages().isEmpty()) {
+                        thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                    }
+                    return artworkMapper.toArtworkSummaryWithDetails(artwork, thumbnailUrl);
+                })
+                .collect(Collectors.toList());
+
+        // Pagination DTO 생성
+        Pagination pagination = new Pagination(
+                artworkPage.getNumber(),
+                artworkPage.getSize(),
+                artworkPage.getTotalElements(),
+                artworkPage.getTotalPages(),
+                artworkPage.hasNext()
+        );
+
+        // artists는 null로 설정 (작가 검색이 아니므로)
+        return artworkMapper.toArtworkListData(null, artworkSummaries, pagination);
     }
 }
