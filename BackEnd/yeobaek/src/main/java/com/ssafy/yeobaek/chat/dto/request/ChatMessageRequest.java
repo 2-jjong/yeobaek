@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.chat.dto.request;
 
 import com.ssafy.yeobaek.common.enums.MessageType;
+import com.ssafy.yeobaek.common.validation.ValidEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

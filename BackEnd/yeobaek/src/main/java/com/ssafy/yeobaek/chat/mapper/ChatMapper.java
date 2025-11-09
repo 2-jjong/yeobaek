@@ -12,6 +12,7 @@ import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -46,23 +47,25 @@ public class ChatMapper {
     }
 
     /**
-     * 채팅방 엔티티를 채팅방 정보 DTO로 변환 (기존 채팅방)
-     * @param chatRoom 채팅방 정보
-     * @param partner 상대방 정보
-     * @param partnerImageUrl 상대방 프로필 이미지 url
-     * @param lastMessage 마지막 메시지
-     * @return ChatRoomInfo dto
+     * 채팅방 목록의 각 항목 DTO로 변환
+     * @param chatRoom 채팅방 엔티티
+     * @param partner 상대방 User 엔티티
+     * @param partnerImageUrl 상대방 프로필 이미지 URL
+     * @param lastMessageOpt 마지막 메시지
+     * @param unreadCount 읽지 않은 메시지 수
+     * @return ChatRoomInfo DTO
      */
-    public ChatRoomInfo toChatRoomInfo(ChatRoom chatRoom, User partner, String partnerImageUrl, Message lastMessage) {
+    public ChatRoomInfo toChatRoomInfo(ChatRoom chatRoom, User partner, String partnerImageUrl, Optional<Message> lastMessageOpt, Long unreadCount) {
         return ChatRoomInfo.builder()
                 .chatRoomId(chatRoom.getId())
                 .partnerId(partner.getId())
                 .partnerName(partner.getNickname())
                 .partnerImageUrl(partnerImageUrl)
                 .partnerRole(partner.getUserType())
-                .unreadCount(1L) // TODO: 실제 읽지 않은 메시지 수 연동 필요
-                .lastMessage(lastMessage.getContent())
-                .lastMessageAt(lastMessage.getCreatedAt())
+                .unreadCount(unreadCount)
+                .lastMessage(lastMessageOpt.map(Message::getContent).orElse(null))
+                .lastMessageAt(lastMessageOpt.map(Message::getCreatedAt).orElse(null))
+                .lastMessageType(lastMessageOpt.map(Message::getMessageType).orElse(null))
                 .build();
     }
 
