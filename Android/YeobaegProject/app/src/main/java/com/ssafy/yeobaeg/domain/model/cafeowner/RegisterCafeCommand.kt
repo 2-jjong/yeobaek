@@ -1,7 +1,6 @@
 // domain model
 package com.ssafy.yeobaeg.domain.model.cafeowner
 
-import com.ssafy.yeobaeg.presentation.home.cafeowner.register.CafeInteriorStyle
 import com.ssafy.yeobaeg.presentation.home.cafeowner.register.VisitorsBand
 
 data class RegisterCafe(
@@ -11,7 +10,7 @@ data class RegisterCafe(
     val contact: String,
     val businessHoursStart: String,
     val businessHoursEnd: String,
-    val categories: List<CafeInteriorStyle>,
+    val categoryIds: List<Long>,
     val dailyVisitors: VisitorsBand,
     val images: List<String>
 )

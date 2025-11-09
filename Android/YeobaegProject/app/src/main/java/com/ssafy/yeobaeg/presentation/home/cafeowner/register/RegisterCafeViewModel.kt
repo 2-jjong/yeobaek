@@ -4,6 +4,7 @@ package com.ssafy.yeobaeg.presentation.home.cafeowner.register
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 import com.ssafy.yeobaeg.domain.model.storage.PresignedUrl
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
@@ -17,6 +18,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
+import kotlin.collections.isNotEmpty
+import kotlin.collections.toList
+import kotlin.collections.toMutableSet
 
 const val STEP1 = 1
 const val STEP2 = 2
@@ -45,9 +49,9 @@ class RegisterCafeViewModel @Inject constructor(
 
     fun prev() = update { copy(step = if (step == STEP2) STEP1 else step) }
 
-    fun toggleStyle(style: CafeInteriorStyle) = update {
+    fun toggleStyle(category: CafeCategory) = update {
         val set = selectedStyles.toMutableSet()
-        if (style in set) set.remove(style) else if (set.size < 3) set.add(style)
+        if (category in set) set.remove(category) else if (set.size < 3) set.add(category)
         copy(selectedStyles = set)
     }
 
@@ -70,6 +74,14 @@ class RegisterCafeViewModel @Inject constructor(
         }
 
 
+    }
+
+    fun getCafeCategories() {
+        viewModelScope.launch {
+            cafeRepository.getCafeCategories().onSuccess { categories ->
+                _uiState.update { it.copy(cafeCategories = categories) }
+            }
+        }
     }
 
     private fun uploadImage(addImageFiles: List<File>) {
@@ -114,7 +126,7 @@ class RegisterCafeViewModel @Inject constructor(
             contact = s.phone,
             businessHoursStart = s.openTime,
             businessHoursEnd = s.closeTime,
-            categories = s.selectedStyles.toList(),
+            categoryIds = s.selectedStyles.map { it.categoryId },
             dailyVisitors = requireNotNull(s.visitorsBand),
             images = s.uploadedImages.map { it.fileKey }
         )
@@ -140,7 +152,8 @@ data class RegisterCafeState(
     val closeTime: String = "",
     val imageFiles: List<File> = emptyList(),
     val uploadedImages: List<PresignedUrl> = emptyList(),
-    val selectedStyles: Set<CafeInteriorStyle> = emptySet(),
+    val selectedStyles: Set<CafeCategory> = emptySet(),
+    val cafeCategories: List<CafeCategory> = emptyList(),
     val visitorsBand: VisitorsBand? = null
 ) {
     val isStep1Valid
@@ -150,11 +163,6 @@ data class RegisterCafeState(
     val isStep2Valid
         get() =
             selectedStyles.isNotEmpty() && selectedStyles.size <= 3 && visitorsBand != null
-}
-
-enum class CafeInteriorStyle(val label: String) {
-    MODERN("모던"), VINTAGE("빈티지"), MINIMAL("미니멀"), INDUSTRIAL("인더스트리얼"),
-    CLASSIC("클래식"), RETRO("레트로"), SCANDINAVIAN("스칸디나비아"), NATURAL("네추럴");
 }
 
 enum class VisitorsBand(val label: String) {

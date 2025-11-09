@@ -5,6 +5,7 @@ import com.ssafy.yeobaeg.data.model.request.UpdateSlotRequest
 import com.ssafy.yeobaeg.data.model.request.toDto
 import com.ssafy.yeobaeg.data.model.response.toDomain
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
@@ -50,6 +51,11 @@ class CafeRepositoryImpl @Inject constructor(
             cafeId, slotId,
             UpdateSlotRequest(commissionRate, requirements)
         )
-        response.data?: throw Exception(response.message)
+        response.data ?: throw Exception(response.message)
+    }
+
+    override suspend fun getCafeCategories() = runCatching {
+        val response = cafeApiService.getCafeCategories()
+        response.data?.categories?.map { it.toDomain() } ?: throw Exception(response.message)
     }
 }
