@@ -246,4 +246,81 @@ public class ChatController {
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
     }
+
+    @Operation(summary = "채팅방 나가기", description = "특정 채팅방의 메시지 목록을 조회합니다. 과거 메시지부터 최신 메시지 순으로 정렬됩니다. 무한 스크롤 방식으로 페이징 처리됩니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"S0000\", \"message\":\"정상 처리\"}\n"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "필수 값 누락", value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "해당 채팅방에 권한 없음", value = "{\"code\": \"MS4031\", \"message\": \"자신이 속한 채팅방만 조회할 수 있습니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스를 찾을 수 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"),
+                                    @ExampleObject(name = "채팅방을 찾을 수 없음", value = "{\"code\": \"MS4041\", \"message\": \"존재하지 않는 채팅방입니다\"}")
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 내부 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @DeleteMapping("/{chatRoomId}")
+    public ResponseEntity<ResponseDto<Void>> leaveChatRoom(
+            @Parameter(description = "채팅방 ID", required = true)
+            @PathVariable Long chatRoomId
+    ) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success());
+    }
 }
