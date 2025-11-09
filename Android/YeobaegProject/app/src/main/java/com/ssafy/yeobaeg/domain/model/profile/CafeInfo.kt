@@ -8,5 +8,5 @@ data class CafeInfo(
     val contact: String="",
     val businessHoursStart: String="",
     val businessHoursEnd:String="",
-    val ratingStats: RatingStats = RatingStats()
+    val ratingStats: ProfileRatingSummary = ProfileRatingSummary()
 )

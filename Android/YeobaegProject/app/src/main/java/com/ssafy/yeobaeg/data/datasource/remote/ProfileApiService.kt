@@ -4,8 +4,10 @@ import com.ssafy.yeobaeg.data.model.BaseResponse
 import com.ssafy.yeobaeg.data.model.profile.BookmarkArtworksResponse
 import com.ssafy.yeobaeg.data.model.profile.BookmarkCafesResponse
 import com.ssafy.yeobaeg.data.model.profile.GetProfileResponseDto
-import com.ssafy.yeobaeg.data.model.profile.ReviewStatisticsResponse
 import com.ssafy.yeobaeg.data.model.profile.UpdateProfileRequest
+import com.ssafy.yeobaeg.data.model.review.ReviewListResponse
+import com.ssafy.yeobaeg.data.model.review.ReviewStatisticsResponse
+import com.ssafy.yeobaeg.data.model.review.WrittenReviewListResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -40,8 +42,21 @@ interface ProfileApiService {
         @Body request: UpdateProfileRequest
     ): Response<BaseResponse<Unit>>
 
-    @GET("reviews/statistics/users/{userId}")
-    suspend fun getReviewStatistics(
-        @Path("userId") userId: Long
+    @GET("reviews/me/statistics")
+    suspend fun getMyReviewStatistics(
     ): Response<BaseResponse<ReviewStatisticsResponse>>
+
+    @GET("reviews/me")
+    suspend fun getMyReviewList(
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): Response<BaseResponse<ReviewListResponse>>
+
+    @GET("reviews/me/written")
+    suspend fun getMyWrittenReviews(
+        @Query("rating") rating: Int? = null,
+        @Query("createdAt") createdAt: String? = null,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): Response<BaseResponse<WrittenReviewListResponse>>
 }

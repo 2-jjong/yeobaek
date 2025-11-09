@@ -3,7 +3,8 @@ package com.ssafy.yeobaeg.domain.repository
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtwork
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafe
 import com.ssafy.yeobaeg.domain.model.profile.Profile
-import com.ssafy.yeobaeg.domain.model.profile.ReviewStats
+import com.ssafy.yeobaeg.domain.model.review.ReviewList
+import com.ssafy.yeobaeg.domain.model.review.ReviewStatistics
 
 interface ProfileRepository {
     suspend fun getProfile(): Result<Profile>
@@ -15,6 +16,13 @@ interface ProfileRepository {
         profileImageUrl: String?,
         introduction: String?,
     ):Result<Unit>
-    suspend fun getReviewStatistics(userId:Long):Result<ReviewStats>
+    suspend fun getMyReviewStatistics(): Result<ReviewStatistics>
+    suspend fun getMyReviewList(page: Int, size: Int): Result<ReviewList>
+    suspend fun getMyWrittenReviews(
+        rating: Int? = null,
+        createdAt: String? = null,
+        page: Int,
+        size: Int
+    ): Result<ReviewList>
 }
 
