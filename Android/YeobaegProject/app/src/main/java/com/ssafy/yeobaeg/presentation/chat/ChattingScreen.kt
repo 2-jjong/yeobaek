@@ -40,6 +40,12 @@ fun ChattingScreen(
 
     LaunchedEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
+        viewModel.connectWebSocket(chatRoomId)
+    }
+
+    //  화면 나갈 때 해제
+    DisposableEffect(Unit) {
+        onDispose { viewModel.disconnectWebSocket() }
     }
 
     var inputText by remember { mutableStateOf("") }
@@ -68,7 +74,7 @@ fun ChattingScreen(
 @Composable
 fun ChattingScreenContent(
     title: String,
-    profileImg:String?,
+    profileImg: String?,
     messages: List<ChatMessage> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
@@ -99,7 +105,10 @@ fun ChattingScreenContent(
                 CircularProgressIndicator()
             }
 
-            errorMessage != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            errorMessage != null -> Box(
+                Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text(text = errorMessage, color = Color.Red)
             }
 
@@ -122,7 +131,7 @@ fun ChattingScreenContent(
 }
 
 @Composable
-fun PartnerMessageBubble(message: ChatMessage,profileImg: String?) {
+fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -228,7 +237,9 @@ fun ChatInputBar(
         }
 
         Surface(
-            modifier = Modifier.weight(1f).background(YeobaegWhite),
+            modifier = Modifier
+                .weight(1f)
+                .background(YeobaegWhite),
             shape = RoundedCornerShape(20.dp),
             border = BorderStroke(1.dp, YeobaegLightGray),
         ) {
@@ -277,8 +288,8 @@ fun ChatInputBar(
 @Composable
 fun ChattingScreenPreview() {
     val dummyMessages = listOf(
-        ChatMessage(1, "PARTNER", "TEXT", "안녕하세요","",null,false,"2시간 전"),
-        ChatMessage(2, "ME", "TEXT", "안녕하세요","",null,false,"2시간 전")
+        ChatMessage(1, "PARTNER", "TEXT", "안녕하세요", "", null, false, "2시간 전"),
+        ChatMessage(2, "ME", "TEXT", "안녕하세요", "", null, false, "2시간 전")
     )
     ChattingScreenContent(
         title = "김아티스트",

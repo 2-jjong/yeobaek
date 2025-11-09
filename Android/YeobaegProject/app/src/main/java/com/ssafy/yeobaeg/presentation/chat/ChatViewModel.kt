@@ -3,13 +3,11 @@ package com.ssafy.yeobaeg.presentation.chat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.chat.ChatRoomSummary
-import com.ssafy.yeobaeg.domain.model.UserRole
-import com.ssafy.yeobaeg.domain.model.chat.ChatList
-import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
+import com.ssafy.yeobaeg.data.model.ws.resquest.SendMessageRequest
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomInfo
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomMessages
 import com.ssafy.yeobaeg.domain.repository.ChatRepository
+import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,44 +28,59 @@ data class ChatUiState(
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val navigator: Navigator,
-    private val chatRepository: ChatRepository
+    private val chatRepository: ChatRepository,
+    private val chatWebSocketRepository: ChatWebSocketRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState
+    private val _messages = MutableStateFlow<List<String>>(emptyList())
+    val messages: StateFlow<List<String>> = _messages
+
+    /** 채팅방 입장 시점에만 웹소켓 연결 */
+    fun connectWebSocket(chatRoomId: Long) {
+        viewModelScope.launch {
+            chatWebSocketRepository.connectAndSubscribe(chatRoomId)
+            observeIncomingMessages()
+        }
+    }
+    /** 채팅방 나가면 연결 해제 */
+    fun disconnectWebSocket() {
+        chatWebSocketRepository.disconnectWebSocket()
+    }
+
+    private fun observeIncomingMessages() {
+        viewModelScope.launch {
+            chatWebSocketRepository.receiveMessages().collect { msg ->
+                _messages.update { it + msg }
+            }
+        }
+    }
+
+    fun sendMessage(message: SendMessageRequest) {
+        chatWebSocketRepository.sendMessage(message)
+    }
 
     fun loadChatRooms() = viewModelScope.launch {
-        _uiState.value = _uiState.value.copy(isLoading = true)
+        _uiState.update { it.copy(isLoading = true) }
 
         chatRepository.getChatList()
             .onSuccess { chatList ->
-                _uiState.value = ChatUiState(
-                    chatRooms = chatList.chatRooms,
-                    isLoading = false
-                )
+                _uiState.update {
+                    it.copy(
+                        chatRooms = chatList.chatRooms,
+                        isLoading = false,
+                        errorMessage = null
+                    )
+                }
             }
             .onFailure { e ->
-                _uiState.value = ChatUiState(
-                    errorMessage = e.message ?: "채팅 목록을 불러오는 중 오류가 발생했습니다.",
-                    isLoading = false
-                )
-            }
-    }
-
-    fun createChatRoom(partnerId: Long) = viewModelScope.launch {
-        _uiState.value = _uiState.value.copy(isLoading = true)
-
-        chatRepository.createChatRoom(partnerId)
-            .onSuccess { chatRoom ->
-                // 생성 성공 시: 새 채팅방으로 바로 이동
-                _uiState.value = _uiState.value.copy(isLoading = false)
-                navigateToChatRoom(chatRoom.chatRoomId)
-            }
-            .onFailure { e ->
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    errorMessage = e.message ?: "채팅방 생성 중 오류가 발생했습니다."
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "채팅 목록을 불러오는 중 오류가 발생했습니다."
+                    )
+                }
             }
     }
 

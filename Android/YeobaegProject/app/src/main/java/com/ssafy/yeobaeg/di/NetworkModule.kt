@@ -2,10 +2,12 @@ package com.ssafy.yeobaeg.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.ssafy.yeobaeg.BuildConfig
+import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
 import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ChatApiService
+import com.ssafy.yeobaeg.data.datasource.remote.ChatWebSocketService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import com.ssafy.yeobaeg.data.datasource.remote.StorageApiService
 import com.ssafy.yeobaeg.data.network.AuthAuthenticator
@@ -156,4 +158,11 @@ object NetworkModule {
     @Singleton
     fun provideChatApiService(@GeneralRetrofit retrofit: Retrofit): ChatApiService =
         retrofit.create(ChatApiService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideChatWebSocketService(
+        tokenDataSource: TokenDataSource
+    ): ChatWebSocketService = ChatWebSocketService(tokenDataSource)
+
 }
