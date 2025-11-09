@@ -19,8 +19,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.domain.model.UserRole
+import com.ssafy.yeobaeg.domain.model.chat.ChatRoomInfo
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
 import com.ssafy.yeobaeg.ui.theme.*
 
 @Composable
@@ -28,7 +30,9 @@ fun ChatListScreen(
     viewModel: ChatViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
+    LaunchedEffect(Unit) {
+        viewModel.loadChatRooms()
+    }
     ChatListScreenContent(
         uiState = uiState,
         onChatClick = { viewModel.navigateToChatRoom(it) }
@@ -95,7 +99,7 @@ fun ChatListScreenContent(
 }
 
 @Composable
-fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
+fun ChatListItem(chat: ChatRoomInfo, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -105,7 +109,7 @@ fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = chat.partnerProfileImageUrl,
+            model = chat.partnerImageUrl,
             contentDescription = null,
             modifier = Modifier
                 .size(60.dp)
@@ -127,7 +131,7 @@ fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = chat.lastMessage,
+                text = chat.lastMessage?:"",
                 fontFamily = jansilFont,
                 fontWeight = FontWeight.Light,
                 color = YeobaegBlack,
@@ -143,14 +147,14 @@ fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
             modifier = Modifier.height(45.dp)
         ) {
             Text(
-                text = chat.lastMessageAt,
+                text = DateFormatter.toTimeAgo(chat.lastMessageAt.toString()),
                 fontFamily = jansilFont,
                 fontWeight = FontWeight.Light,
                 color = YeobaegTextGray,
                 fontSize = 13.sp
             )
 
-            if (chat.unreadCount > 0) {
+            if (chat.unreadCount!=null&&chat.unreadCount > 0) {
                 Box(
                     modifier = Modifier
                         .size(24.dp)
@@ -178,22 +182,22 @@ fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
 fun ChatListScreenPreview() {
     val dummyUiState = ChatUiState(
         chatRooms = listOf(
-            ChatRoomSummary(
+            ChatRoomInfo(
                 chatRoomId = 1,
                 partnerId = 101,
                 partnerName = "김아티스트",
-                partnerProfileImageUrl = "",
+                partnerImageUrl = "",
                 partnerRole = UserRole.ARTIST.toString(),
                 unreadCount = 2,
                 lastMessage = "작품 전시에 대해 논의하고 싶습니다",
                 lastMessageType = "TEXT",
                 lastMessageAt = "2분 전"
             ),
-            ChatRoomSummary(
+            ChatRoomInfo(
                 chatRoomId = 2,
                 partnerId = 102,
                 partnerName = "Brew & Canvas",
-                partnerProfileImageUrl = "",
+                partnerImageUrl = "",
                 partnerRole = UserRole.CAFE_OWNER.toString(),
                 unreadCount = 0,
                 lastMessage = "전시 공간이 준비되었습니다",

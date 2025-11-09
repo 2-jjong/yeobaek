@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.data.model.chat.response
 
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomSummary
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -8,12 +9,8 @@ data class ChatRoomSummaryResponse(
     val chatRoomId: Long,
     val partnerId: Long,
     val partnerName: String,
-    val partnerProfileImageUrl: String,
+    val partnerImageUrl: String?=null,
     val partnerRole: String,
-    val unreadCount: Int,
-    val lastMessage: String,
-    val lastMessageType: String,
-    val lastMessageAt: String
 )
 
 fun ChatRoomSummaryResponse.toDomain(): ChatRoomSummary {
@@ -21,11 +18,7 @@ fun ChatRoomSummaryResponse.toDomain(): ChatRoomSummary {
         chatRoomId = chatRoomId,
         partnerId = partnerId,
         partnerName = partnerName,
-        partnerProfileImageUrl = partnerProfileImageUrl,
+        partnerImageUrl = partnerImageUrl,
         partnerRole = partnerRole,
-        unreadCount = unreadCount,
-        lastMessage = lastMessage,
-        lastMessageType = lastMessageType,
-        lastMessageAt = lastMessageAt
     )
 }

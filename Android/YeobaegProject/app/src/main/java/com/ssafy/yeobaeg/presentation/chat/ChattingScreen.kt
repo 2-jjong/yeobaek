@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.presentation.chat
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,46 +26,57 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.ui.theme.*
 import androidx.compose.material3.TextFieldDefaults
-
-data class ChatMessage(
-    val id: Int,
-    val sender: String, // "me" or "partner"
-    val content: String,
-    val time: String,
-    val profileImage: String? = null
-)
+import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
+import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
+import kotlinx.coroutines.launch
 
 @Composable
 fun ChattingScreen(
     chatRoomId: Long,
-    viewModel: ChatViewModel= hiltViewModel()
+    viewModel: ChatViewModel = hiltViewModel()
 ) {
-    // 실제 화면에선 viewModel 데이터 사용
+    val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(chatRoomId) {
+        viewModel.loadChatMessages(chatRoomId)
+    }
+
+    var inputText by remember { mutableStateOf("") }
+
     ChattingScreenContent(
-        title = "김아티스트",
+        title = uiState.chatRoomMessages.chatRoom.partnerName,
+        profileImg = uiState.chatRoomMessages.chatRoom.partnerImageUrl,
+        messages = uiState.chatRoomMessages.messages,
+        isLoading = uiState.isLoading,
+        errorMessage = uiState.errorMessage,
+        inputText = inputText,
+        onInputChange = { inputText = it },
+        onSendClick = {
+            coroutineScope.launch {
+                // TODO: 메시지 전송 로직 추가
+                inputText = ""
+            }
+        },
         onBackClick = viewModel::navigateBack
     )
 }
 
 /**
- * Preview 전용 또는 ViewModel 없는 UI만 분리
+ * 실제 UI를 구성하는 함수
  */
 @Composable
 fun ChattingScreenContent(
     title: String,
+    profileImg:String?,
+    messages: List<ChatMessage> = emptyList(),
+    isLoading: Boolean = false,
+    errorMessage: String? = null,
+    inputText: String = "",
+    onInputChange: (String) -> Unit = {},
+    onSendClick: () -> Unit = {},
     onBackClick: (() -> Unit)? = null
 ) {
-    val dummyMessages = listOf(
-        ChatMessage(1, "partner", "안녕하세요! 전시 공간에 대해 문의드리고 싶습니다.", "14:30"),
-        ChatMessage(2, "me", "안녕하세요! 어떤 작품을 전시하고 싶으신가요?", "14:32"),
-        ChatMessage(3, "partner", "추상화 작품 10점 정도 전시하고 싶습니다. 공간 크기는 어떻게 되나요?", "14:35"),
-        ChatMessage(4, "me", "저희 갤러리 공간은 약 50평 정도이고, 벽면 전시 공간이 충분합니다. 언제쯤 전시를 원하시나요?", "14:38"),
-        ChatMessage(5, "partner", "다음 달 중순쯤 생각하고 있습니다. 비용은 어떻게 되나요?", "14:40"),
-        ChatMessage(6, "me", "전시 기간과 작품 수에 따라 달라지는데, 자세한 내용은 매칭 요청을 통해 논의해보시면 어떨까요?", "14:42")
-    )
-
-    var inputText by remember { mutableStateOf("") }
-
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
@@ -76,39 +88,51 @@ fun ChattingScreenContent(
         bottomBar = {
             ChatInputBar(
                 value = inputText,
-                onValueChange = { inputText = it },
-                onSendClick = { /* TODO */ }
+                onValueChange = onInputChange,
+                onSendClick = onSendClick
             )
         },
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(YeobaegWhite)
-                .padding(innerPadding)
-                .padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(dummyMessages) { msg ->
-                if (msg.sender == "me") MyMessageBubble(msg)
-                else PartnerMessageBubble(msg)
+        when {
+            isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+
+            errorMessage != null -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = errorMessage, color = Color.Red)
+            }
+
+            else -> LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(YeobaegWhite)
+                    .padding(innerPadding)
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(messages, key = { it.messageId }) { msg ->
+                    if (msg.senderType == "ME") MyMessageBubble(msg)
+                    else PartnerMessageBubble(msg, profileImg)
+                }
+
             }
         }
     }
 }
 
 @Composable
-fun PartnerMessageBubble(message: ChatMessage) {
+fun PartnerMessageBubble(message: ChatMessage,profileImg: String?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Bottom
+        verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = message.profileImage ?: "",
+            model = profileImg,
             contentDescription = null,
             modifier = Modifier
-                .size(38.dp)
+                .size(50.dp)
+                .border(0.5.dp, YeobaegLightGray, CircleShape)
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -130,7 +154,7 @@ fun PartnerMessageBubble(message: ChatMessage) {
                 )
             }
             Text(
-                text = message.time,
+                text = DateFormatter.toTimeAgo(message.createdAt),
                 color = YeobaegTextGray,
                 fontSize = 11.sp,
                 modifier = Modifier.padding(start = 4.dp, top = 2.dp)
@@ -163,7 +187,7 @@ fun MyMessageBubble(message: ChatMessage) {
                 )
             }
             Text(
-                text = message.time,
+                text = DateFormatter.toTimeAgo(message.createdAt),
                 color = YeobaegTextGray,
                 fontSize = 11.sp,
                 textAlign = TextAlign.End,
@@ -188,7 +212,6 @@ fun ChatInputBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // 왼쪽 + 버튼
         Surface(
             modifier = Modifier.size(40.dp),
             shape = CircleShape,
@@ -198,13 +221,12 @@ fun ChatInputBar(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .clickable { }
+                    .clickable { onAddClick() }
             ) {
                 Text("+", color = YeobaegTextGray, fontSize = 22.sp)
             }
         }
 
-        // 메시지 입력창
         Surface(
             modifier = Modifier.weight(1f).background(YeobaegWhite),
             shape = RoundedCornerShape(20.dp),
@@ -215,7 +237,7 @@ fun ChatInputBar(
                 onValueChange = onValueChange,
                 placeholder = {
                     Text(
-                        text="메시지를 입력하세요...",
+                        text = "메시지를 입력하세요...",
                         color = YeobaegTextGray,
                         fontSize = 13.sp,
                     )
@@ -235,11 +257,10 @@ fun ChatInputBar(
             )
         }
 
-        // 전송 버튼
         Surface(
             modifier = Modifier.size(40.dp),
             shape = CircleShape,
-            color = YeobaegLightGray.copy(alpha = 0.5f)
+            color = YeobaegBrown
         ) {
             IconButton(onClick = onSendClick) {
                 Icon(
@@ -252,9 +273,16 @@ fun ChatInputBar(
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
 fun ChattingScreenPreview() {
-    ChattingScreenContent(title = "김아티스트")
+    val dummyMessages = listOf(
+        ChatMessage(1, "PARTNER", "TEXT", "안녕하세요","",null,false,"2시간 전"),
+        ChatMessage(2, "ME", "TEXT", "안녕하세요","",null,false,"2시간 전")
+    )
+    ChattingScreenContent(
+        title = "김아티스트",
+        messages = dummyMessages,
+        profileImg = ""
+    )
 }
