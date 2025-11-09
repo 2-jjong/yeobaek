@@ -7,6 +7,7 @@ import com.ssafy.yeobaeg.data.model.profile.GetProfileResponseDto
 import com.ssafy.yeobaeg.data.model.profile.UpdateProfileRequest
 import com.ssafy.yeobaeg.data.model.review.ReviewListResponse
 import com.ssafy.yeobaeg.data.model.review.ReviewStatisticsResponse
+import com.ssafy.yeobaeg.data.model.review.WrittenReviewListResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -50,4 +51,12 @@ interface ProfileApiService {
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
     ): Response<BaseResponse<ReviewListResponse>>
+
+    @GET("reviews/me/written")
+    suspend fun getMyWrittenReviews(
+        @Query("rating") rating: Int? = null,
+        @Query("createdAt") createdAt: String? = null,
+        @Query("page") page: Int = 0,
+        @Query("size") size: Int = 20
+    ): Response<BaseResponse<WrittenReviewListResponse>>
 }

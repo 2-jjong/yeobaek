@@ -156,4 +156,34 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getMyWrittenReviews(
+        rating: Int?,
+        createdAt: String?,
+        page: Int,
+        size: Int
+    ): Result<ReviewList> {
+        return try {
+            val response = api.getMyWrittenReviews(
+                rating = rating,
+                createdAt = createdAt,
+                page = page,
+                size = size
+            )
+            if (response.isSuccessful) {
+                val writtenReviewListDto = response.body()?.data
+                Log.d(TAG, "getMyWrittenReviews: $writtenReviewListDto")
+                if (writtenReviewListDto != null) {
+                    Result.success(writtenReviewListDto.toDomain())
+                } else {
+                    Result.failure(Exception("Response body is null"))
+                }
+            } else {
+                Result.failure(Exception("Failed to get written review list"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getMyWrittenReviews() error: ${e.message}", e)
+            Result.failure(e)
+        }
+    }
+
 }

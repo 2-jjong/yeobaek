@@ -18,5 +18,11 @@ interface ProfileRepository {
     ):Result<Unit>
     suspend fun getMyReviewStatistics(): Result<ReviewStatistics>
     suspend fun getMyReviewList(page: Int, size: Int): Result<ReviewList>
+    suspend fun getMyWrittenReviews(
+        rating: Int? = null,
+        createdAt: String? = null,
+        page: Int,
+        size: Int
+    ): Result<ReviewList>
 }
 

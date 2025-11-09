@@ -20,8 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -30,23 +28,17 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -77,7 +69,8 @@ fun ReviewManagementScreen(
     ReviewManagementContent(
         uiState = uiState,
         onBackClick = viewModel::navigateBack,
-        onLoadNextPage = viewModel::loadNextPage
+        onLoadNextPage = viewModel::loadNextPage,
+        onLoadWrittenNextPage = viewModel::loadWrittenNextPage
     )
 }
 
@@ -85,7 +78,8 @@ fun ReviewManagementScreen(
 fun ReviewManagementContent(
     uiState: ReviewManagementUiState,
     onBackClick: () -> Unit = {},
-    onLoadNextPage: () -> Unit = {}
+    onLoadNextPage: () -> Unit = {},
+    onLoadWrittenNextPage: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableIntStateOf(0) }
     val tabs = listOf("받은 리뷰", "보낸 리뷰")
@@ -153,7 +147,21 @@ fun ReviewManagementContent(
                         )
                     }
                 }
-                1 -> SentReviewTab()
+                1 -> {
+                    if (uiState.writtenIsLoading && uiState.writtenReviews.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(color = YeobaegBrown)
+                        }
+                    } else {
+                        SentReviewTab(
+                            writtenReviews = uiState.writtenReviews,
+                            onLoadNextPage = onLoadWrittenNextPage
+                        )
+                    }
+                }
             }
         }
     }
@@ -401,18 +409,126 @@ fun ReviewCard(review: ReviewDetail) {
 }
 
 @Composable
-fun SentReviewTab() {
-    Box(
+fun SentReviewTab(
+    writtenReviews: List<ReviewDetail>,
+    onLoadNextPage: () -> Unit = {}
+) {
+    val listState = rememberLazyListState()
+
+    val shouldLoadMore by remember {
+        derivedStateOf {
+            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
+            lastVisibleItem != null && lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 3
+        }
+    }
+
+    LaunchedEffect(shouldLoadMore) {
+        if (shouldLoadMore) {
+            onLoadNextPage()
+        }
+    }
+
+    if (writtenReviews.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(YeobaegWhite),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = "아직 작성한 리뷰가 없어요",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.Black
+                )
+                Text(
+                    text = "전시를 경험하고 리뷰를 남겨보세요!",
+                    fontSize = 14.sp,
+                    color = YeobaegGray
+                )
+            }
+        }
+    } else {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(YeobaegWhite)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            items(writtenReviews) { review ->
+                WrittenReviewCard(review = review)
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun WrittenReviewCard(review: ReviewDetail) {
+    Column(
         modifier = Modifier
-            .fillMaxSize()
-            .background(YeobaegWhite),
-        contentAlignment = Alignment.Center
+            .fillMaxWidth()
+            .background(YeobaegWhite, shape = RoundedCornerShape(12.dp))
+            .border(1.dp, Color(0xFFF2F2F2), shape = RoundedCornerShape(12.dp))
+            .padding(16.dp)
     ) {
-        Text(
-            text = "보낸 리뷰 기능은 준비 중입니다.",
-            fontSize = 16.sp,
-            color = YeobaegGray
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AsyncImage(
+                model = review.reviewer.profileImageUrl ?: "",
+                contentDescription = "프로필 이미지",
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(YeobaegYellow),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = review.reviewer.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.Black
+                )
+                Text(
+                    text = review.createdAt,
+                    fontSize = 12.sp,
+                    color = YeobaegGray
+                )
+            }
+
+            YeobaegRatingStars(
+                rating = review.rating,
+                starSize = 16
+            )
+        }
+
+        if (review.comment.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = review.comment,
+                fontSize = 14.sp,
+                color = Color.Black,
+                lineHeight = 20.sp
+            )
+        }
     }
 }
 
@@ -478,6 +594,7 @@ fun ReviewManagementScreenPreview() {
     ReviewManagementContent(
         uiState = fakeState,
         onBackClick = {},
-        onLoadNextPage = {}
+        onLoadNextPage = {},
+        onLoadWrittenNextPage = {}
     )
 }

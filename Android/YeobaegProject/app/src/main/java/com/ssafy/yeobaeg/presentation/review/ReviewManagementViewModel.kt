@@ -19,6 +19,10 @@ data class ReviewManagementUiState(
     val reviews: List<ReviewDetail> = emptyList(),
     val currentPage: Int = 0,
     val hasNext: Boolean = false,
+    val writtenReviews: List<ReviewDetail> = emptyList(),
+    val writtenCurrentPage: Int = 0,
+    val writtenHasNext: Boolean = false,
+    val writtenIsLoading: Boolean = false,
     val errorMessage: String? = null
 )
 
@@ -34,6 +38,7 @@ class ReviewManagementViewModel @Inject constructor(
     init {
         loadReviewStatistics()
         loadReviewList()
+        loadWrittenReviewList()
     }
 
     private fun loadReviewStatistics() {
@@ -81,6 +86,39 @@ class ReviewManagementViewModel @Inject constructor(
     fun loadNextPage() {
         if (!_uiState.value.isLoading && _uiState.value.hasNext) {
             loadReviewList(_uiState.value.currentPage + 1)
+        }
+    }
+
+    private fun loadWrittenReviewList(page: Int = 0) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(writtenIsLoading = true)
+            repository.getMyWrittenReviews(
+                rating = null,
+                createdAt = null,
+                page = page,
+                size = 20
+            )
+                .onSuccess { writtenReviewList ->
+                    _uiState.value = _uiState.value.copy(
+                        writtenReviews = if (page == 0) writtenReviewList.reviews else _uiState.value.writtenReviews + writtenReviewList.reviews,
+                        writtenCurrentPage = writtenReviewList.pagination.currentPage,
+                        writtenHasNext = writtenReviewList.pagination.hasNext,
+                        writtenIsLoading = false,
+                        errorMessage = null
+                    )
+                }
+                .onFailure { error ->
+                    _uiState.value = _uiState.value.copy(
+                        writtenIsLoading = false,
+                        errorMessage = error.message
+                    )
+                }
+        }
+    }
+
+    fun loadWrittenNextPage() {
+        if (!_uiState.value.writtenIsLoading && _uiState.value.writtenHasNext) {
+            loadWrittenReviewList(_uiState.value.writtenCurrentPage + 1)
         }
     }
 

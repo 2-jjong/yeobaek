@@ -9,8 +9,8 @@ data class ReviewDetailDto(
     val reviewer: ReviewerDto,
     val rating: Int,
     val comment: String,
-    val exhibitionStartDate: String,
-    val exhibitionEndDate: String,
+    val exhibitionStartDate: String?,
+    val exhibitionEndDate: String?,
     val createdAt: String
 )
 
