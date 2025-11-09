@@ -274,4 +274,26 @@ public class ChatServiceImpl implements ChatService {
 
         return new ChatRoomListData(chatRoomInfoPage.getContent(), pagination);
     }
+
+    /**
+     * 채팅방 나가기
+     * @param userId 사용자 ID
+     * @param chatRoomId 채팅방 ID
+     */
+    @Override
+    @Transactional
+    public void leaveChatRoom(Long userId, Long chatRoomId) {
+
+        // 1. 채팅방 조회
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_NOT_FOUND));
+
+        // 2. 나가려는 사용자가 채팅방의 멤버이며, 아직 나가지 않은 상태인지 확인
+        ChatRoomMember member = chatRoomMemberRepository.findByChatRoomAndUser_IdAndLeftAtIsNull(chatRoom, userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_FORBIDDEN));
+
+        // 3. 나간 시간 업데이트하여 소프트 삭제 처리
+        member.setLeftAt(LocalDateTime.now());
+        chatRoomMemberRepository.save(member);
+    }
 }

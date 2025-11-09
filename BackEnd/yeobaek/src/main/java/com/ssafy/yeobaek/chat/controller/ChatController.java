@@ -247,7 +247,7 @@ public class ChatController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "채팅방 나가기", description = "특정 채팅방의 메시지 목록을 조회합니다. 과거 메시지부터 최신 메시지 순으로 정렬됩니다. 무한 스크롤 방식으로 페이징 처리됩니다.")
+    @Operation(summary = "채팅방 나가기", description = "현재 사용자가 참여 중인 특정 채팅방에서 나갑니다. 나간 채팅방은 채팅 목록에서 제외됩니다. 채팅방의 메시지는 삭제되지 않습니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -319,6 +319,7 @@ public class ChatController {
             @PathVariable Long chatRoomId
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
+        chatService.leaveChatRoom(userId, chatRoomId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success());
