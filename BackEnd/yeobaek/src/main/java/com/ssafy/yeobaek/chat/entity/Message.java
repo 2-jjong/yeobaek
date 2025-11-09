@@ -40,7 +40,8 @@ public class Message {
     private MessageType messageType;
 
     @Column(name = "is_read", nullable = false)
-    private Boolean isRead;
+    @Builder.Default
+    private Boolean isRead = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
