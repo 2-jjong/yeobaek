@@ -1,21 +1,17 @@
 package com.ssafy.yeobaeg.presentation.chat
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,45 +31,61 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable
 fun ChatListScreen(
-    viewModel: ChatViewModel = hiltViewModel(),
-    onChatClick: (Long) -> Unit = {}
+    viewModel: ChatViewModel = hiltViewModel()
 ) {
-    val chatRooms by viewModel.chatRooms.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
                 title = "채팅",
                 onBackClick = {},
-                showBackButton = false,
-                actionIcon = null,
-                onActionClick = null
+                showBackButton = false
             )
         },
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(YeobaegWhite)
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(0.dp)
-        ) {
-            itemsIndexed(chatRooms) { index, chat ->
-                ChatListItem(chat = chat, onClick = { onChatClick(chat.chatRoomId) })
+        when {
+            uiState.isLoading -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
 
-                // 마지막 아이템이 아닐 때만 Divider 추가
-                if (index < chatRooms.lastIndex) {
-                    HorizontalDivider(
-                        color = YeobaegLightGray,
-                        thickness = 0.7.dp,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+            uiState.errorMessage != null -> {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(text = "오류 발생: ${uiState.errorMessage}")
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(YeobaegWhite)
+                        .padding(innerPadding),
+                    verticalArrangement = Arrangement.spacedBy(0.dp)
+                ) {
+                    itemsIndexed(uiState.chatRooms) { index, chat ->
+                        ChatListItem(
+                            chat = chat,
+                            onClick = { viewModel.navigateToChatRoom(chat.chatRoomId) }
+                        )
+
+                        if (index < uiState.chatRooms.lastIndex) {
+                            HorizontalDivider(
+                                color = YeobaegLightGray,
+                                thickness = 0.7.dp,
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {

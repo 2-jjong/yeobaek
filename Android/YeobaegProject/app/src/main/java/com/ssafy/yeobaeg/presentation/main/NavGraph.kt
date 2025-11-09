@@ -169,7 +169,7 @@ fun NavGraph(
                         EditDisplaySlotScreen(key.slotId)
                     }
                     is FullScreen.ChattingScreen-> NavEntry(key){
-                        ChattingScreen()
+                        ChattingScreen(key.chatRoomId)
                     }
                     else -> throw IllegalArgumentException("Unknown route: $key")
                 }

@@ -45,7 +45,7 @@ sealed interface FullScreen : Screen {
     data class EditDisplaySlotScreen(val slotId: Long): FullScreen
 
     @Serializable
-    data object ChattingScreen: FullScreen
+    data class ChattingScreen(val chatRoomId:Long): FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {
