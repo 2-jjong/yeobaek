@@ -31,9 +31,9 @@ public class StompHandler implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+        StompCommand command = accessor.getCommand();
 
-        // STOMP CONNECT 요청일 때 JWT 인증
-        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+        if (StompCommand.CONNECT.equals(command)) {
             String jwtToken = accessor.getFirstNativeHeader("Authorization");
             log.info("STOMP CONNECT - Authorization Header: {}", jwtToken);
 
@@ -50,24 +50,24 @@ public class StompHandler implements ChannelInterceptor {
                                 null,
                                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + userType.name()))
                         );
+                        // 세션 속성에 인증 정보 저장
+                        accessor.getSessionAttributes().put("userAuthentication", authentication);
                         accessor.setUser(authentication);
-                        log.info("STOMP User authenticated: userId={}, userType={}", userId, userType);
-                    } else {
-                        log.warn("STOMP connection failed: Invalid JWT token");
-                        // 유효하지 않은 토큰일 경우 연결 거부 (또는 예외 처리)
-                        throw new IllegalArgumentException("Invalid JWT token");
+                        log.info("STOMP User authenticated and session attribute set: userId={}", userId);
                     }
-                } catch (ExpiredJwtException e) {
-                    log.warn("STOMP connection failed: Expired JWT token");
-                    throw new IllegalArgumentException("Expired JWT token");
-                } catch (UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
+                } catch (Exception e) {
                     log.warn("STOMP connection failed: Invalid JWT token - {}", e.getMessage());
                     throw new IllegalArgumentException("Invalid JWT token");
                 }
             } else {
                 log.warn("STOMP connection failed: Missing or invalid Authorization header");
-                // 토큰이 없거나 형식이 잘못된 경우 연결 거부
                 throw new IllegalArgumentException("Missing or invalid Authorization header");
+            }
+        } else if (StompCommand.SEND.equals(command) || StompCommand.SUBSCRIBE.equals(command)) {
+            // CONNECT 이후의 다른 요청에서 세션에 저장된 인증 정보 사용
+            Authentication authentication = (Authentication) accessor.getSessionAttributes().get("userAuthentication");
+            if (authentication != null) {
+                accessor.setUser(authentication);
             }
         }
         return message;
