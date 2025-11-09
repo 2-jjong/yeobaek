@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.artwork.service;
 
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
+import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailData;
 import com.ssafy.yeobaek.artwork.dto.response.ArtworkListData;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
@@ -16,6 +17,14 @@ public interface ArtworkService {
      * @param request 작품 등록 정보
      */
     void createArtwork(Long userId, CreateArtworkRequest request);
+
+    /**
+     * 작품 수정
+     * @param userId 사용자 ID (권한 검증용)
+     * @param artworkId 수정할 작품 ID
+     * @param request 작품 수정 정보
+     */
+    void updateArtwork(Long userId, Long artworkId, UpdateArtworkRequest request);
 
     /**
      * 작품 상세 조회
