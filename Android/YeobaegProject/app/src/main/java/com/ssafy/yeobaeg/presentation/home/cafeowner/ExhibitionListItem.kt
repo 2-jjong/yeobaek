@@ -29,6 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.Exhibition
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBlue
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
@@ -46,8 +48,9 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegLightYellow
 fun StatusChip(status: SlotStatus) {
     val (bg, fg, label) = when (status) {
         SlotStatus.AVAILABLE -> Triple(YeobaegLightGreen, YeobaegDarkGreen, "전시 가능")
-        SlotStatus.ONGOING -> Triple(YeobaegLightBlue, YeobaegDarkBlue, "전시 중")
+        SlotStatus.EXHIBITING -> Triple(YeobaegLightBlue, YeobaegDarkBlue, "전시 중")
         SlotStatus.RESERVED -> Triple(YeobaegLightYellow, YeobaegDarkYellow, "예약됨")
+        else -> Triple(YeobaegLightGray, YeobaegDarkGray, "전시 불가능")
     }
     Box(
         modifier = Modifier
@@ -64,25 +67,13 @@ fun StatusChip(status: SlotStatus) {
 /**
  * 전시 리스트 아이템
  *
- * @param thumbnail 썸네일 이미지(리소스/URL 등 Coil Any)
- * @param title     슬롯명(예: "입구 좌측 벽")
- * @param status    상태(AVAILABLE/ONGOING/RESERVED)
- * @param workTitle 작품명(전시 중일 때)
- * @param artist    작가명(전시 중일 때)
- * @param endDate   종료 날짜 텍스트(전시 중일 때, 예: "종료: 2024-02-15")
- * @param sizeText  크기 텍스트(전시 가능일 때, 예: "120cm × 80cm")
+ * @param displaySlot DisplaySlot 객체 (전시 공간 정보)
  * @param onMatchClick 전시 가능일 때 "작품 매칭" 버튼 클릭
  */
 @Composable
 fun ExhibitionListItem(
     modifier: Modifier = Modifier,
-    thumbnail: Any?,
-    title: String,
-    status: SlotStatus,
-    workTitle: String,
-    artist: String,
-    endDate: String,
-    sizeText: String,
+    displaySlot: DisplaySlot,
     onMatchClick: () -> Unit = {},
 ) {
     Card(
@@ -97,7 +88,7 @@ fun ExhibitionListItem(
         ) {
             // 썸네일
             AsyncImage(
-                model = thumbnail,
+                model = displaySlot.exhibition?.artImgUrl?.ifEmpty { null },
                 contentDescription = null,
                 modifier = Modifier
                     .size(100.dp)
@@ -111,7 +102,7 @@ fun ExhibitionListItem(
                 // 상단: 제목 + 상태칩
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = title,
+                        text = displaySlot.wName,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Black,
@@ -119,22 +110,24 @@ fun ExhibitionListItem(
                         overflow = TextOverflow.Ellipsis
                     )
                     Spacer(Modifier.weight(1f))
-                    StatusChip(status)
+                    StatusChip(displaySlot.status)
                 }
                 Spacer(Modifier.height(6.dp))
 
-                when (status) {
-                    SlotStatus.ONGOING -> {
+                when (displaySlot.status) {
+                    SlotStatus.EXHIBITING -> {
                         // 작품명 / 작가 / 종료
-                        Text("🎨 $workTitle", fontSize = 13.sp, color = YeobaegDarkGray)
-                        Text("👩‍🎨 $artist", fontSize = 13.sp, color = YeobaegDarkGray)
-                        Spacer(Modifier.height(2.dp))
-                        Text("종료 : $endDate", fontSize = 12.sp, color = YeobaegGray)
+                        displaySlot.exhibition?.let { exhibition ->
+                            Text("🎨 ${exhibition.artTitle}", fontSize = 13.sp, color = YeobaegDarkGray)
+                            Text("👩‍🎨 ${exhibition.artist}", fontSize = 13.sp, color = YeobaegDarkGray)
+                            Spacer(Modifier.height(2.dp))
+                            Text("종료 : ${exhibition.endDate}", fontSize = 12.sp, color = YeobaegGray)
+                        }
                     }
 
                     SlotStatus.AVAILABLE -> {
                         // 크기 + 작품 매칭 버튼
-                        Text("📏 $sizeText", fontSize = 13.sp, color = YeobaegDarkGray)
+                        Text("📏 ${displaySlot.sizeText}", fontSize = 13.sp, color = YeobaegDarkGray)
                         Spacer(Modifier.height(8.dp))
 
                         Button(
@@ -153,12 +146,16 @@ fun ExhibitionListItem(
                     }
 
                     SlotStatus.RESERVED -> {
-                        // 예약됨: 추가 본문 없이 상태칩/배경으로만 구분
-                        Text("🎨 $workTitle", fontSize = 13.sp, color = YeobaegDarkGray)
-                        Text("👩‍🎨 $artist", fontSize = 13.sp, color = YeobaegDarkGray)
-                        Spacer(Modifier.height(2.dp))
-                        Text("종료 : $endDate", fontSize = 12.sp, color = YeobaegGray)
+                        // 예약됨: 작품명 / 작가 / 종료
+                        displaySlot.exhibition?.let { exhibition ->
+                            Text("🎨 ${exhibition.artTitle}", fontSize = 13.sp, color = YeobaegDarkGray)
+                            Text("👩‍🎨 ${exhibition.artist}", fontSize = 13.sp, color = YeobaegDarkGray)
+                            Spacer(Modifier.height(2.dp))
+                            Text("종료 : ${exhibition.endDate}", fontSize = 12.sp, color = YeobaegGray)
+                        }
                     }
+
+                    else -> {}
                 }
             }
         }
@@ -170,13 +167,16 @@ fun ExhibitionListItem(
 private fun PreviewExhibitionListItem_Available() {
     MaterialTheme {
         ExhibitionListItem(
-            thumbnail = null,
-            title = "입구 좌측 벽",
-            status = SlotStatus.AVAILABLE,
-            sizeText = "120cm × 80cm",
-            workTitle = "",
-            artist = "",
-            endDate = "",
+            displaySlot = DisplaySlot(
+                wid = 1L,
+                wName = "입구 좌측 벽",
+                width = 1.2f,
+                height = 0.8f,
+                status = SlotStatus.AVAILABLE,
+                commission = 10f,
+                requirements = "",
+                exhibition = null
+            ),
             onMatchClick = {}
         )
     }
@@ -187,13 +187,23 @@ private fun PreviewExhibitionListItem_Available() {
 private fun PreviewExhibitionListItem_Ongoing() {
     MaterialTheme {
         ExhibitionListItem(
-            thumbnail = null,
-            title = "메인 전시 공간",
-            status = SlotStatus.ONGOING,
-            workTitle = "푸른 밤의 꿈",
-            artist = "김예술",
-            endDate = "2024-12-31",
-            sizeText = "",
+            displaySlot = DisplaySlot(
+                wid = 2L,
+                wName = "메인 전시 공간",
+                width = 2.0f,
+                height = 1.5f,
+                status = SlotStatus.EXHIBITING,
+                commission = 15f,
+                requirements = "",
+                exhibition = Exhibition(
+                    startDate = "2024-01-01",
+                    endDate = "2024-12-31",
+                    artId = 100L,
+                    artTitle = "푸른 밤의 꿈",
+                    artist = "김예술",
+                    artImgUrl = ""
+                )
+            )
         )
     }
 }
@@ -203,13 +213,23 @@ private fun PreviewExhibitionListItem_Ongoing() {
 private fun PreviewExhibitionListItem_Reserved() {
     MaterialTheme {
         ExhibitionListItem(
-            thumbnail = null,
-            title = "창가 벽면",
-            status = SlotStatus.RESERVED,
-            sizeText = "100cm × 100cm",
-            endDate = "2025-01-15",
-            workTitle = "푸른 밤의 꿈",
-            artist = "김예술",
+            displaySlot = DisplaySlot(
+                wid = 3L,
+                wName = "창가 벽면",
+                width = 1.0f,
+                height = 1.0f,
+                status = SlotStatus.RESERVED,
+                commission = 12f,
+                requirements = "",
+                exhibition = Exhibition(
+                    startDate = "2025-01-01",
+                    endDate = "2025-01-15",
+                    artId = 101L,
+                    artTitle = "푸른 밤의 꿈",
+                    artist = "김예술",
+                    artImgUrl = ""
+                )
+            )
         )
     }
 }

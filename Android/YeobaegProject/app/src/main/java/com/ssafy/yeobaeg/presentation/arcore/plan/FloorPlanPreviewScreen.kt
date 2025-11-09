@@ -23,8 +23,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
-import com.ssafy.yeobaeg.domain.model.DisplayWall
-import com.ssafy.yeobaeg.domain.model.WallStatus
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -40,14 +40,14 @@ private const val LABEL_PAD_V = 8f    // 라벨 수직 패딩
 @SuppressLint("DefaultLocale")
 @Composable
 fun FloorPlanPreview(
-    initialWalls: List<DisplayWall>,
+    initialWalls: List<DisplaySlot>,
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
     onWallTapped: (Long) -> Unit = {},
     activeWallId: Long? = null,
 ) {
     val wallsState = remember(initialWalls) { initialWalls.toMutableStateList() }
-    val walls: List<DisplayWall> = wallsState
+    val walls: List<DisplaySlot> = wallsState
 
     if (walls.isEmpty()) {
         Box(modifier = modifier) {
@@ -124,7 +124,7 @@ fun FloorPlanPreview(
                             val (wallId, dist) = findNearestSegmentById(mappedSegmentsState.value, tap)
                             if (wallId != null && dist <= HIT_THRESHOLD_PX) {
                                 if (!readOnly) {
-                                    val idx = walls.indexOfFirst { it.id == wallId }
+                                    val idx = walls.indexOfFirst { it.wid == wallId }
                                     if (idx >= 0) toggleWallPossible(wallsState, idx)
                                 }
                                 onWallTapped(wallId) // 선택/하이라이트/디테일 시트 갱신은 외부에서
@@ -134,7 +134,7 @@ fun FloorPlanPreview(
                             if (readOnly) return@detectTapGestures
                             val (wallId, dist) = findNearestSegmentById(mappedSegmentsState.value, tap)
                             if (wallId != null && dist <= HIT_THRESHOLD_PX) {
-                                val idx = walls.indexOfFirst { it.id == wallId }
+                                val idx = walls.indexOfFirst { it.wid == wallId }
                                 if (idx >= 0) toggleWallInUse(wallsState, idx)
                             }
                         }
@@ -183,7 +183,7 @@ fun FloorPlanPreview(
                 // 이미 배치된 라벨 박스들(겹침 회피용)
                 val placedLabelRects = mutableListOf<RectF>()
 
-                fun drawWall(wall: DisplayWall, emphasize: Boolean) {
+                fun drawWall(wall: DisplaySlot, emphasize: Boolean) {
                     val a = map(wall.start.x, wall.start.y)
                     val b = map(wall.end.x, wall.end.y)
 
@@ -191,7 +191,7 @@ fun FloorPlanPreview(
 
                     val (stroke, color) = wallStyle(wall.status, emphasize)
                     drawLine(color = color, start = a, end = b, strokeWidth = stroke)
-                    mappedSegments.add(Triple(a, b, wall.id))
+                    mappedSegments.add(Triple(a, b, wall.wid))
 
                     // 라벨(두 줄: 이름, 크기)
                     val dx = wall.end.x - wall.start.x
@@ -209,18 +209,12 @@ fun FloorPlanPreview(
                     if (!ccw) { nx = -nx; ny = -ny }
 
                     // 텍스트 구성
-                    val name = wall.wName.ifBlank { "벽 ${wall.id}" }
-                    val widthText = wall.widthText ?: run {
-                        // widthText가 없으면 길이로 대체
-                        if (len < 1f) "${(len * 100).toInt()} cm" else String.format("%.2f m", len)
-                    }
-                    val sizeText = if ((wall.height ?: -1f) < 0f) {
+                    val name = wall.wName.ifBlank { "벽 ${wall.wid}" }
+                    val widthText = wall.widthText
+                    val sizeText = if (wall.height <= 0f) {
                         widthText
                     } else {
-                        val hText = wall.heightText ?: String.format(
-                            if (wall.height!! < 1f) "%d cm" else "%.2f m",
-                            if (wall.height < 1f) (wall.height * 100).toInt() else wall.height
-                        )
+                        val hText = wall.heightText
                         "$widthText × $hText"
                     }
 
@@ -292,14 +286,14 @@ fun FloorPlanPreview(
                     placedLabelRects += (chosenRect ?: return)
 
                     // 두 줄 그리기(가운데 정렬)
-                    val cx = chosenCenter!!.x
-                    val top = chosenRect!!.top + LABEL_PAD_V
+                    val cx = chosenCenter.x
+                    val top = chosenRect.top + LABEL_PAD_V
 
                     // baseline 계산: top에서 ascent 보정
                     val baselineName = top - namePaint.fontMetrics.ascent
                     val baselineSize = baselineName + lineH2 // 바로 아래 줄
 
-                    if (wall.status != WallStatus.NOT_POSSIBLE) {
+                    if (wall.status != SlotStatus.UNAVAILABLE) {
                         drawContext.canvas.nativeCanvas.apply {
                             drawText(name, cx, baselineName, namePaint)
                             drawText(sizeText, cx, baselineSize, sizePaint)
@@ -308,8 +302,8 @@ fun FloorPlanPreview(
                 }
 
                 // 비활성 → 활성 순으로 그려 하이라이트가 위로 오게
-                walls.filter { it.id != activeWallId }.forEach { drawWall(it, emphasize = false) }
-                walls.firstOrNull { it.id == activeWallId }?.let { drawWall(it, emphasize = true) }
+                walls.filter { it.wid != activeWallId }.forEach { drawWall(it, emphasize = false) }
+                walls.firstOrNull { it.wid == activeWallId }?.let { drawWall(it, emphasize = true) }
 
                 mappedSegmentsState.value = mappedSegments
 
@@ -354,12 +348,12 @@ private fun pointToSegmentDistance(p: Offset, a: Offset, b: Offset): Float {
 }
 
 /* ====== 스타일/유틸 ====== */
-private fun wallStyle(status: WallStatus, emphasize: Boolean): Pair<Float, Color> {
+private fun wallStyle(status: SlotStatus, emphasize: Boolean): Pair<Float, Color> {
     val baseColor = when (status) {
-        WallStatus.NOT_POSSIBLE -> Color(0xFFCBD5E1)
-        WallStatus.POSSIBLE     -> Color(0xFF10B981)
-        WallStatus.IN_USE       -> Color(0xFFEF4444)
-        WallStatus.RESERVED     -> Color(0xFFF59E0B)
+        SlotStatus.UNAVAILABLE -> Color(0xFFCBD5E1)
+        SlotStatus.AVAILABLE     -> Color(0xFF10B981)
+        SlotStatus.EXHIBITING       -> Color(0xFFEF4444)
+        SlotStatus.RESERVED     -> Color(0xFFF59E0B)
     }
     val stroke = if (emphasize) WALL_STROKE_PX * 1.15f else WALL_STROKE_PX
     val color  = if (emphasize) baseColor.copy(alpha = 0.95f) else baseColor
@@ -377,22 +371,22 @@ private fun isCCW(vertices: List<Offset>): Boolean {
 }
 
 /* ====== 내부 토글 로직(편집 모드에서만 사용) ====== */
-private fun toggleWallPossible(walls: MutableList<DisplayWall>, index: Int) {
+private fun toggleWallPossible(walls: MutableList<DisplaySlot>, index: Int) {
     if (index !in walls.indices) return
     val w = walls[index]
     val newStatus = when (w.status) {
-        WallStatus.NOT_POSSIBLE -> WallStatus.POSSIBLE
-        WallStatus.POSSIBLE, WallStatus.IN_USE, WallStatus.RESERVED -> WallStatus.NOT_POSSIBLE
+        SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
+        SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED -> SlotStatus.UNAVAILABLE
     }
     walls[index] = w.copy(status = newStatus)
 }
 
-private fun toggleWallInUse(walls: MutableList<DisplayWall>, index: Int) {
+private fun toggleWallInUse(walls: MutableList<DisplaySlot>, index: Int) {
     if (index !in walls.indices) return
     val w = walls[index]
     val newStatus = when (w.status) {
-        WallStatus.IN_USE -> WallStatus.POSSIBLE
-        else -> WallStatus.IN_USE
+        SlotStatus.EXHIBITING -> SlotStatus.AVAILABLE
+        else -> SlotStatus.EXHIBITING
     }
     walls[index] = w.copy(status = newStatus)
 }

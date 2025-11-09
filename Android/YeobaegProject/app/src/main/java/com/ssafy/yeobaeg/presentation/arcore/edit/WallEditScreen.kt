@@ -8,12 +8,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.ssafy.yeobaeg.domain.model.DisplayWall
-import com.ssafy.yeobaeg.domain.model.WallStatus
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.presentation.arcore.plan.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.arcore.vertical.VerticalMeasureCamera
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
@@ -22,7 +21,7 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WallEditScreen(
-    initialWalls: List<DisplayWall>,
+    initialWalls: List<DisplaySlot>,
     onClose: () -> Unit = {},
     viewModel: WallEditViewModel = hiltViewModel()
 ) {
@@ -64,7 +63,7 @@ fun WallEditScreen(
                     WallEditStep.SelectWall -> "탭하여 전시 가능한 벽을 선택하세요"
                     WallEditStep.MeasureHeight -> {
                         val measuredCount = state.walls.count { wall ->
-                            state.targetIds.contains(wall.id) && wall.height > 0f
+                            state.targetIds.contains(wall.wid) && wall.height > 0f
                         }
                         val totalCount = state.targetIds.size
                         "전시가능한 벽의 높이를 측정하세요 ($measuredCount/$totalCount)"
@@ -125,7 +124,7 @@ fun WallEditScreen(
                             modifier = Modifier.fillMaxWidth(),
                             wall = current,
                             onNameChange = { newName ->
-                                viewModel.updateWallName(current.id, newName)
+                                viewModel.updateWallName(current.wid, newName)
                             },
                             onMeasureClick = { showCamera = true },
                             onNextClick = {
@@ -143,5 +142,5 @@ fun WallEditScreen(
     }
 }
 
-private fun WallStatus.isSelectable(): Boolean =
-    this != WallStatus.NOT_POSSIBLE
+private fun SlotStatus.isSelectable(): Boolean =
+    this != SlotStatus.UNAVAILABLE

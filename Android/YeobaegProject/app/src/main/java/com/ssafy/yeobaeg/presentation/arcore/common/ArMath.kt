@@ -64,4 +64,4 @@ fun eulerYawOnGround(dx: Float, dz: Float): Float3 {
 }
 
 @SuppressLint("DefaultLocale")
-fun fmt(m: Float) = "${(m * 100).toInt()} cm"
+fun fmt(m: Float) = "${(m).toInt()} cm"

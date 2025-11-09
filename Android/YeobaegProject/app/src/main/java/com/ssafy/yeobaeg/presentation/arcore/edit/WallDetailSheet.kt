@@ -1,29 +1,26 @@
 package com.ssafy.yeobaeg.presentation.arcore.edit
 
-import android.R.attr.name
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ssafy.yeobaeg.domain.model.DisplayWall
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
-import kotlin.math.hypot
 
 @Composable
 fun WallDetailSheet(
     modifier: Modifier = Modifier,
-    wall: DisplayWall,
+    wall: DisplaySlot,
     onNameChange: (String) -> Unit,
     onMeasureClick: () -> Unit,
     onNextClick: () -> Unit
 ) {
-    var name by remember(wall.id) { mutableStateOf(wall.wName) }
+    var name by remember(wall.wid) { mutableStateOf(wall.wName) }
 
     Column(modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
         Text(

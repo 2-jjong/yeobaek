@@ -4,7 +4,6 @@ import androidx.compose.runtime.Immutable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.SlotStatus
-import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -62,7 +61,7 @@ private val demoArtworks = listOf(
         priceWon = "￦450,000",
         likes = 45,
         placeName = "Brew & Canvas",
-        status = SlotStatus.ONGOING
+        status = SlotStatus.EXHIBITING
     ),
     ArtistArtwork(
         id = 2L,

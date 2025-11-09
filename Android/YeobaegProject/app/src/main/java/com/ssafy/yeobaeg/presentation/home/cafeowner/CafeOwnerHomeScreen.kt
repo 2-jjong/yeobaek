@@ -23,8 +23,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
-import com.ssafy.yeobaeg.domain.model.DisplayWall
+import com.ssafy.yeobaeg.domain.model.Exhibition
 import com.ssafy.yeobaeg.domain.model.SlotStatus
+import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwnerInfo
 import com.ssafy.yeobaeg.presentation.arcore.plan.FloorPlanPreview
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
@@ -37,17 +38,17 @@ fun CafeOwnerHomeScreen(
 ) {
     val state = viewModel.uiState.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
+        viewModel.loadMyCafe()
+    }
+
     val cafeOwnerInfo = state.value.cafeOwnerInfo
-    val displaySlots = state.value.displaySlots
-    val displayWalls = state.value.displayWalls
     val selectedTab = state.value.selectedTab
 
     val colors = if (cafeOwnerInfo != null) RegisteredColors else UnregisteredColors
     CompositionLocalProvider(LocalCafeOwnerColors provides colors) {
         CafeOwnerHomeScreen(
             cafeOwnerInfo = cafeOwnerInfo,
-            displaySlots = displaySlots,
-            displayWalls = displayWalls,
             selectedTab = selectedTab,
             onRegisterClick = viewModel::navigateToRegister,
             onTabSelected = { viewModel.selectTab(it) },
@@ -61,14 +62,12 @@ fun CafeOwnerHomeScreen(
 @Composable
 private fun CafeOwnerHomeScreen(
     cafeOwnerInfo: CafeOwnerInfo?,
-    displaySlots: List<DisplaySlot> = emptyList(),
-    displayWalls: List<DisplayWall> = emptyList(),
     selectedTab: CafeOwnerTab = CafeOwnerTab.PLAN,
     onRegisterClick: () -> Unit = {},
     onTabSelected: (CafeOwnerTab) -> Unit = {},
     onScanClick: () -> Unit = {},
     onSearchArtistClick: () -> Unit = {},
-    onWallClick: (Long) -> Unit = {}
+    onWallClick: (DisplaySlot) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -126,8 +125,7 @@ private fun CafeOwnerHomeScreen(
                 Spacer(Modifier.height(8.dp))
 
                 CafeOwnerHomeContent(
-                    slots = displaySlots,
-                    walls = displayWalls,
+                    slots = cafeOwnerInfo.displaySlots,
                     tab = selectedTab,
                     onTabSelected = onTabSelected,
                     onWallClick = onWallClick
@@ -156,9 +154,7 @@ fun CafeOwnerHomeHeader(
         AsyncImage(
             model = cafeImgUrl,
             contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop
         )
     }
@@ -212,10 +208,9 @@ fun CafeOwnerHomeActions(
 @Composable
 fun CafeOwnerHomeContent(
     slots: List<DisplaySlot>,
-    walls: List<DisplayWall>,
     tab: CafeOwnerTab,
     onTabSelected: (CafeOwnerTab) -> Unit = { },
-    onWallClick: (Long) -> Unit
+    onWallClick: (DisplaySlot) -> Unit
 ) {
     var sheetVisible by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf<DisplaySlot?>(null) }
@@ -258,14 +253,14 @@ fun CafeOwnerHomeContent(
 
         when (tab) {
             CafeOwnerTab.PLAN -> FloorPlanSection(
-                walls = walls,
                 slots = slots,
                 onRowClick = {
                     selected = it
                     sheetVisible = true
                 }
             )
-            CafeOwnerTab.STATUS -> ExhibitionStatusSection(slots = slots)
+
+            CafeOwnerTab.STATUS -> ExhibitionStatusSection(slots = slots.filter { it.status != SlotStatus.UNAVAILABLE })
         }
     }
 
@@ -284,7 +279,7 @@ fun CafeOwnerHomeContent(
             },
             onClickSetting = {
                 sheetVisible = false
-                selected?.let { onWallClick(it.wid) }
+                selected?.let { onWallClick(it) }
                 selected = null
             }
         )
@@ -293,13 +288,12 @@ fun CafeOwnerHomeContent(
 
 @Composable
 fun FloorPlanSection(
-    walls: List<DisplayWall>,
     slots: List<DisplaySlot>,
     onRowClick: (DisplaySlot) -> Unit
 ) {
     Spacer(Modifier.height(8.dp))
     FloorPlanPreview(
-        initialWalls = walls,
+        initialWalls = slots,
         modifier = Modifier
             .fillMaxWidth()
             .height(400.dp),
@@ -307,7 +301,10 @@ fun FloorPlanSection(
     )
 
     Spacer(Modifier.height(16.dp))
-    SlotAvailabilityList(slots = slots, onRowClick = onRowClick)
+    SlotAvailabilityList(
+        slots = slots.filter { it.status != SlotStatus.UNAVAILABLE },
+        onRowClick = onRowClick
+    )
 }
 
 @Composable
@@ -330,8 +327,9 @@ private fun SlotAvailabilityRow(
 ) {
     val dot = when (slot.status) {
         SlotStatus.AVAILABLE -> green
-        SlotStatus.ONGOING -> blue
+        SlotStatus.EXHIBITING -> blue
         SlotStatus.RESERVED -> yellow
+        else -> YeobaegLightGray
     }
 
     Row(
@@ -381,13 +379,7 @@ fun ExhibitionStatusSection(slots: List<DisplaySlot>) {
 fun DisplaySlotList(slots: List<DisplaySlot>) {
     slots.forEach { displaySlot ->
         ExhibitionListItem(
-            thumbnail = displaySlot.artImgUrl,
-            title = displaySlot.wName,
-            status = displaySlot.status,
-            workTitle = displaySlot.artTitle,
-            artist = displaySlot.artist,
-            endDate = displaySlot.deadline,
-            sizeText = displaySlot.sizeText,
+            displaySlot = displaySlot,
             onMatchClick = {}
         )
     }
@@ -453,9 +445,7 @@ private fun PreviewCafeOwnerHomeScreen_Registered_Plan() {
                 numExhibitedWorks = 12,
                 numArtistsWorkedWith = 8
             ),
-            displaySlots = dummyDisplaySlots,
-            displayWalls = dummyDisplayWalls,
-            selectedTab = CafeOwnerTab.PLAN
+            selectedTab = CafeOwnerTab.PLAN,
         )
     }
 }
@@ -473,8 +463,6 @@ private fun PreviewCafeOwnerHomeScreen_Registered_Status() {
                 numExhibitedWorks = 12,
                 numArtistsWorkedWith = 8
             ),
-            displaySlots = dummyDisplaySlots,
-            displayWalls = dummyDisplayWalls,
             selectedTab = CafeOwnerTab.STATUS
         )
     }
@@ -494,30 +482,46 @@ private fun PreviewSlotAvailabilityList() {
                     DisplaySlot(
                         wid = 1L,
                         wName = "입구 좌측 벽",
-                        width = 120f,
-                        height = 80f,
+                        width = 1.2f,
+                        height = 0.8f,
                         status = SlotStatus.AVAILABLE,
                         commission = 15f,
                         requirements = "실내 조명 밝음",
-                        deadline = ""
+                        exhibition = null
                     ),
                     DisplaySlot(
                         wid = 2L,
                         wName = "메인 전시 공간",
-                        width = 150f,
-                        height = 100f,
-                        status = SlotStatus.ONGOING,
-                        artTitle = "푸른 밤의 꿈",
-                        artist = "김예술",
-                        deadline = "2024-12-31"
+                        width = 1.5f,
+                        height = 1.0f,
+                        status = SlotStatus.EXHIBITING,
+                        commission = 15f,
+                        requirements = "",
+                        exhibition = Exhibition(
+                            startDate = "2024-01-01",
+                            endDate = "2024-12-31",
+                            artId = 100L,
+                            artTitle = "푸른 밤의 꿈",
+                            artist = "김예술",
+                            artImgUrl = ""
+                        )
                     ),
                     DisplaySlot(
                         wid = 3L,
                         wName = "창가 벽면",
-                        width = 100f,
-                        height = 100f,
+                        width = 1.0f,
+                        height = 1.0f,
                         status = SlotStatus.RESERVED,
-                        deadline = "2025-01-15"
+                        commission = 15f,
+                        requirements = "",
+                        exhibition = Exhibition(
+                            startDate = "2024-12-01",
+                            endDate = "2025-01-15",
+                            artId = 101L,
+                            artTitle = "겨울 풍경",
+                            artist = "박작가",
+                            artImgUrl = ""
+                        )
                     )
                 ),
                 onRowClick = {}
