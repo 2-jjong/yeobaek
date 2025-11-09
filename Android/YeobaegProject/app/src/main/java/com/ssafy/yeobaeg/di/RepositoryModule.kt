@@ -3,12 +3,14 @@ package com.ssafy.yeobaeg.di
 import com.ssafy.yeobaeg.data.repository.ArtRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.AuthRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.CafeRepositoryImpl
+import com.ssafy.yeobaeg.data.repository.ChatRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.ProfileRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.RecentSearchRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.StorageRepositoryImpl
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
+import com.ssafy.yeobaeg.domain.repository.ChatRepository
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.domain.repository.RecentSearchRepository
 import com.ssafy.yeobaeg.domain.repository.StorageRepository
@@ -57,5 +59,11 @@ abstract class RepositoryModule {
     abstract fun bindStorageRepository(
         storageRepository: StorageRepositoryImpl
     ): StorageRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindChatRepository(
+        chatRepositoryImpl: ChatRepositoryImpl
+    ): ChatRepository
 }
 

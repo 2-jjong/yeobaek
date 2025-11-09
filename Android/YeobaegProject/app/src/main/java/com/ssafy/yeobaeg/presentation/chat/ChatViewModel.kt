@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomSummary
 import com.ssafy.yeobaeg.domain.model.UserRole
-import com.ssafy.yeobaeg.domain.model.profile.UserInfo
+import com.ssafy.yeobaeg.domain.repository.ChatRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,6 +23,7 @@ data class ChatUiState(
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val navigator: Navigator,
+    private val chatRepository: ChatRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ChatUiState())
@@ -34,50 +35,20 @@ class ChatViewModel @Inject constructor(
 
     private fun loadChatRooms() = viewModelScope.launch {
         _uiState.value = _uiState.value.copy(isLoading = true)
-        try {
-            // 실제 API 연동 시
-            // val response = chatRepository.getChatRooms()
-            // _uiState.value = ChatUiState(chatRooms = response, isLoading = false)
-            // API 연동 전 임시 데이터
-            val sampleRooms = listOf(
-                ChatRoomSummary(
-                    chatRoomId = 1,
-                    partnerId = 101,
-                    partnerName = "김아티스트",
-                    partnerProfileImageUrl = "https://picsum.photos/200/200",
-                    partnerRole = UserRole.ARTIST,
-                    cafeId = 0,
-                    cafeName = "",
-                    artworkId = 0,
-                    artworkTitle = "",
-                    artworkThumbnailUrl = "",
-                    unreadCount = 3,
-                    lastMessage = "전시 일정 관련해서 문의드립니다.",
-                    lastMessageType = "TEXT",
-                    lastMessageAt = "5분 전"
-                ),
-                ChatRoomSummary(
-                    chatRoomId = 2,
-                    partnerId = 102,
-                    partnerName = "카페 여백",
-                    partnerProfileImageUrl = "https://picsum.photos/201/201",
-                    partnerRole = UserRole.CAFE_OWNER,
-                    cafeId = 0,
-                    cafeName = "",
-                    artworkId = 0,
-                    artworkTitle = "",
-                    artworkThumbnailUrl = "",
-                    unreadCount = 0,
-                    lastMessage = "작품 잘 도착했습니다. 감사합니다!",
-                    lastMessageType = "TEXT",
-                    lastMessageAt = "1시간 전"
-                )
-            )
 
-            _uiState.value = ChatUiState(chatRooms = sampleRooms, isLoading = false)
-        } catch (e: Exception) {
-            _uiState.value = ChatUiState(errorMessage = e.message, isLoading = false)
-        }
+        chatRepository.getChatList()
+            .onSuccess { chatList ->
+                _uiState.value = ChatUiState(
+                    chatRooms = chatList.chatRooms,
+                    isLoading = false
+                )
+            }
+            .onFailure { e ->
+                _uiState.value = ChatUiState(
+                    errorMessage = e.message ?: "채팅 목록을 불러오는 중 오류가 발생했습니다.",
+                    isLoading = false
+                )
+            }
     }
 
 

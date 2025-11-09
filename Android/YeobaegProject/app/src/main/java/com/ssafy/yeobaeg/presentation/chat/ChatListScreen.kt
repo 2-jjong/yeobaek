@@ -3,7 +3,6 @@ package com.ssafy.yeobaeg.presentation.chat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
@@ -22,12 +21,7 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
-import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
-import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
-import com.ssafy.yeobaeg.ui.theme.jansilFont
+import com.ssafy.yeobaeg.ui.theme.*
 
 @Composable
 fun ChatListScreen(
@@ -35,6 +29,20 @@ fun ChatListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    ChatListScreenContent(
+        uiState = uiState,
+        onChatClick = { viewModel.navigateToChatRoom(it) }
+    )
+}
+
+/**
+ * 실제 화면과 프리뷰 둘 다에서 재사용 가능한 Content 분리
+ */
+@Composable
+fun ChatListScreenContent(
+    uiState: ChatUiState,
+    onChatClick: (Long) -> Unit = {}
+) {
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
@@ -69,7 +77,7 @@ fun ChatListScreen(
                     itemsIndexed(uiState.chatRooms) { index, chat ->
                         ChatListItem(
                             chat = chat,
-                            onClick = { viewModel.navigateToChatRoom(chat.chatRoomId) }
+                            onClick = { onChatClick(chat.chatRoomId) }
                         )
 
                         if (index < uiState.chatRooms.lastIndex) {
@@ -85,7 +93,6 @@ fun ChatListScreen(
         }
     }
 }
-
 
 @Composable
 fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
@@ -107,7 +114,6 @@ fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // 왼쪽: 이름 + 메시지
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center
@@ -131,11 +137,10 @@ fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
             )
         }
 
-        // 오른쪽: 시간 (위) + 안읽은 수 (아래)
         Column(
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.height(45.dp) // 두 줄 높이 확보
+            modifier = Modifier.height(45.dp)
         ) {
             Text(
                 text = chat.lastMessageAt,
@@ -162,28 +167,7 @@ fun ChatListItem(chat: ChatRoomSummary, onClick: () -> Unit) {
                     )
                 }
             } else {
-                Spacer(modifier = Modifier.size(22.dp)) // 빈칸 맞추기용
-            }
-        }
-    }
-}
-
-
-@Composable
-fun ChatListPreviewContent(chatRooms: List<ChatRoomSummary>, onChatClick: (Long) -> Unit = {}) {
-    LazyColumn {
-
-        itemsIndexed(chatRooms) { index, chat ->
-            ChatListItem(chat = chat, onClick = { onChatClick(chat.chatRoomId) })
-
-            // 마지막 아이템이 아닐 때만 Divider 추가
-            if (index < chatRooms.lastIndex) {
-                HorizontalDivider(
-                    color = YeobaegLightGray,
-                    thickness = 0.7.dp,
-                    modifier = Modifier.padding(horizontal = 8.dp)
-
-                )
+                Spacer(modifier = Modifier.size(22.dp))
             }
         }
     }
@@ -192,40 +176,32 @@ fun ChatListPreviewContent(chatRooms: List<ChatRoomSummary>, onChatClick: (Long)
 @Preview(showBackground = true)
 @Composable
 fun ChatListScreenPreview() {
-    val dummyChatRooms = listOf(
-        ChatRoomSummary(
-            chatRoomId = 1,
-            partnerId = 101,
-            partnerName = "김아티스트",
-            partnerProfileImageUrl = "",
-            partnerRole = UserRole.ARTIST,
-            cafeId = 0,
-            cafeName = "",
-            artworkId = 0,
-            artworkTitle = "",
-            artworkThumbnailUrl = "",
-            unreadCount = 2,
-            lastMessage = "작품 전시에 대해 논의하고 싶습니다",
-            lastMessageType = "TEXT",
-            lastMessageAt = "2분 전"
-        ),
-        ChatRoomSummary(
-            chatRoomId = 2,
-            partnerId = 102,
-            partnerName = "Brew & Canvas",
-            partnerProfileImageUrl = "",
-            partnerRole = UserRole.CAFE_OWNER,
-            cafeId = 0,
-            cafeName = "",
-            artworkId = 0,
-            artworkTitle = "",
-            artworkThumbnailUrl = "",
-            unreadCount = 0,
-            lastMessage = "전시 공간이 준비되었습니다",
-            lastMessageType = "TEXT",
-            lastMessageAt = "1시간 전"
+    val dummyUiState = ChatUiState(
+        chatRooms = listOf(
+            ChatRoomSummary(
+                chatRoomId = 1,
+                partnerId = 101,
+                partnerName = "김아티스트",
+                partnerProfileImageUrl = "",
+                partnerRole = UserRole.ARTIST.toString(),
+                unreadCount = 2,
+                lastMessage = "작품 전시에 대해 논의하고 싶습니다",
+                lastMessageType = "TEXT",
+                lastMessageAt = "2분 전"
+            ),
+            ChatRoomSummary(
+                chatRoomId = 2,
+                partnerId = 102,
+                partnerName = "Brew & Canvas",
+                partnerProfileImageUrl = "",
+                partnerRole = UserRole.CAFE_OWNER.toString(),
+                unreadCount = 0,
+                lastMessage = "전시 공간이 준비되었습니다",
+                lastMessageType = "TEXT",
+                lastMessageAt = "1시간 전"
+            )
         )
     )
 
-    ChatListPreviewContent(chatRooms = dummyChatRooms)
+    ChatListScreenContent(uiState = dummyUiState)
 }
