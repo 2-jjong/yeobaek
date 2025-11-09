@@ -76,7 +76,7 @@ public class ChatServiceImpl implements ChatService {
         User partner = userService.findById(partnerId)
                 .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
 
-        // 3. 기존 1:1 채팅방 확인
+        // 3. 기존 1:1 채팅방 확인 (leftAt 상태와 상관없이 모든 멤버 조회)
         List<ChatRoomMember> senderRooms = chatRoomMemberRepository.findByUser(user);
         List<ChatRoomMember> recipientRooms = chatRoomMemberRepository.findByUser(partner);
 
@@ -85,14 +85,25 @@ public class ChatServiceImpl implements ChatService {
                 .collect(Collectors.toSet());
 
         Optional<ChatRoom> existingRoomOpt = recipientRooms.stream()
-                .filter(member -> senderChatRooms.contains(member.getChatRoom()))
                 .map(ChatRoomMember::getChatRoom)
+                .filter(senderChatRooms::contains)
                 .findFirst();
 
         // 4. 기존 채팅방이 있으면 해당 채팅방 정보 반환
         if (existingRoomOpt.isPresent()) {
+            ChatRoom existingChatRoom = existingRoomOpt.get();
+
+            // 현재 사용자의 ChatRoomMember를 찾아 leftAt을 null로 업데이트 (재참여)
+            chatRoomMemberRepository.findByChatRoomAndUser_Id(existingChatRoom, userId)
+                    .ifPresent(member -> {
+                        if (member.getLeftAt() != null) {
+                            member.setLeftAt(null);
+                            chatRoomMemberRepository.save(member);
+                        }
+                    });
+
             String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
-            return chatMapper.toChatRoomData(existingRoomOpt.get(), partner, partnerImageUrl);
+            return chatMapper.toChatRoomData(existingChatRoom, partner, partnerImageUrl);
         }
 
         // 5. 새로운 채팅방 생성
@@ -223,7 +234,7 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
 
         // 2. 사용자가 참여하고 있는 모든 채팅방 멤버 조회
-        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByUser(currentUser);
+        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByUserAndLeftAtIsNull(currentUser);
 
         List<ChatRoomInfo> chatRoomInfoList = new ArrayList<>();
 

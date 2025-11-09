@@ -297,7 +297,6 @@ public class ChatController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "사용자를 찾을 수 없음", value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"),
                                     @ExampleObject(name = "채팅방을 찾을 수 없음", value = "{\"code\": \"MS4041\", \"message\": \"존재하지 않는 채팅방입니다\"}")
                             }
                     )
