@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.chat.dto.request;
 
 import com.ssafy.yeobaek.common.enums.MessageType;
+import com.ssafy.yeobaek.common.validation.ValidEnum;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -16,6 +17,7 @@ public class ChatMessageRequest {
     private Long chatRoomId;
 
     @NotNull(message = "MISSING_REQUIRED_FIELD")
+    @ValidEnum(enumClass = MessageType.class, message = "MESSAGE_INVALID_TYPE")
     @Schema(description = "메시지 유형", example = "TEXT")
     private MessageType messageType;
 
