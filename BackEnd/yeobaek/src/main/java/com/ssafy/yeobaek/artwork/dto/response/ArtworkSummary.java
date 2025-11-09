@@ -1,16 +1,16 @@
 package com.ssafy.yeobaek.artwork.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Schema(description = "작품 요약 정보")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ArtworkSummary {
     @Schema(description = "작품 ID", example = "1")
     private Long artworkId;
@@ -20,4 +20,22 @@ public class ArtworkSummary {
 
     @Schema(description = "썸네일 이미지 URL", example = "https://example.com/thumbnail.jpg")
     private String thumbnailUrl;
+
+    @Schema(description = "작품 가격 (원)", example = "500000")
+    private Integer price;
+
+    @Schema(description = "카테고리", example = "PAINTING")
+    private String category;
+
+    @Schema(description = "작품 가로 (cm)", example = "100")
+    private Integer widthCm;
+
+    @Schema(description = "작품 세로 (cm)", example = "150")
+    private Integer heightCm;
+
+    @Schema(description = "작품 상태 (AVAILABLE: 전시 가능, EXHIBITING: 전시 중)", example = "AVAILABLE")
+    private String exhibitionStatus;
+
+    @Schema(description = "북마크 수", example = "42")
+    private Integer bookmarkCount;
 }
