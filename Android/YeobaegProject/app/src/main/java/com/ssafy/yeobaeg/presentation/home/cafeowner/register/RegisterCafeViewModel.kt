@@ -10,6 +10,7 @@ import com.ssafy.yeobaeg.domain.model.storage.PresignedUrl
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.domain.repository.StorageRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,8 @@ const val TOTAL_STEPS = 2
 class RegisterCafeViewModel @Inject constructor(
     private val cafeRepository: CafeRepository,
     private val storageRepository: StorageRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val snackBarController: SnackBarController
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(RegisterCafeState())
     val uiState: StateFlow<RegisterCafeState> = _uiState.asStateFlow()
@@ -131,11 +133,13 @@ class RegisterCafeViewModel @Inject constructor(
             images = s.uploadedImages.map { it.fileKey }
         )
 
-        runCatching { cafeRepository.registerCafe(cafe) }
+        cafeRepository.registerCafe(cafe)
             .onSuccess {
+                snackBarController.showSuccess("카페 등록 완료")
                 navigateToCafeOwnerHome()
             }
             .onFailure {
+                snackBarController.showError(it.message ?: "오류")
                 Log.d("RegisterCafeViewModel http", "카페 등록 실패: ${it.message}")
             }
     }

@@ -22,7 +22,7 @@ interface CafeApiService {
     @POST("cafes")
     suspend fun registerCafe(
         @Body request: RegisterCafeRequest
-    ) : BaseResponse<String>
+    ) : BaseResponse<Unit>
 
     @GET("cafes/popular")
     suspend fun getPopularCafes(
