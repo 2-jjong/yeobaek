@@ -26,6 +26,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
@@ -35,6 +36,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -143,6 +146,8 @@ fun ReviewManagementContent(
                         ReceivedReviewTab(
                             statistics = uiState.statistics,
                             reviews = uiState.reviews,
+                            hasNext = uiState.hasNext,
+                            isLoading = uiState.isLoading,
                             onLoadNextPage = onLoadNextPage
                         )
                     }
@@ -158,6 +163,8 @@ fun ReviewManagementContent(
                     } else {
                         SentReviewTab(
                             writtenReviews = uiState.writtenReviews,
+                            hasNext = uiState.writtenHasNext,
+                            isLoading = uiState.writtenIsLoading,
                             onLoadNextPage = onLoadWrittenNextPage
                         )
                     }
@@ -171,21 +178,25 @@ fun ReviewManagementContent(
 fun ReceivedReviewTab(
     statistics: ReviewStatistics?,
     reviews: List<ReviewDetail>,
+    hasNext: Boolean = true,
+    isLoading: Boolean = false,
     onLoadNextPage: () -> Unit = {}
 ) {
     val listState = rememberLazyListState()
 
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem != null && lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 3
+    LaunchedEffect(listState, hasNext, isLoading) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            last >= total - 3
         }
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            onLoadNextPage()
-        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+                if (shouldLoadMore && hasNext && !isLoading) {
+                    onLoadNextPage()
+                }
+            }
     }
 
     if (statistics == null || (statistics.totalReviewCount == 0 && reviews.isEmpty())) {
@@ -245,7 +256,10 @@ fun ReceivedReviewTab(
                     }
                 }
             } else {
-                items(reviews) { review ->
+                items(
+                    items = reviews,
+                    key = { it.reviewId }
+                ) { review ->
                     ReviewCard(review = review)
                 }
             }
@@ -259,6 +273,23 @@ fun ReceivedReviewTab(
 
 @Composable
 fun ReviewStatisticsCard(statistics: ReviewStatistics) {
+    val animatedScore = remember { Animatable(0f) }
+    val animatedReviewCount = remember { Animatable(0f) }
+
+    LaunchedEffect(statistics) {
+        animatedScore.animateTo(
+            targetValue = statistics.totalReviewScore.toFloat(),
+            animationSpec = tween(durationMillis = 1000)
+        )
+    }
+
+    LaunchedEffect(statistics) {
+        animatedReviewCount.animateTo(
+            targetValue = statistics.totalReviewCount.toFloat(),
+            animationSpec = tween(durationMillis = 1000)
+        )
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -271,7 +302,7 @@ fun ReviewStatisticsCard(statistics: ReviewStatistics) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = String.format("%.1f", statistics.totalReviewScore),
+                text = String.format("%.1f", animatedScore.value),
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -281,10 +312,13 @@ fun ReviewStatisticsCard(statistics: ReviewStatistics) {
                 modifier = Modifier.padding(10.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                YeobaegRatingStars(rating = statistics.totalReviewScore)
+                YeobaegRatingStars(
+                    rating = statistics.totalReviewScore,
+                    animated = true
+                )
 
                 Text(
-                    text = "${statistics.totalReviewCount}개의 리뷰",
+                    text = "${animatedReviewCount.value.toInt()}개의 리뷰",
                     fontSize = 14.sp,
                     color = YeobaegGray
                 )
@@ -311,11 +345,14 @@ fun RatingBar(
     count: Int,
     percentage: Double
 ) {
-    val animatedPercentage by animateFloatAsState(
-        targetValue = percentage.toFloat() / 100f,
-        animationSpec = tween(durationMillis = 800, delayMillis = rating * 50),
-        label = "ratingBarAnimation"
-    )
+    val animatedPercentage = remember { Animatable(0f) }
+
+    LaunchedEffect(percentage) {
+        animatedPercentage.animateTo(
+            targetValue = percentage.toFloat() / 100f,
+            animationSpec = tween(durationMillis = 800, delayMillis = (5 - rating) * 100)
+        )
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -336,7 +373,7 @@ fun RatingBar(
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(animatedPercentage)
+                    .fillMaxWidth(animatedPercentage.value)
                     .height(10.dp)
                     .background(YeobaegBrown, shape = RoundedCornerShape(5.dp))
             )
@@ -411,21 +448,25 @@ fun ReviewCard(review: ReviewDetail) {
 @Composable
 fun SentReviewTab(
     writtenReviews: List<ReviewDetail>,
+    hasNext: Boolean = true,
+    isLoading: Boolean = false,
     onLoadNextPage: () -> Unit = {}
 ) {
     val listState = rememberLazyListState()
 
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()
-            lastVisibleItem != null && lastVisibleItem.index >= listState.layoutInfo.totalItemsCount - 3
+    LaunchedEffect(listState, hasNext, isLoading) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            last >= total - 3
         }
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            onLoadNextPage()
-        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+                if (shouldLoadMore && hasNext && !isLoading) {
+                    onLoadNextPage()
+                }
+            }
     }
 
     if (writtenReviews.isEmpty()) {
@@ -465,7 +506,10 @@ fun SentReviewTab(
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            items(writtenReviews) { review ->
+            items(
+                items = writtenReviews,
+                key = { it.reviewId }
+            ) { review ->
                 WrittenReviewCard(review = review)
             }
 
