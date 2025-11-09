@@ -1,5 +1,7 @@
 package com.ssafy.yeobaek.chat.service;
 
+import com.ssafy.yeobaek.chat.dto.request.ChatMessageRequest;
+import com.ssafy.yeobaek.chat.dto.response.ChatMessage;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomDetailData;
 
@@ -22,4 +24,12 @@ public interface ChatService {
      * @return 채팅방 정보
      */
     ChatRoomDetailData getChatRoomMessages(Long userId, Long chatRoomId, Integer page, Integer size);
+
+    /**
+     * 채팅 메시지 전송
+     * @param userId 발신자 ID
+     * @param chatMessageRequest 채팅 메시지 요청
+     * @return 전송된 채팅 메시지 정보
+     */
+    ChatMessage sendMessage(Long userId, ChatMessageRequest chatMessageRequest);
 }

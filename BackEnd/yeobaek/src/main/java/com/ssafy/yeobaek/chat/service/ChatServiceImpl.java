@@ -1,5 +1,7 @@
 package com.ssafy.yeobaek.chat.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ssafy.yeobaek.chat.dto.request.ChatMessageRequest;
 import com.ssafy.yeobaek.chat.dto.response.ChatMessage;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomDetailData;
@@ -22,6 +24,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +45,9 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final S3Service s3Service;
+    private final StringRedisTemplate stringRedisTemplate;
+    private final ChannelTopic channelTopic;
+    private final ObjectMapper objectMapper;
 
     /**
      * 채팅방 생성
@@ -151,5 +158,44 @@ public class ChatServiceImpl implements ChatService {
         );
 
         return new ChatRoomDetailData(chatRoomSummary, chatMessages, pagination);
+    }
+
+    /**
+     * 채팅 메시지 전송
+     * @param userId 발신자 ID
+     * @param request 채팅 메시지 요청
+     * @return 전송된 채팅 메시지 정보
+     */
+    @Override
+    @Transactional
+    public ChatMessage sendMessage(Long userId, ChatMessageRequest request) {
+
+        // 1. 채팅방 유효성 검증
+        ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
+                .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_NOT_FOUND));
+
+        // 2. 발신자 유효성 검증
+        User sender = userService.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+
+        // 3. 사용자 권한 확인 (채팅방 멤버인지 확인)
+        chatRoomMemberRepository.findByChatRoomAndUser_Id(chatRoom, userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_FORBIDDEN));
+
+        // 4. 메시지 엔티티 생성 및 저장
+        Message message = chatMapper.toMessageEntity(chatRoom, sender, request);
+        messageRepository.save(message);
+
+        // 5. ChatMessage 생성
+        ChatMessage chatMessage = chatMapper.toChatMessage(message, userId);
+
+        // 6. Redis Pub/Sub을 통해 메시지 발행
+        try {
+            stringRedisTemplate.convertAndSend(channelTopic.getTopic(), objectMapper.writeValueAsString(chatMessage));
+        } catch (Exception e) {
+            throw new CustomException(ResponseCode.MESSAGE_SEND_FAILED);
+        }
+
+        return chatMessage;
     }
 }

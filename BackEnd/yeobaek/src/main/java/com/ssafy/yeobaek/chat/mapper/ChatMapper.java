@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.chat.mapper;
 
+import com.ssafy.yeobaek.chat.dto.request.ChatMessageRequest;
 import com.ssafy.yeobaek.chat.dto.response.ChatMessage;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
@@ -98,5 +99,22 @@ public class ChatMapper {
         return messages.stream()
                 .map(message -> toChatMessage(message, currentUserId))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 메시지 전송 요청 정보를 Message 엔티티로 변환
+     * @param chatRoom 채팅방 정보
+     * @param sender 발신자 정보
+     * @param request 메시지 전송 요청 정보
+     * @return Message 엔티티
+     */
+    public Message toMessageEntity(ChatRoom chatRoom, User sender, ChatMessageRequest request) {
+        return Message.builder()
+                .chatRoom(chatRoom)
+                .user(sender)
+                .content(request.getContent())
+                .imageUrl(request.getImageUrl())
+                .messageType(request.getMessageType())
+                .build();
     }
 }

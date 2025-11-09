@@ -110,6 +110,9 @@ public enum ResponseCode {
     // 채팅 관련 에러 (404 Not Found)
     MESSAGE_ROOM_NOT_FOUND("MS4041", "존재하지 않는 채팅방입니다", HttpStatus.NOT_FOUND),
 
+    // 채팅 관련 에러 (500 Internal Server Error)
+    MESSAGE_SEND_FAILED("MS5001", "메시지 전송에 실패했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
+
     // 리뷰 관련 에러 (400 Bad Request)
     REVIEW_INVALID_RATING("RV4001", "평점은 1~5 사이여야 합니다", HttpStatus.BAD_REQUEST),
     REVIEW_INVALID_COMMENT_LENGTH("RV4002", "후기는 최대 100자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
