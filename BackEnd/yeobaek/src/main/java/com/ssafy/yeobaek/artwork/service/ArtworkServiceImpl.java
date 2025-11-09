@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.artwork.service;
 
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
+import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
 import com.ssafy.yeobaek.artwork.mapper.ArtworkMapper;
@@ -9,6 +10,7 @@ import com.ssafy.yeobaek.artwork.repository.ArtworkSpecification;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
+import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.storage.service.S3Service;
@@ -67,6 +69,67 @@ public class ArtworkServiceImpl implements ArtworkService {
                 .images(request.getImages())
                 .build();
 
+        artworkRepository.save(artwork);
+    }
+
+    /**
+     * 작품 수정
+     * @param userId 사용자 ID (권한 검증용)
+     * @param artworkId 수정할 작품 ID
+     * @param request 작품 수정 정보
+     */
+    @Override
+    @Transactional
+    public void updateArtwork(Long userId, Long artworkId, UpdateArtworkRequest request) {
+        // 작품 조회
+        Artwork artwork = artworkRepository.findById(artworkId)
+                .orElseThrow(() -> new CustomException(ResponseCode.ARTWORK_NOT_FOUND));
+
+        // 권한 검증: 본인의 작품만 수정 가능
+        if (!artwork.getArtist().getUser().getId().equals(userId)) {
+            throw new CustomException(ResponseCode.ARTWORK_FORBIDDEN);
+        }
+
+        // 전시 중인 작품의 규격 변경 검증
+        boolean isExhibiting = artwork.getExhibitionStatus().equals(ExhibitionStatus.EXHIBITING);
+        boolean isSizeChanging = (request.getWidthCm() != null && !request.getWidthCm().equals(artwork.getWidthCm().intValue())) ||
+                                 (request.getHeightCm() != null && !request.getHeightCm().equals(artwork.getHeightCm().intValue()));
+
+        if (isExhibiting && isSizeChanging) {
+            throw new CustomException(ResponseCode.ARTWORK_EXHIBITING_SIZE_CHANGE);
+        }
+
+        // 필드별 업데이트 (null이 아닌 필드만)
+        if (request.getTitle() != null) {
+            artwork.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            artwork.setDescription(request.getDescription());
+        }
+        if (request.getCategory() != null) {
+            ArtCategory artCategory = ArtCategory.valueOf(request.getCategory());
+            artwork.setArtCategory(artCategory);
+        }
+        if (request.getPrice() != null) {
+            artwork.setPrice(request.getPrice());
+        }
+        if (request.getWidthCm() != null) {
+            artwork.setWidthCm(request.getWidthCm().doubleValue());
+        }
+        if (request.getHeightCm() != null) {
+            artwork.setHeightCm(request.getHeightCm().doubleValue());
+        }
+        if (request.getWeightKg() != null) {
+            artwork.setWeightKg(request.getWeightKg());
+        }
+        if (request.getProductionYear() != null) {
+            artwork.setProductionYear(request.getProductionYear());
+        }
+        if (request.getImages() != null) {
+            artwork.setImages(request.getImages());
+        }
+
+        // 변경 사항 저장
         artworkRepository.save(artwork);
     }
 
