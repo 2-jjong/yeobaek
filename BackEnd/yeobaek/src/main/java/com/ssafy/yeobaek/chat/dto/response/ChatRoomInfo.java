@@ -1,6 +1,5 @@
 package com.ssafy.yeobaek.chat.dto.response;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,7 +13,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChatRoomInfo {
 
     @Schema(description = "채팅방 ID", example = "1")
