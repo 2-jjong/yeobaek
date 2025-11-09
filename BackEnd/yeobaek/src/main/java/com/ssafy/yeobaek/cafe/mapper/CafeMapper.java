@@ -26,7 +26,7 @@ public class CafeMapper {
      * @param coordinates 카페 위치 좌표
      * @return Cafe 엔티티
      */
-    public Cafe toEntity(CreateCafeRequest request, User owner, Coordinates coordinates) {
+    public Cafe toCafeEntity(CreateCafeRequest request, User owner, Coordinates coordinates) {
         return Cafe.builder()
                 .cafeOwner(owner)
                 .cafeName(request.getCafeName())
@@ -80,14 +80,14 @@ public class CafeMapper {
     /**
      * Cafe 엔티티와 DisplayWall 엔티티 리스트를 내 카페 정보 DTO로 변환
      * @param cafe 카페 정보
-     * @param walls 카페 공간 정보
+     * @param displayWalls 카페 공간 정보
      * @return MyCafeData DTO
      */
-    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> walls, String primaryImage) {
+    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> displayWalls, String primaryImage) {
 
         // 통계 계산
-        long totalSlots = walls.size();
-        long exhibitingSlots = walls.stream()
+        long totalSlots = displayWalls.size();
+        long exhibitingSlots = displayWalls.stream()
                 .filter(w -> w.getSlot() != null && w.getSlot().getStatus() == ExhibitionStatus.EXHIBITING)
                 .count();
 
@@ -95,12 +95,12 @@ public class CafeMapper {
         long collaboratingArtists = 15L;
 
         // 슬롯 정보
-        List<Slot> slots = walls.stream()
-                .map(this::toDisplaySlot)
+        List<Slot> slots = displayWalls.stream()
+                .map(this::toSlotDto)
                 .collect(Collectors.toList());
 
-        // 요약 정보
-        MyCafeSummary summary = new MyCafeSummary(
+        // 내 카페 정보
+        MyCafe myCafe = new MyCafe(
                 cafe.getId(),
                 cafe.getCafeName(),
                 cafe.getAddress(),
@@ -111,36 +111,7 @@ public class CafeMapper {
                 slots
         );
 
-        return new MyCafeData(summary);
-    }
-
-    private Slot toDisplaySlot(DisplayWall wall) {
-
-        ExhibitionInfo exhibitionInfo = null;
-        com.ssafy.yeobaek.cafe.entity.DisplaySlot slot = wall.getSlot();
-
-        if (slot != null && (wall.getSlot().getStatus() == ExhibitionStatus.EXHIBITING
-                || wall.getSlot().getStatus() == ExhibitionStatus.SCHEDULED)) {
-            exhibitionInfo = new ExhibitionInfo(
-                    1L,
-                    "여름의 여백",
-                    "https://example.com/artwork1.jpg",
-                    "홍길동",
-                    "2024-01-01",
-                    "2024-03-31"
-            );
-        }
-
-        return new Slot(
-                wall.getId(),
-                wall.getWallName(),
-                wall.getWidthCm(),
-                wall.getHeightCm(),
-                slot != null ? slot.getStatus().toWallStatus() : WallStatus.UNAVAILABLE,
-                slot != null ? slot.getCommissionRate() : null,
-                slot != null ? slot.getRequirements() : null,
-                exhibitionInfo
-        );
+        return new MyCafeData(myCafe);
     }
 
     /**
@@ -171,16 +142,16 @@ public class CafeMapper {
     /**
      * Cafe 엔티티와 관련 정보들을 카페 상세 정보 DTO로 변환
      * @param cafe 카페 정보
-     * @param walls 카페 공간 정보
+     * @param displayWalls 카페 공간 정보
      * @param categories 카페 카테고리 목록
      * @return CafeDetailData DTO
      */
-    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> walls, List<String> categories, List<String> images, String profileImage) {
+    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage) {
 
-        // 1. 벽 정보 -> 슬롯 상세 정보 DTO 목록으로 변환
-        List<Slot> slotDetails = walls.stream()
-                .map(this::toDisplaySlot)
-                .collect(Collectors.toList());
+        // 1. 슬롯 정보
+        List<Slot> slots = displayWalls.stream()
+                .map(this::toSlotDto)
+                .toList();
 
         // 2. 카페 사장 정보 DTO 생성
         User ownerUser = cafe.getCafeOwner();
@@ -202,7 +173,7 @@ public class CafeMapper {
                 false, // TODO: 실제 북마크 여부 정보 연동 필요
                 categories,
                 images,
-                slotDetails,
+                slots,
                 owner
         );
 
@@ -210,19 +181,58 @@ public class CafeMapper {
     }
 
     /**
-     * DisplaySlot 엔티티를  DTO로 변환
-     * @param slot 슬롯 정보
-     * @return DisplaySlot DTO
+     * DisplayWall 엔티티를 슬롯 DTO로 변환
+     * @param displayWall 벽 정보
+     * @return Slot DTO
      */
-    public Slot toDisplaySlot(DisplaySlot slot){
+    public Slot toSlotDto(DisplayWall displayWall){
+
+        ExhibitionInfo exhibitionInfo = null;
+        DisplaySlot displaySlot = displayWall.getSlot();
+
+        if (displaySlot != null && (displaySlot.getStatus() == ExhibitionStatus.EXHIBITING
+                || displaySlot.getStatus() == ExhibitionStatus.SCHEDULED)) {
+            exhibitionInfo = new ExhibitionInfo(
+                    1L,
+                    "여름의 여백",
+                    "https://example.com/artwork1.jpg",
+                    "홍길동",
+                    "2024-01-01",
+                    "2024-03-31"
+            );
+        }
+
         return Slot.builder()
-                .wallId(slot.getId())
-                .wallName(slot.getWall().getWallName())
-                .width(slot.getWall().getWidthCm())
-                .status(slot.getStatus().toWallStatus())
-                .height(slot.getWall().getHeightCm())
-                .commissionRate(slot.getCommissionRate())
-                .requirements(slot.getRequirements())
+                .wallId(displayWall.getId())
+                .wallName(displayWall.getWallName())
+                .start(new Vec2(displayWall.getStartX(), displayWall.getStartY()))
+                .end(new Vec2(displayWall.getEndX(), displayWall.getEndY()))
+                .width(displayWall.getWidthCm())
+                .height(displayWall.getHeightCm())
+                .status(displaySlot != null ? displaySlot.getStatus().toWallStatus() : WallStatus.UNAVAILABLE)
+                .commissionRate(displaySlot != null ? displaySlot.getCommissionRate() : null)
+                .requirements(displaySlot != null ? displaySlot.getRequirements() : null)
+                .currentExhibition(exhibitionInfo)
                 .build();
+    }
+
+    /**
+     * DisplaySlot 엔티티를 DTO로 변환
+     * @param displaySlot 슬롯 정보
+     * @return SlotData DTO
+     */
+    public SlotData toSlotData(DisplaySlot displaySlot){
+
+        Slot slot = Slot.builder()
+                .wallId(displaySlot.getId())
+                .wallName(displaySlot.getWall().getWallName())
+                .width(displaySlot.getWall().getWidthCm())
+                .status(displaySlot.getStatus().toWallStatus())
+                .height(displaySlot.getWall().getHeightCm())
+                .commissionRate(displaySlot.getCommissionRate())
+                .requirements(displaySlot.getRequirements())
+                .build();
+
+        return new SlotData(slot);
     }
 }

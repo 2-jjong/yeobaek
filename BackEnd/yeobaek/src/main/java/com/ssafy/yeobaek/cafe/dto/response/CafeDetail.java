@@ -51,7 +51,7 @@ public class CafeDetail {
     private List<String> images;
 
     @Schema(description = "전시 슬롯 목록")
-    private List<Slot> slots;
+    private List<Slot> displaySlots;
 
     @Schema(description = "카페 사장 정보")
     private CafeOwner cafeOwner;

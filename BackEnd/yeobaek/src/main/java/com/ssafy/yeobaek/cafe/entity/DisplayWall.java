@@ -38,7 +38,7 @@ public class DisplayWall {
     @Column(name = "width_cm", nullable = false)
     private Double widthCm;
 
-    @Column(name = "height_cm", nullable = false)
+    @Column(name = "height_cm")
     private Double heightCm;
 
     @Column(name = "status", nullable = false)

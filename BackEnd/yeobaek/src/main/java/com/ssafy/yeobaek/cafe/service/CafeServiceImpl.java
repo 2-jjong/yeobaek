@@ -65,7 +65,7 @@ public class CafeServiceImpl implements CafeService {
         Coordinates coordinates = geocoderService.getCoordinates(request.getAddress());
 
         // 4. 카페 엔티티 생성 및 저장
-        Cafe cafe = cafeMapper.toEntity(request, user, coordinates);
+        Cafe cafe = cafeMapper.toCafeEntity(request, user, coordinates);
         cafeRepository.save(cafe);
 
         // 5. 카페 카테고리 저장
@@ -269,7 +269,7 @@ public class CafeServiceImpl implements CafeService {
      */
     @Override
     @Transactional
-    public Slot updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request) {
+    public SlotData updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request) {
 
         // 1. 슬롯 조회
         DisplaySlot slot = displaySlotRepository.findById(slotId)
@@ -298,6 +298,6 @@ public class CafeServiceImpl implements CafeService {
         displaySlotRepository.save(slot);
 
         // 6. DTO 반환
-        return cafeMapper.toDisplaySlot(slot);
+        return cafeMapper.toSlotData(slot);
     }
 }
