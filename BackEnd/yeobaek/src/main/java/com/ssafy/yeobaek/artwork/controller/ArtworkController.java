@@ -307,14 +307,53 @@ public class ArtworkController {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "작품이 있는 경우",
+                                            description = "사용자가 등록한 작품이 있는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 1, \"title\": \"여름의 여백\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork1.jpg\", \"price\": 500000, \"category\": \"PAINTING\", \"widthCm\": 100, \"heightCm\": 150, \"exhibitionStatus\": \"AVAILABLE\", \"bookmarkCount\": 42}, {\"artworkId\": 2, \"title\": \"가을의 정적\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork2.jpg\", \"price\": 750000, \"category\": \"SCULPTURE\", \"widthCm\": 80, \"heightCm\": 120, \"exhibitionStatus\": \"EXHIBITING\", \"bookmarkCount\": 35}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 15, \"totalPages\": 1, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품이 없는 경우",
+                                            description = "사용자가 등록한 작품이 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 0, \"totalPages\": 0, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"AU4041\", \"data\": null, \"message\": \"존재하지 않는 회원입니다\"}")
+                            examples = @ExampleObject(
+                                    name = "존재하지 않는 회원",
+                                    value = "{\"code\": \"AU4041\", \"message\": \"존재하지 않는 회원입니다\"}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -322,42 +361,80 @@ public class ArtworkController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
                     )
             )
     })
     @GetMapping("/me")
+    @PreAuthorize("hasRole('ARTIST')")
     public ResponseEntity<ResponseDto<ArtworkListData>> getMyArtworks(
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
             @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터 - 20개로 증가
-        List<ArtworkSummary> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 1L);
-
-        // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
-        Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
-        ArtworkListData data = new ArtworkListData(null, artworks, pagination);
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArtworkListData data = artworkService.getUserArtworks(userId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "특정 작가의 작품 목록 조회", description = "특정 작가의 작품 목록을 조회합니다.")
+    @Operation(summary = "특정 작가의 작품 목록 조회", description = "특정 작가의 작품 목록을 조회합니다. 작가 프로필 페이지에서 작품 목록을 표시할 때 사용합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "작품이 있는 경우",
+                                            description = "작가가 등록한 작품이 있는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 101, \"title\": \"도시의 밤\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork101.jpg\", \"price\": 600000, \"category\": \"PHOTOGRAPHY\", \"widthCm\": 120, \"heightCm\": 80, \"exhibitionStatus\": \"AVAILABLE\", \"bookmarkCount\": 28}, {\"artworkId\": 102, \"title\": \"산속의 오두막\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork102.jpg\", \"price\": 450000, \"category\": \"PAINTING\", \"widthCm\": 90, \"heightCm\": 70, \"exhibitionStatus\": \"AVAILABLE\", \"bookmarkCount\": 15}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 23, \"totalPages\": 2, \"hasNext\": true}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품이 없는 경우",
+                                            description = "작가가 등록한 작품이 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 0, \"totalPages\": 0, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"AU4041\", \"data\": null, \"message\": \"존재하지 않는 회원입니다\"}")
+                            examples = @ExampleObject(
+                                    name = "존재하지 않는 회원",
+                                    value = "{\"code\": \"AU4041\", \"message\": \"존재하지 않는 회원입니다\"}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -365,7 +442,9 @@ public class ArtworkController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
                     )
             )
     })
@@ -378,12 +457,7 @@ public class ArtworkController {
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터 - 20개로 증가
-        List<ArtworkSummary> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 100L); // 다른 ID로 시작
-
-        // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
-        Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
-        ArtworkListData data = new ArtworkListData(null, artworks, pagination);
+        ArtworkListData data = artworkService.getUserArtworks(userId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -860,7 +934,11 @@ public class ArtworkController {
                     String title = titles[i % titles.length] + " #" + id;
                     String thumbnailUrl = "https://example.com/artwork" + (i + 1) + ".jpg";
 
-                    return new ArtworkSummary(id, title, thumbnailUrl);
+                    return ArtworkSummary.builder()
+                            .artworkId(id)
+                            .title(title)
+                            .thumbnailUrl(thumbnailUrl)
+                            .build();
                 })
                 .toList();
     }
