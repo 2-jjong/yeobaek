@@ -138,7 +138,7 @@ public class ArtworkController {
                 .body(ResponseDto.created());
     }
 
-    @Operation(summary = "작품 수정", description = "등록된 작품 정보를 수정합니다. 전시 중인 작품은 일부 정보만 수정 가능합니다.")
+    @Operation(summary = "작품 수정", description = "등록된 작품 정보를 수정합니다. 전시 중인 작품은 규격(가로/세로) 변경이 불가능합니다. 수정하고자 하는 필드만 포함하여 요청하면 됩니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -147,7 +147,7 @@ public class ArtworkController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": null, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
                             )
                     )
             ),
@@ -157,10 +157,31 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "이미지 개수 오류", value = "{\"code\": \"AW4001\", \"data\": null, \"message\": \"작품 이미지는 최소 1장 최대 10장까지 등록 가능합니다\"}"),
-                                    @ExampleObject(name = "작품명 길이 오류", value = "{\"code\": \"AW4003\", \"data\": null, \"message\": \"작품명은 1~100자 이내여야 합니다\"}"),
-                                    @ExampleObject(name = "작품 설명 길이 오류", value = "{\"code\": \"AW4004\", \"data\": null, \"message\": \"작품 설명은 최대 500자까지 입력 가능합니다\"}"),
-                                    @ExampleObject(name = "유효하지 않은 카테고리", value = "{\"code\": \"AW4006\", \"data\": null, \"message\": \"유효하지 않은 카테고리입니다\"}")
+                                    @ExampleObject(
+                                            name = "이미지 개수 오류",
+                                            description = "작품 이미지가 1~10장 범위를 벗어난 경우",
+                                            value = "{\"code\": \"AW4001\", \"message\": \"작품 이미지는 최소 1장 최대 10장까지 등록 가능합니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품명 길이 오류",
+                                            description = "작품명이 1~100자 범위를 벗어난 경우",
+                                            value = "{\"code\": \"AW4003\", \"message\": \"작품명은 1~100자 이내여야 합니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품 설명 길이 오류",
+                                            description = "작품 설명이 500자를 초과한 경우",
+                                            value = "{\"code\": \"AW4004\", \"message\": \"작품 설명은 최대 500자까지 입력 가능합니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 카테고리",
+                                            description = "존재하지 않는 카테고리 값이 입력된 경우",
+                                            value = "{\"code\": \"AW4006\", \"message\": \"유효하지 않은 카테고리입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 입력값",
+                                            description = "가격, 규격, 연도 등의 값이 유효 범위를 벗어난 경우",
+                                            value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                                    )
                             }
                     )
             ),
@@ -170,8 +191,18 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
                             }
                     )
             ),
@@ -180,9 +211,18 @@ public class ArtworkController {
                     description = "권한 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\"code\": \"AW4032\", \"data\": null, \"message\": \"본인의 작품만 수정/삭제할 수 있습니다\"}"
-                            )
+                            examples = {
+                                    @ExampleObject(
+                                            name = "작품 수정 권한 없음",
+                                            description = "본인의 작품이 아닌 경우",
+                                            value = "{\"code\": \"AW4032\", \"message\": \"본인의 작품만 수정/삭제할 수 있습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "권한 없음",
+                                            description = "작가 권한이 없는 경우",
+                                            value = "{\"code\": \"AW4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -191,7 +231,9 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"AW4041\", \"data\": null, \"message\": \"존재하지 않는 작품입니다\"}"
+                                    name = "작품을 찾을 수 없음",
+                                    description = "해당 ID의 작품이 존재하지 않는 경우",
+                                    value = "{\"code\": \"AW4041\", \"message\": \"존재하지 않는 작품입니다\"}"
                             )
                     )
             ),
@@ -201,7 +243,9 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"AW4091\", \"data\": null, \"message\": \"전시 중인 작품은 규격을 변경할 수 없습니다\"}"
+                                    name = "전시 중인 작품 규격 변경 불가",
+                                    description = "전시 중인 작품의 가로/세로 크기를 변경하려는 경우",
+                                    value = "{\"code\": \"AW4091\", \"message\": \"전시 중인 작품은 규격을 변경할 수 없습니다\"}"
                             )
                     )
             ),
@@ -211,17 +255,21 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
     })
-    @PutMapping("/{artworkId}")
+    @PatchMapping("/{artworkId}")
+    @PreAuthorize("hasRole('ARTIST')")
     public ResponseEntity<ResponseDto<Void>> updateArtwork(
             @Parameter(description = "수정할 작품 ID", required = true)
             @PathVariable Long artworkId,
-            @RequestBody UpdateArtworkRequest request
+            @Valid @RequestBody UpdateArtworkRequest request
     ) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        artworkService.updateArtwork(userId, artworkId, request);
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success());
