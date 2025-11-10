@@ -9,7 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BookmarkToggleData {
+public class BookmarkToggleResponse {
     @Schema(description = "북마크 상태 (true: 추가됨, false: 제거됨)", example = "true")
     private Boolean isBookmarked;
 }

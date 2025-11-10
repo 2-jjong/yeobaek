@@ -2,18 +2,18 @@ package com.ssafy.yeobaek.artwork.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Schema(description = "작품 상세 응답 데이터")
+import java.util.List;
+
+@Schema(description = "인기 작품 목록 응답 데이터")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ArtworkDetailData {
-    @Schema(description = "작품 상세 정보")
-    private ArtworkDetail artwork;
+public class PopularArtworksResponse {
+    @Schema(description = "인기 작품 목록")
+    private List<ArtworkSummaryDto> artworks;
 }

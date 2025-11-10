@@ -2,7 +2,11 @@ package com.ssafy.yeobaek.artwork.mapper;
 
 import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
+import com.ssafy.yeobaek.common.dto.Pagination;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
+import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -19,13 +23,13 @@ public class ArtworkMapper {
      * @param isBookmarked 현재 사용자의 북마크 여부
      * @param artworkImageUrls 변환된 작품 이미지 URL 리스트 (presigned URL)
      * @param artistProfileImageUrl 변환된 작가 프로필 이미지 URL (presigned URL)
-     * @param exhibition 현재 전시 정보 (없으면 null)
+     * @param exhibitionDto 현재 전시 정보 (없으면 null)
      * @return ArtworkDetail DTO
      */
-    public ArtworkDetail toArtworkDetail(Artwork artwork, boolean isBookmarked, List<String> artworkImageUrls, String artistProfileImageUrl, Exhibition exhibition) {
-        Artist artist = toArtist(artwork.getArtist(), artistProfileImageUrl);
+    public ArtworkDetailDto toArtworkDetail(Artwork artwork, boolean isBookmarked, List<String> artworkImageUrls, String artistProfileImageUrl, ExhibitionDto exhibitionDto) {
+        ArtistDto artistDto = toArtist(artwork.getArtist(), artistProfileImageUrl);
 
-        return ArtworkDetail.builder()
+        return ArtworkDetailDto.builder()
                 .artworkId(artwork.getId())
                 .title(artwork.getTitle())
                 .description(artwork.getDescription())
@@ -40,8 +44,8 @@ public class ArtworkMapper {
                 .bookmarkCount(artwork.getBookmarkCount())
                 .isBookmarked(isBookmarked)
                 .images(artworkImageUrls)
-                .artist(artist)
-                .currentExhibition(exhibition)
+                .artistDto(artistDto)
+                .currentExhibitionDto(exhibitionDto)
                 .build();
     }
 
@@ -51,13 +55,13 @@ public class ArtworkMapper {
      * @param isBookmarked 현재 사용자의 북마크 여부
      * @param artworkImageUrls 변환된 작품 이미지 URL 리스트 (presigned URL)
      * @param artistProfileImageUrl 변환된 작가 프로필 이미지 URL (presigned URL)
-     * @param exhibition 현재 전시 정보 (없으면 null)
+     * @param exhibitionDto 현재 전시 정보 (없으면 null)
      * @return ArtworkDetailData
      */
-    public ArtworkDetailData toArtworkDetailData(Artwork artwork, boolean isBookmarked, List<String> artworkImageUrls, String artistProfileImageUrl, Exhibition exhibition) {
-        ArtworkDetail artworkDetail = toArtworkDetail(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl, exhibition);
-        return ArtworkDetailData.builder()
-                .artwork(artworkDetail)
+    public ArtworkDetailResponse toArtworkDetailData(Artwork artwork, boolean isBookmarked, List<String> artworkImageUrls, String artistProfileImageUrl, ExhibitionDto exhibitionDto) {
+        ArtworkDetailDto artworkDetailDto = toArtworkDetail(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl, exhibitionDto);
+        return ArtworkDetailResponse.builder()
+                .artwork(artworkDetailDto)
                 .build();
     }
 
@@ -67,8 +71,8 @@ public class ArtworkMapper {
      * @param profileImageUrl 변환된 프로필 이미지 URL (presigned URL)
      * @return Artist DTO
      */
-    public Artist toArtist(com.ssafy.yeobaek.user.entity.Artist artist, String profileImageUrl) {
-        return Artist.builder()
+    public ArtistDto toArtist(Artist artist, String profileImageUrl) {
+        return ArtistDto.builder()
                 .userId(artist.getUser().getId())
                 .artistName(artist.getUser().getNickname())
                 .profileImageUrl(profileImageUrl)
@@ -81,8 +85,8 @@ public class ArtworkMapper {
      * @param cafeImageUrl 카페 이미지 URL (presigned URL)
      * @return Exhibition DTO
      */
-    public Exhibition toExhibition(com.ssafy.yeobaek.exhibition.entity.Exhibition exhibition, String cafeImageUrl) {
-        return Exhibition.builder()
+    public ExhibitionDto toExhibition(Exhibition exhibition, String cafeImageUrl) {
+        return ExhibitionDto.builder()
                 .cafeId(exhibition.getCafe().getId())
                 .cafeName(exhibition.getCafe().getCafeName())
                 .cafeAddress(exhibition.getCafe().getAddress())
@@ -98,8 +102,8 @@ public class ArtworkMapper {
      * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
      * @return ArtworkSummary DTO
      */
-    public ArtworkSummary toArtworkSummary(Artwork artwork, String thumbnailUrl) {
-        return ArtworkSummary.builder()
+    public ArtworkSummaryDto toArtworkSummary(Artwork artwork, String thumbnailUrl) {
+        return ArtworkSummaryDto.builder()
                 .artworkId(artwork.getId())
                 .title(artwork.getTitle())
                 .thumbnailUrl(thumbnailUrl)
@@ -112,8 +116,8 @@ public class ArtworkMapper {
      * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
      * @return ArtworkSummary DTO (모든 필드 포함)
      */
-    public ArtworkSummary toArtworkSummaryWithDetails(Artwork artwork, String thumbnailUrl) {
-        return ArtworkSummary.builder()
+    public ArtworkSummaryDto toArtworkSummaryWithDetails(Artwork artwork, String thumbnailUrl) {
+        return ArtworkSummaryDto.builder()
                 .artworkId(artwork.getId())
                 .title(artwork.getTitle())
                 .thumbnailUrl(thumbnailUrl)
@@ -127,20 +131,21 @@ public class ArtworkMapper {
     }
 
     /**
-     * Artist 엔티티를 ArtistSummary DTO로 변환
+     * Artist 엔티티를 Artist DTO로 변환 (검색 결과용 - introduction 포함)
      * @param artist Artist 엔티티
      * @param artworkCount 작품 수
-     * @return ArtistSummary DTO
+     * @param profileImageUrl 변환된 프로필 이미지 URL (presigned URL)
+     * @return Artist DTO
      */
-    public ArtistSummary toArtistSummary(com.ssafy.yeobaek.user.entity.Artist artist, int artworkCount) {
+    public ArtistDto toArtist(Artist artist, int artworkCount, String profileImageUrl) {
         User user = artist.getUser();
-        return new ArtistSummary(
-                user.getId(),
-                user.getNickname(),
-                user.getProfileImageUrl(),
-                artist.getIntroduction(),
-                artworkCount
-        );
+        return ArtistDto.builder()
+                .userId(user.getId())
+                .artistName(user.getNickname())
+                .profileImageUrl(profileImageUrl)
+                .introduction(artist.getIntroduction())
+                .artworkCount(artworkCount)
+                .build();
     }
 
     /**
@@ -150,11 +155,26 @@ public class ArtworkMapper {
      * @param pagination 페이징 정보
      * @return ArtworkListData DTO
      */
-    public ArtworkListData toArtworkListData(List<ArtistSummary> artists, List<ArtworkSummary> artworks, Pagination pagination) {
-        return ArtworkListData.builder()
+    public ArtworkListResponse toArtworkListData(List<ArtistDto> artists, List<ArtworkSummaryDto> artworks, Pagination pagination) {
+        return ArtworkListResponse.builder()
                 .artists(artists)
                 .artworks(artworks)
                 .pagination(pagination)
+                .build();
+    }
+
+    /**
+     * Spring Data Page 객체를 Pagination DTO로 변환
+     * @param page Spring Data Page 객체
+     * @return Pagination DTO
+     */
+    public Pagination toPagination(Page<?> page) {
+        return Pagination.builder()
+                .currentPage(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .hasNext(page.hasNext())
                 .build();
     }
 }
