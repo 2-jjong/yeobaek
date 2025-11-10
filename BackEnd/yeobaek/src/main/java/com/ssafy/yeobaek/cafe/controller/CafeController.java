@@ -1,6 +1,5 @@
 package com.ssafy.yeobaek.cafe.controller;
 
-import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleResponse;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
@@ -806,7 +805,9 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": {\"isBookmarked\" : true}, \"message\": \"정상 처리\"}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -815,8 +816,9 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "토큰 누락", value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"),
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -825,9 +827,10 @@ public class CafeController {
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4041\", \"data\": null, \"message\": \"존재하지 않는 카페입니다\"}"
-                            )
+                            examples = {
+                                    @ExampleObject(name = "회원 정보 없음", value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"),
+                                    @ExampleObject(name = "카페 정보 없음", value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}")
+                            }
                     )
             ),
             @ApiResponse(
@@ -836,7 +839,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -846,7 +849,6 @@ public class CafeController {
             @Parameter(description = "북마크 토글할 카페 ID", required = true)
             @PathVariable Long cafeId
     ) {
-        // Mock 데이터: 북마크 추가됨
         BookmarkToggleResponse data = new BookmarkToggleResponse(true);
 
         return ResponseEntity
