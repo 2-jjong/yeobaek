@@ -43,6 +43,16 @@ public interface ExhibitionService {
     void rejectExhibition(Long userId, Long exhibitionId);
 
     /**
+     * 특정 작품의 현재 진행 중인 전시 조회
+     * - 오늘 날짜 기준으로 진행 중인 전시 반환
+     * - 전시가 없으면 Optional.empty() 반환
+     *
+     * @param artworkId 작품 ID
+     * @return 현재 진행 중인 전시
+     */
+    Optional<Exhibition> getCurrentExhibitionByArtwork(Long artworkId);
+
+    /**
      * 슬롯의 현재 또는 예정된 전시 조회
      * @param displaySlot 조회할 슬롯
      * @return 현재 진행 중이거나 예정된 전시 중 가장 빠른 전시
