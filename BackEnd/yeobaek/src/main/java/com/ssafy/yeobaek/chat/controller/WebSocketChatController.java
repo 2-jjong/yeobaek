@@ -39,18 +39,27 @@ public class WebSocketChatController {
 
         Authentication authentication = (Authentication) sessionAttributes.get("userAuthentication");
 
-        if (authentication == null) {
-            log.error("[WebSocket] Authentication object not found in session attributes!");
+        if (authentication == null || authentication.getPrincipal() == null) {
+            log.error("[WebSocket] Authentication object not found or principal is null in session attributes!");
             return;
         }
 
+        // 1. 서버가 STOMP 세션에서 인식한 사용자 ID 추출
         JwtUserPrincipal userPrincipal = (JwtUserPrincipal) authentication.getPrincipal();
         Long userId = userPrincipal.userId();
 
-        log.info("[WebSocket] Message from userId: {}", userId);
+        try {
+            // 2. 메시지 처리 로직 수행
+            log.info("[WebSocket] Calling chatService.sendMessage for userId: {}", userId);
+            ChatMessage chatMessage = chatService.sendMessage(userId, chatMessageRequest);
 
-        ChatMessage chatMessage = chatService.sendMessage(userId, chatMessageRequest);
+            // 3. 채팅방 채널로 메시지 브로드캐스트
+            String destination = "/sub/chat/room/" + chatMessageRequest.getChatRoomId();
+            messagingTemplate.convertAndSend(destination, chatMessage);
+            log.info("[WebSocket] Broadcasted message to {}: {}", destination, chatMessage);
 
-        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessageRequest.getChatRoomId(), chatMessage);
+        } catch (Exception e) {
+            log.error("[WebSocket] Error during message processing for userId: {}", userId, e);
+        }
     }
 }

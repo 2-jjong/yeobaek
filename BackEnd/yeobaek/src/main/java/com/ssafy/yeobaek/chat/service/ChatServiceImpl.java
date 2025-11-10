@@ -19,6 +19,7 @@ import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +39,7 @@ import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomListData;
 import com.ssafy.yeobaek.common.enums.ChatSortBy;
 
+@Slf4j
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -181,25 +183,32 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public ChatMessage sendMessage(Long userId, ChatMessageRequest request) {
+        log.info("[ChatService] Starting sendMessage for userId: {} in chatRoomId: {}", userId, request.getChatRoomId());
 
         // 1. 채팅방 유효성 검증
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
                 .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_NOT_FOUND));
+        log.info("[ChatService] ChatRoom found: {}", chatRoom.getId());
 
         // 2. 발신자 유효성 검증
         User sender = userService.findById(userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+        log.info("[ChatService] Sender found: {}", sender.getId());
 
         // 3. 사용자 권한 확인 (채팅방 멤버인지 확인)
         chatRoomMemberRepository.findByChatRoomAndUser_Id(chatRoom, userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_FORBIDDEN));
+        log.info("[ChatService] Sender {} is a valid member of chatRoom {}", userId, chatRoom.getId());
 
         // 4. 메시지 엔티티 생성 및 저장
         Message message = chatMapper.toMessageEntity(chatRoom, sender, request);
         messageRepository.save(message);
+        log.info("[ChatService] Message saved to DB with id: {}", message.getId());
 
         // 5. ChatMessage 생성 후 반환
-        return chatMapper.toChatMessage(message, userId);
+        ChatMessage chatMessage = chatMapper.toChatMessage(message);
+        log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
+        return chatMessage;
     }
 
     /**
