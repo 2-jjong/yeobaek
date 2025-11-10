@@ -12,8 +12,9 @@ interface AuthRepository {
         birthDate: String,
         gender: String
     ): Result<String>
-    
+
     suspend fun login(email: String, password: String): Result<UserRole>
     suspend fun logout(): Result<Unit>
+    suspend fun checkEmailAvailability(email: String): Result<Boolean>
 }
 

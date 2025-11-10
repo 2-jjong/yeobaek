@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.data.repository
 import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.model.BaseResponse
+import com.ssafy.yeobaeg.data.model.auth.EmailCheckRequest
 import com.ssafy.yeobaeg.data.model.auth.LoginRequest
 import com.ssafy.yeobaeg.data.model.auth.SignUpRequest
 import com.ssafy.yeobaeg.di.StoreJson
@@ -124,6 +125,39 @@ class AuthRepositoryImpl @Inject constructor(
             // 토큰 삭제
             tokenDataSource.clearTokens()
             Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun checkEmailAvailability(email: String): Result<Boolean> {
+        return try {
+            val request = EmailCheckRequest(email = email)
+            val response = authApiService.checkEmail(request)
+
+            if (response.isSuccessful) {
+                val body = response.body()
+                val emailCheckResponse = body?.data
+
+                if (emailCheckResponse != null) {
+                    Result.success(emailCheckResponse.available)
+                } else {
+                    Result.failure(Exception("이메일 중복 확인 응답 데이터가 없습니다"))
+                }
+            } else {
+                val errorBody = response.errorBody()?.string()
+                val errorMessage = if (errorBody != null) {
+                    try {
+                        val errorResponse = json.decodeFromString<BaseResponse<Unit?>>(errorBody)
+                        errorResponse.message ?: "이메일 중복 확인에 실패했습니다"
+                    } catch (e: Exception) {
+                        errorBody
+                    }
+                } else {
+                    "이메일 중복 확인에 실패했습니다"
+                }
+                Result.failure(Exception(errorMessage))
+            }
         } catch (e: Exception) {
             Result.failure(e)
         }
