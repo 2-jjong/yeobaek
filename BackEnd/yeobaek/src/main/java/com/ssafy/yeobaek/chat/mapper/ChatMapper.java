@@ -7,7 +7,6 @@ import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
 import com.ssafy.yeobaek.chat.entity.ChatRoom;
 import com.ssafy.yeobaek.chat.entity.Message;
-import com.ssafy.yeobaek.common.enums.SenderType;
 import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -72,17 +71,13 @@ public class ChatMapper {
     /**
      * Message 엔티티를 ChatMessage DTO로 변환
      * @param message Message 엔티티
-     * @param userId 현재 사용자 ID
      * @return ChatMessage DTO
      */
-    public ChatMessage toChatMessage(Message message, Long userId) {
-
-        SenderType senderType = (message.getUser() == null) ? SenderType.SYSTEM
-                : (message.getUser().getId().equals(userId) ? SenderType.ME : SenderType.PARTNER);
+    public ChatMessage toChatMessage(Message message) {
 
         return ChatMessage.builder()
                 .messageId(message.getId())
-                .senderType(senderType)
+                .senderId(message.getUser().getId())
                 .messageType(message.getMessageType())
                 .content(message.getContent())
                 .imageUrl(message.getImageUrl())
@@ -100,7 +95,7 @@ public class ChatMapper {
      */
     public List<ChatMessage> toChatMessageList(List<Message> messages, Long currentUserId) {
         return messages.stream()
-                .map(message -> toChatMessage(message, currentUserId))
+                .map(this::toChatMessage)
                 .collect(Collectors.toList());
     }
 

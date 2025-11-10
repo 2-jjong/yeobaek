@@ -48,12 +48,12 @@ public class WebSocketChatController {
         JwtUserPrincipal userPrincipal = (JwtUserPrincipal) authentication.getPrincipal();
         Long userId = userPrincipal.userId();
 
-        // 3. 기존 메시지 처리 로직 수행
         try {
+            // 2. 메시지 처리 로직 수행
             log.info("[WebSocket] Calling chatService.sendMessage for userId: {}", userId);
             ChatMessage chatMessage = chatService.sendMessage(userId, chatMessageRequest);
 
-            // 4. 공용 채널로 메시지 브로드캐스트
+            // 3. 채팅방 채널로 메시지 브로드캐스트
             String destination = "/sub/chat/room/" + chatMessageRequest.getChatRoomId();
             messagingTemplate.convertAndSend(destination, chatMessage);
             log.info("[WebSocket] Broadcasted message to {}: {}", destination, chatMessage);

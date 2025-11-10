@@ -206,7 +206,7 @@ public class ChatServiceImpl implements ChatService {
         log.info("[ChatService] Message saved to DB with id: {}", message.getId());
 
         // 5. ChatMessage 생성 후 반환
-        ChatMessage chatMessage = chatMapper.toChatMessage(message, userId);
+        ChatMessage chatMessage = chatMapper.toChatMessage(message);
         log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
         return chatMessage;
     }

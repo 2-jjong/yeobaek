@@ -2,7 +2,6 @@ package com.ssafy.yeobaek.chat.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ssafy.yeobaek.common.enums.MessageType;
-import com.ssafy.yeobaek.common.enums.SenderType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -20,8 +19,8 @@ public class ChatMessage {
     @Schema(description = "메시지 ID", example = "1")
     private Long messageId;
 
-    @Schema(description = "발신자 유형", example = "ME")
-    private SenderType senderType;
+    @Schema(description = "발신자 ID", example = "1")
+    private Long senderId;
 
     @Schema(description = "메시지 유형", example = "TEXT")
     private MessageType messageType;
