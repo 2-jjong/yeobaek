@@ -41,11 +41,11 @@ public class CreateExhibitionRequest {
 
     @Schema(description = "합의된 수수료율 (%, 0~15)", example = "10.0", required = true)
     @NotNull(message = "MISSING_REQUIRED_FIELD")
-    @Min(value = 0, message = "INVALID_COMMISSION_RATE")
-    @Max(value = 15, message = "INVALID_COMMISSION_RATE")
+    @Min(value = 0, message = "EXHIBITION_INVALID_COMMISSION_RATE")
+    @Max(value = 15, message = "EXHIBITION_INVALID_COMMISSION_RATE")
     private Double commissionRate;
 
     @Schema(description = "추가 조건 및 요구사항", example = "작품 운반비는 카페에서 부담합니다.")
-    @Size(max = 500, message = "INVALID_REQUIREMENTS_LENGTH")
+    @Size(max = 500, message = "EXHIBITION_INVALID_REQUIREMENTS_LENGTH")
     private String requirements;
 }
