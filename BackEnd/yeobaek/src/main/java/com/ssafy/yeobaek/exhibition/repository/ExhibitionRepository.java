@@ -67,5 +67,11 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             @Param("today") LocalDate today
     );
 
+    /**
+     * 특정 슬롯에 대해 현재 진행 중이거나 예정된 전시 중 가장 빠른 전시를 조회
+     * @param displaySlot 슬롯 엔티티
+     * @param states 전시 상태 목록 (ONGOING, APPROVED)
+     * @return 조건에 맞는 첫 번째 전시
+     */
     Optional<Exhibition> findFirstByDisplaySlotAndStateInOrderByStartDateAsc(DisplaySlot displaySlot, List<ExhibitionState> states);
 }
