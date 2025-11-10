@@ -48,8 +48,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegStepBar
-import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegErrorDialog
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
@@ -189,11 +189,13 @@ private fun Step1EmailPassword(
             .padding(24.dp)
     ) {
 
-        YeobaegTextField(
+        YeobaegOutlinedTextField(
+            title = "이메일",
+            essential = true,
             value = email,
             onValueChange = onEmailChange,
-            label = "이메일",
-            placeholder = "coffee@gmail.com"
+            placeholder = "coffee@gmail.com",
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (emailError != null) {
@@ -223,11 +225,13 @@ private fun Step1EmailPassword(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        YeobaegTextField(
+        YeobaegOutlinedTextField(
+            title = "비밀번호 (8자 이상, 영문+숫자+특수문자)",
+            essential = true,
             value = password,
             onValueChange = onPasswordChange,
-            label = "비밀번호 (8자 이상, 영문+숫자+특수문자)",
             placeholder = "Password123!",
+            modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
         
@@ -242,11 +246,13 @@ private fun Step1EmailPassword(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        YeobaegTextField(
+        YeobaegOutlinedTextField(
+            title = "비밀번호 확인",
+            essential = true,
             value = passwordConfirm,
             onValueChange = onPasswordConfirmChange,
-            label = "비밀번호 확인",
             placeholder = "비밀번호를 다시 입력하세요",
+            modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
         
@@ -668,12 +674,14 @@ private fun Step4Nickname(
             fontWeight = FontWeight.Bold,
             color = Color.Black,
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        YeobaegTextField(
+        Spacer(modifier = Modifier.height(24.dp))
+        YeobaegOutlinedTextField(
+            title = null,
+            essential = false,
             value = nickname,
             onValueChange = onNicknameChange,
-            showLabel = false,
-            placeholder = "커피왕자"
+            placeholder = "커피왕자",
+            modifier = Modifier.fillMaxWidth()
         )
         
         if (nicknameError != null) {
