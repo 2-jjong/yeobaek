@@ -11,20 +11,19 @@ class ArtRepositoryImpl @Inject constructor(
     private val artworkApiService: ArtworkApiService
 ) : ArtRepository {
 
-    override suspend fun getArtworks(category: String) =
+    override suspend fun getArtworks(category: List<String>, page: Int, size: Int) =
         runCatching {
-            val response = artworkApiService.getArtworks()
-            response.data?.artworks?.map { it.toDomain() }
-                ?: throw Exception(response.message)
+            val response = artworkApiService.getArtworks(categories = category, page = page, size = size)
+            response.data?.toDomain() ?: throw Exception(response.message)
         }
 
     override suspend fun searchArt(
         keyword: String,
         categories: List<String>,
-        minWidth: Int,
-        maxWidth: Int,
-        minHeight: Int,
-        maxHeight: Int,
+        minWidth: Int?,
+        maxWidth: Int?,
+        minHeight: Int?,
+        maxHeight: Int?,
         sortBy: String,
         page: Int,
         size: Int

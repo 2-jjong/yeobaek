@@ -18,10 +18,10 @@ interface ArtworkApiService {
     suspend fun getArtworks(
         @Query("keyword") keyword: String? = null,
         @Query("categories") categories: List<String>? = null,
-        @Query("minWidth") minWidth: Int = 0,
-        @Query("maxWidth") maxWidth: Int = Integer.MAX_VALUE,
-        @Query("minHeight") minHeight: Int = 0,
-        @Query("maxHeight") maxHeight: Int = Integer.MAX_VALUE,
+        @Query("minWidth") minWidth: Int? = null,
+        @Query("maxWidth") maxWidth: Int? = null,
+        @Query("minHeight") minHeight: Int? = null,
+        @Query("maxHeight") maxHeight: Int? = null,
         @Query("sortBy") sortBy: String = "LATEST",
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20

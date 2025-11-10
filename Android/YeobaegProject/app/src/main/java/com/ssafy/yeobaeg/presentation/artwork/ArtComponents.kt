@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
@@ -36,10 +38,12 @@ fun ArtworkGrid(
     modifier: Modifier = Modifier,
     columns: Int = 3,
     contentPadding: PaddingValues = PaddingValues(0.dp),
+    listState: LazyGridState = rememberLazyGridState(),
     topContent: @Composable () -> Unit = {}
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(columns),
+        state = listState,
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = contentPadding,
@@ -51,7 +55,10 @@ fun ArtworkGrid(
             topContent()
         }
 
-        items(items) { artwork ->
+        items(
+            items = items,
+            key = { it.artworkId }
+        ) { artwork ->
             AsyncImage(
                 model = artwork.thumbnailUrl,
                 contentDescription = artwork.title,

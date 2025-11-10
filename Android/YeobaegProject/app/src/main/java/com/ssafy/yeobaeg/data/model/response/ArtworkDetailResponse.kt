@@ -16,7 +16,7 @@ data class ArtworkDetailData(
     val artworkId: Long,
     val bookmarkCount: Int,
     val category: String,
-    val currentExhibition: CurrentExhibition,
+    val currentExhibition: CurrentExhibition? = null,
     val description: String,
     val heightCm: Int,
     val images: List<String>,
@@ -62,7 +62,7 @@ fun ArtworkDetailData.toDomain(): ArtworkDetail = ArtworkDetail(
         profileImageUrl = artist.profileImageUrl,
         artworkCount = 0
     ),
-    exhibition = currentExhibition.let {
+    exhibition = currentExhibition?.let {
         ExhibitionSpot(
             cafeId = it.cafeId,
             cafeName = it.cafeName,
