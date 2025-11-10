@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -158,8 +159,7 @@ public class ArtworkServiceImpl implements ArtworkService {
 
         // 현재 진행 중인 전시 조회
         Exhibition exhibition = null;
-        java.util.Optional<com.ssafy.yeobaek.exhibition.entity.Exhibition> currentExhibition =
-            exhibitionService.getCurrentExhibitionByArtwork(artworkId);
+        Optional<com.ssafy.yeobaek.exhibition.entity.Exhibition> currentExhibition = exhibitionService.getCurrentExhibitionByArtwork(artworkId);
 
         if (currentExhibition.isPresent()) {
             // 카페 대표 이미지 URL 변환
