@@ -972,6 +972,72 @@ public class ArtworkController {
                 .body(ResponseDto.success(data));
     }
 
+    @Operation(summary = "작가 홈 조회", description = "특정 작가의 홈 정보를 조회합니다. 작가 프로필 정보와 인기 작품 목록(최대 3개)을 포함합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    name = "작가 홈 정보 조회 성공",
+                                    value = "{\"code\": \"S0000\", \"data\": {\"artist\": {\"userId\": 1, \"artistName\": \"김작가\", \"profileImageUrl\": \"https://s3.presigned.url/artist_kim.jpg\", \"artworkCount\": 15, \"currentExhibitionCount\": 2}, \"artworks\": [{\"artworkId\": 101, \"title\": \"숲속의 아침\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork101.jpg\", \"price\": 1200000, \"category\": \"PAINTING\", \"cafeName\": \"갤러리 카페 여백\", \"bookmarkCount\": 50, \"isExhibiting\": true}, {\"artworkId\": 102, \"title\": \"고요한 호수\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork102.jpg\", \"price\": 950000, \"category\": \"PHOTOGRAPHY\", \"cafeName\": null, \"bookmarkCount\": 45, \"isExhibiting\": false}, {\"artworkId\": 103, \"title\": \"도시의 밤\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork103.jpg\", \"price\": 1500000, \"category\": \"SCULPTURE\", \"cafeName\": \"아트 스페이스\", \"bookmarkCount\": 40, \"isExhibiting\": true}]}, \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "존재하지 않는 작가",
+                                    value = "{\"code\": \"US4041\", \"message\": \"존재하지 않는 회원입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                    )
+            )
+    })
+    @GetMapping("/me/home")
+    @PreAuthorize("hasRole('ARTIST')")
+    public ResponseEntity<ResponseDto<ArtistHomeResponse>> getArtistHome() {
+        Long artistId = SecurityUtil.getCurrentUserId();
+        ArtistHomeResponse data = artworkService.getArtistHome(artistId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(data));
+    }
+
     private List<ArtworkSummaryDto> createMockArtworks(int count, Long startId) {
         String[] titles = {"여름의 여백", "가을의 정적", "봄날의 꿈", "겨울의 침묵", "도시의 밤", "산속의 오두막", "추상의 세계", "바다의 속삭임", "황혼의 노래", "새벽의 기도", "꽃병과 과일", "푸른 하늘", "고요한 아침", "빛과 그림자", "시간의 흐름", "미지의 공간", "노을 진 풍경", "밤하늘의 별", "꿈속의 정원", "자유로운 영혼"};
 
