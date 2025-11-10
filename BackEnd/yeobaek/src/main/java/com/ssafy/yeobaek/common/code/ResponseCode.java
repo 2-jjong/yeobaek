@@ -122,8 +122,18 @@ public enum ResponseCode {
     // 리뷰 관련 에러 (409 Conflict)
     REVIEW_ALREADY_EXISTS("RV4091", "이미 작성한 평가입니다", HttpStatus.CONFLICT),
 
+    // 전시 관련 에러 (400 Bad Request)
+    EXHIBITION_INVALID_COMMISSION_RATE("EX4001", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_INVALID_REQUIREMENTS_LENGTH("EX4002", "추가 조건은 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_INVALID_EXHIBITION_DATE("EX4003", "전시 종료일은 시작일보다 늦어야 합니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_DATE_PAST("EX4004", "전시 시작일은 오늘 이후여야 합니다", HttpStatus.BAD_REQUEST),
+
     // 전시 관련 에러 (404 Not Found)
     EXHIBITION_NOT_FOUND("EX4041", "존재하지 않는 전시입니다", HttpStatus.NOT_FOUND),
+
+    // 전시 관련 에러 (409 Conflict)
+    SLOT_ALREADY_RESERVED("EX4091", "해당 기간에 이미 예약된 슬롯입니다", HttpStatus.CONFLICT),
+    ARTWORK_ALREADY_RESERVED("EX4092", "해당 기간에 이미 다른 전시가 예정된 작품입니다", HttpStatus.CONFLICT),
 
     // 서버 에러 (500 Internal Server Error)
     INTERNAL_SERVER_ERROR("S5000", "서버 내부 오류가 발생했습니다", HttpStatus.INTERNAL_SERVER_ERROR),
