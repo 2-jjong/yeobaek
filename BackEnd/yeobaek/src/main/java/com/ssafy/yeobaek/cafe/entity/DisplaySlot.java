@@ -1,6 +1,5 @@
 package com.ssafy.yeobaek.cafe.entity;
 
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
