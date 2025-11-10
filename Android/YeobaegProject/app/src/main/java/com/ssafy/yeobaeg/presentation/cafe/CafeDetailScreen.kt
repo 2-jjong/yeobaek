@@ -25,9 +25,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.cafe.*
 import com.ssafy.yeobaeg.domain.model.cafe.SlotStatus.*
 import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwner
+import com.ssafy.yeobaeg.presentation.arcore.plan.FloorPlanPreview
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -151,21 +153,44 @@ fun CafeDetailContent(
             )
         }
         
-        // 탭 내용
-        item {
-            when (selectedTab) {
-                CafeDetailTab.EXHIBITION -> {
-                    ExhibitionTabContent(
-                        slots = cafeDetail.slots
-                    )
+        when (selectedTab) {
+            CafeDetailTab.EXHIBITION -> {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    FloorPlanSection(floorPlanSlots = cafeDetail.displaySlots)
                 }
-                CafeDetailTab.INFO -> {
+
+                item {
+                    ExhibitionSlotSectionHeader(slotCount = cafeDetail.slots.size)
+                }
+
+                if (cafeDetail.slots.isEmpty()) {
+                    item {
+                        ExhibitionSlotEmptyState()
+                    }
+                } else {
+                    items(
+                        items = cafeDetail.slots,
+                        key = { it.slotId }
+                    ) { slot ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 6.dp)
+                        ) {
+                            SlotItem(slot = slot)
+                        }
+                    }
+                }
+            }
+            CafeDetailTab.INFO -> {
+                item {
                     InfoTabContent(
                         cafeDetail = cafeDetail
                     )
                 }
             }
         }
+
     }
 }
 
@@ -304,55 +329,62 @@ fun CafeDetailTabs(
 }
 
 @Composable
-fun ExhibitionTabContent(
-    slots: List<SlotDetail>
-) {
+fun ExhibitionSlotSectionHeader(slotCount: Int) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
     ) {
-        // 도면 섹션
-        FloorPlanSection()
-
-        // 슬롯 리스트
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // 슬롯 제목
-            Text(
-                text = "전시 슬롯",
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF654321),
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            if (slots.isEmpty()) {
-                Text(
-                    text = "등록된 전시 슬롯이 없습니다",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(vertical = 32.dp)
-                )
-            } else {
-                slots.forEach { slot ->
-                    SlotItem(slot = slot)
-                }
-            }
-        }
+        Text(
+            text = "전시 슬롯",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF654321)
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = if (slotCount > 0) "총 ${slotCount}개의 슬롯을 확인해보세요"
+            else "등록된 전시 슬롯이 없습니다",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
 @Composable
-fun FloorPlanSection() {
+fun ExhibitionSlotEmptyState() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(vertical = 40.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Default.Image,
+            contentDescription = null,
+            tint = Color(0xFFBDBDBD),
+            modifier = Modifier.size(48.dp)
+        )
+        Text(
+            text = "등록된 전시 슬롯이 없습니다",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+fun FloorPlanSection(
+    floorPlanSlots: List<DisplaySlot>?
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color(0xFFF5F1ED))
             .padding(16.dp)
     ) {
-        // 제목
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -381,7 +413,7 @@ fun FloorPlanSection() {
                         modifier = Modifier.size(16.dp)
                     )
                     Text(
-                        text = "슬롯 위치 확인",
+                        text = "슬롯 위치 안내",
                         style = MaterialTheme.typography.labelMedium,
                         color = Color(0xFF654321),
                         fontWeight = FontWeight.Medium
@@ -392,7 +424,6 @@ fun FloorPlanSection() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 도면 이미지 플레이스홀더
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -401,26 +432,34 @@ fun FloorPlanSection() {
                 .background(Color.White),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Map,
-                    contentDescription = "도면",
-                    tint = Color(0xFFBDBDBD),
-                    modifier = Modifier.size(64.dp)
-                )
-                Text(
-                    text = "카페 도면",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color(0xFF9E9E9E),
-                    fontWeight = FontWeight.Medium
-                )
-                Text(
-                    text = "슬롯 위치를 확인할 수 있습니다",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFFBDBDBD)
+            if (floorPlanSlots.isNullOrEmpty()) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Map,
+                        contentDescription = "도면 없음",
+                        tint = Color(0xFFBDBDBD),
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Text(
+                        text = "도면 정보가 없습니다",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = Color(0xFF9E9E9E),
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        text = "카페에서 제공한 도면이 없어요",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFBDBDBD)
+                    )
+                }
+            } else {
+                FloorPlanPreview(
+                    initialWalls = floorPlanSlots,
+                    modifier = Modifier.fillMaxSize(),
+                    readOnly = true
                 )
             }
         }
@@ -488,9 +527,9 @@ fun SlotItem(slot: SlotDetail) {
                     ) {
                         Text(
                             text = when (slot.status) {
-                                AVAILABLE -> "전시 가능"
-                                EXHIBITING -> "전시 중"
-                                SCHEDULED -> "예약 됨"
+                                AVAILABLE -> "전시가능"
+                                EXHIBITING -> "전시중"
+                                SCHEDULED -> "예약됨"
                             },
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.White,

@@ -1,5 +1,7 @@
 package com.ssafy.yeobaeg.data.model.cafe
 
+import com.ssafy.yeobaeg.data.model.response.DisplaySlotResponse
+import com.ssafy.yeobaeg.data.model.response.toDomain
 import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import kotlinx.serialization.Serializable
 
@@ -22,7 +24,8 @@ data class CafeDetailDto(
     val isBookmarked: Boolean,
     val categories: List<String>,
     val images: List<CafeImageDto>,
-    val slots: List<SlotDetailDto>,
+    val slots: List<SlotDetailDto> = emptyList(),
+    val displaySlots: List<DisplaySlotResponse>? = null,
     val cafeOwner: CafeOwnerDto
 )
 
@@ -41,8 +44,8 @@ fun CafeDetailDto.toDomain(): CafeDetail {
         categories = categories,
         images = images.map { it.toDomain() },
         slots = slots.map { it.toDomain() },
+        displaySlots = displaySlots?.map { it.toDomain() } ?: emptyList(),
         cafeOwner = cafeOwner.toDomain()
     )
 }
-
 
