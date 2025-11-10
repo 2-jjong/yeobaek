@@ -28,9 +28,6 @@ public class Exhibition {
     @Schema(description = "카페 이미지 URL", example = "https://example.com/cafe.jpg")
     private String cafeImageUrl;
 
-    @Schema(description = "슬롯 이름", example = "메인 전시 공간")
-    private String slotName;
-
     @Schema(description = "전시 시작일 (YYYY-MM-DD)", example = "2024-01-01")
     private LocalDate exhibitionStartDate;
 

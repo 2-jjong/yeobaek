@@ -69,7 +69,7 @@ public class ChatServiceImpl implements ChatService {
         User partner = userService.findById(partnerId)
                 .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
 
-        // 3. 기존 1:1 채팅방 확인
+        // 3. 기존 1:1 채팅방 확인 (leftAt 상태와 상관없이 모든 멤버 조회)
         List<ChatRoomMember> senderRooms = chatRoomMemberRepository.findByUser(user);
         List<ChatRoomMember> recipientRooms = chatRoomMemberRepository.findByUser(partner);
 
@@ -78,14 +78,25 @@ public class ChatServiceImpl implements ChatService {
                 .collect(Collectors.toSet());
 
         Optional<ChatRoom> existingRoomOpt = recipientRooms.stream()
-                .filter(member -> senderChatRooms.contains(member.getChatRoom()))
                 .map(ChatRoomMember::getChatRoom)
+                .filter(senderChatRooms::contains)
                 .findFirst();
 
         // 4. 기존 채팅방이 있으면 해당 채팅방 정보 반환
         if (existingRoomOpt.isPresent()) {
+            ChatRoom existingChatRoom = existingRoomOpt.get();
+
+            // 현재 사용자의 ChatRoomMember를 찾아 leftAt을 null로 업데이트 (재참여)
+            chatRoomMemberRepository.findByChatRoomAndUser_Id(existingChatRoom, userId)
+                    .ifPresent(member -> {
+                        if (member.getLeftAt() != null) {
+                            member.setLeftAt(null);
+                            chatRoomMemberRepository.save(member);
+                        }
+                    });
+
             String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
-            return chatMapper.toChatRoomData(existingRoomOpt.get(), partner, partnerImageUrl);
+            return chatMapper.toChatRoomData(existingChatRoom, partner, partnerImageUrl);
         }
 
         // 5. 새로운 채팅방 생성
@@ -207,7 +218,7 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
 
         // 2. 사용자가 참여하고 있는 모든 채팅방 멤버 조회
-        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByUser(currentUser);
+        List<ChatRoomMember> chatRoomMembers = chatRoomMemberRepository.findByUserAndLeftAtIsNull(currentUser);
 
         List<ChatRoomInfo> chatRoomInfoList = new ArrayList<>();
 
@@ -257,5 +268,27 @@ public class ChatServiceImpl implements ChatService {
         );
 
         return new ChatRoomListData(chatRoomInfoPage.getContent(), pagination);
+    }
+
+    /**
+     * 채팅방 나가기
+     * @param userId 사용자 ID
+     * @param chatRoomId 채팅방 ID
+     */
+    @Override
+    @Transactional
+    public void leaveChatRoom(Long userId, Long chatRoomId) {
+
+        // 1. 채팅방 조회
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_NOT_FOUND));
+
+        // 2. 나가려는 사용자가 채팅방의 멤버이며, 아직 나가지 않은 상태인지 확인
+        ChatRoomMember member = chatRoomMemberRepository.findByChatRoomAndUser_IdAndLeftAtIsNull(chatRoom, userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_FORBIDDEN));
+
+        // 3. 나간 시간 업데이트하여 소프트 삭제 처리
+        member.setLeftAt(LocalDateTime.now());
+        chatRoomMemberRepository.save(member);
     }
 }

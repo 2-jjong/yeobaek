@@ -44,4 +44,11 @@ public interface ChatService {
      * @return 채팅방 목록 정보
      */
     ChatRoomListData getChatRoomList(Long userId, ChatSortBy sortBy, Integer page, Integer size);
+
+    /**
+     * 채팅방 나가기
+     * @param userId 사용자 ID
+     * @param chatRoomId 채팅방 ID
+     */
+    void leaveChatRoom(Long userId, Long chatRoomId);
 }

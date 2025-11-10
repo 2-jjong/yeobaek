@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -693,7 +694,6 @@ public class ArtworkController {
             @RequestParam(required = false) Integer maxHeight,
 
             @Parameter(description = "정렬 기준 (LATEST: 최신 등록순, POPULARITY: 인기순)")
-            @ValidEnum(enumClass = ArtworkSortBy.class, message = "ARTWORK_INVALID_CATEGORY")
             @RequestParam(defaultValue = "LATEST") ArtworkSortBy sortBy,
 
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")

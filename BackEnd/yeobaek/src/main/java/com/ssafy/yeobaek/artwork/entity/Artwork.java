@@ -1,7 +1,6 @@
 package com.ssafy.yeobaek.artwork.entity;
 
 import com.ssafy.yeobaek.common.enums.ArtCategory;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.user.entity.Artist;
 import jakarta.persistence.*;
 import lombok.*;
@@ -53,10 +52,9 @@ public class Artwork {
     @Column(name = "production_year", nullable = false)
     private Integer productionYear;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "exhibition_status", nullable = false, length = 20)
+    @Column(name = "is_exhibiting", nullable = false)
     @Builder.Default
-    private ExhibitionStatus exhibitionStatus = ExhibitionStatus.AVAILABLE;
+    private Boolean isExhibiting = false;
 
     @Column(name = "view_count", nullable = false)
     @Builder.Default
