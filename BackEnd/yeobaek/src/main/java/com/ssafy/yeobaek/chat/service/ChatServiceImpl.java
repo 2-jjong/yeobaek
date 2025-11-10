@@ -1,6 +1,5 @@
 package com.ssafy.yeobaek.chat.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ssafy.yeobaek.chat.dto.request.ChatMessageRequest;
 import com.ssafy.yeobaek.chat.dto.response.ChatMessage;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
@@ -15,7 +14,6 @@ import com.ssafy.yeobaek.chat.repository.ChatRoomRepository;
 import com.ssafy.yeobaek.chat.repository.MessageRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.Pagination;
-import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
@@ -25,8 +23,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.listener.ChannelTopic;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,9 +49,6 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final S3Service s3Service;
-    private final StringRedisTemplate stringRedisTemplate;
-    private final ChannelTopic channelTopic;
-    private final ObjectMapper objectMapper;
 
     /**
      * 채팅방 생성
@@ -176,7 +169,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public void sendMessage(Long userId, ChatMessageRequest request) {
+    public ChatMessage sendMessage(Long userId, ChatMessageRequest request) {
 
         // 1. 채팅방 유효성 검증
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
@@ -194,15 +187,8 @@ public class ChatServiceImpl implements ChatService {
         Message message = chatMapper.toMessageEntity(chatRoom, sender, request);
         messageRepository.save(message);
 
-        // 5. ChatMessage 생성
-        ChatMessage chatMessage = chatMapper.toChatMessage(message, userId);
-
-        // 6. Redis Pub/Sub을 통해 메시지 발행
-        try {
-            stringRedisTemplate.convertAndSend(channelTopic.getTopic(), objectMapper.writeValueAsString(chatMessage));
-        } catch (Exception e) {
-            throw new CustomException(ResponseCode.MESSAGE_SEND_FAILED);
-        }
+        // 5. ChatMessage 생성 후 반환
+        return chatMapper.toChatMessage(message, userId);
     }
 
     /**
