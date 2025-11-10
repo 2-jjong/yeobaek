@@ -48,8 +48,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.domain.model.Gender
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegStepBar
-import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegErrorDialog
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
@@ -99,9 +99,13 @@ fun SignUpScreen(
                     emailError = uiState.emailError,
                     passwordError = uiState.passwordError,
                     passwordConfirmError = uiState.passwordConfirmError,
+                    isEmailChecking = uiState.isEmailChecking,
+                    isEmailAvailable = uiState.isEmailAvailable,
+                    emailCheckMessage = uiState.emailCheckMessage,
                     onEmailChange = viewModel::updateEmail,
                     onPasswordChange = viewModel::updatePassword,
                     onPasswordConfirmChange = viewModel::updatePasswordConfirm,
+                    checkEmailAvailability = viewModel::checkEmailAvailability,
                     onNextClick = viewModel::nextStep,
                     canProceed = viewModel.canProceedFromEmailPasswordStep()
                 )
@@ -161,25 +165,39 @@ private fun Step1EmailPassword(
     emailError: String?,
     passwordError: String?,
     passwordConfirmError: String?,
+    isEmailChecking: Boolean,
+    isEmailAvailable: Boolean?,
+    emailCheckMessage: String?,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onPasswordConfirmChange: (String) -> Unit,
+    checkEmailAvailability: () -> Unit,
     onNextClick: () -> Unit,
     canProceed: Boolean
 ) {
+    // 이메일 입력 완료 후 자동으로 중복 확인
+    androidx.compose.runtime.LaunchedEffect(email) {
+        if (email.isNotBlank() && emailError == null) {
+            kotlinx.coroutines.delay(800) // 0.8초 debounce
+            checkEmailAvailability()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp)
     ) {
 
-        YeobaegTextField(
+        YeobaegOutlinedTextField(
+            title = "이메일",
+            essential = true,
             value = email,
             onValueChange = onEmailChange,
-            label = "이메일",
-            placeholder = "coffee@gmail.com"
+            placeholder = "coffee@gmail.com",
+            modifier = Modifier.fillMaxWidth()
         )
-        
+
         if (emailError != null) {
             Text(
                 text = emailError,
@@ -189,13 +207,31 @@ private fun Step1EmailPassword(
             )
         }
 
+        if (isEmailChecking) {
+            Text(
+                text = "이메일 확인 중...",
+                color = YeobaegTextGray,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        } else if (emailCheckMessage != null) {
+            Text(
+                text = emailCheckMessage,
+                color = if (isEmailAvailable == true) YeobaegDarkBrown else Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
+
         Spacer(modifier = Modifier.height(16.dp))
 
-        YeobaegTextField(
+        YeobaegOutlinedTextField(
+            title = "비밀번호 (8자 이상, 영문+숫자+특수문자)",
+            essential = true,
             value = password,
             onValueChange = onPasswordChange,
-            label = "비밀번호 (8자 이상, 영문+숫자+특수문자)",
             placeholder = "Password123!",
+            modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
         
@@ -210,11 +246,13 @@ private fun Step1EmailPassword(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        YeobaegTextField(
+        YeobaegOutlinedTextField(
+            title = "비밀번호 확인",
+            essential = true,
             value = passwordConfirm,
             onValueChange = onPasswordConfirmChange,
-            label = "비밀번호 확인",
             placeholder = "비밀번호를 다시 입력하세요",
+            modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
         )
         
@@ -512,7 +550,7 @@ private fun Step3GenderAndAge(
                 }.timeInMillis
             }
         )
-        
+
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
@@ -528,16 +566,40 @@ private fun Step3GenderAndAge(
                         showDatePicker = false
                     }
                 ) {
-                    Text("확인")
+                    Text("확인", color = YeobaegDarkBrown)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("취소")
+                    Text("취소", color = YeobaegTextGray)
                 }
-            }
+            },
+            colors = androidx.compose.material3.DatePickerDefaults.colors(
+                containerColor = Color.White
+            )
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                colors = androidx.compose.material3.DatePickerDefaults.colors(
+                    containerColor = Color.White,
+                    titleContentColor = YeobaegDarkBrown,
+                    headlineContentColor = YeobaegDarkBrown,
+                    weekdayContentColor = YeobaegTextGray,
+                    subheadContentColor = YeobaegDarkBrown,
+                    yearContentColor = YeobaegTextGray,
+                    currentYearContentColor = YeobaegDarkBrown,
+                    selectedYearContentColor = Color.White,
+                    selectedYearContainerColor = YeobaegDarkBrown,
+                    dayContentColor = Color.Black,
+                    disabledDayContentColor = YeobaegLightGray,
+                    selectedDayContentColor = Color.White,
+                    selectedDayContainerColor = YeobaegDarkBrown,
+                    todayContentColor = YeobaegDarkBrown,
+                    todayDateBorderColor = YeobaegDarkBrown,
+                    dayInSelectionRangeContentColor = YeobaegDarkBrown,
+                    dayInSelectionRangeContainerColor = YeobaegDarkBrown.copy(alpha = 0.1f)
+                )
+            )
         }
     }
 }
@@ -594,8 +656,8 @@ private fun Step4Nickname(
     canProceed: Boolean
 ) {
     val label = when (userRole) {
-        UserRole.ARTIST -> "작가명"
-        UserRole.CAFE_OWNER -> "카페명"
+        UserRole.ARTIST -> "작가 닉네임"
+        UserRole.CAFE_OWNER -> "닉네임"
         else -> "닉네임"
     }
 
@@ -610,15 +672,16 @@ private fun Step4Nickname(
             text = "${label}을 입력해 주세요",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.Black
+            color = Color.Black,
         )
-
-
-        YeobaegTextField(
+        Spacer(modifier = Modifier.height(24.dp))
+        YeobaegOutlinedTextField(
+            title = null,
+            essential = false,
             value = nickname,
             onValueChange = onNicknameChange,
-            label = label,
-            placeholder = "커피왕자"
+            placeholder = "커피왕자",
+            modifier = Modifier.fillMaxWidth()
         )
         
         if (nicknameError != null) {
@@ -663,9 +726,13 @@ fun SignUpStep1Preview() {
                 emailError = null,
                 passwordError = null,
                 passwordConfirmError = null,
+                isEmailChecking = false,
+                isEmailAvailable = null,
+                emailCheckMessage = null,
                 onEmailChange = {},
                 onPasswordChange = {},
                 onPasswordConfirmChange = {},
+                checkEmailAvailability = {},
                 onNextClick = {},
                 canProceed = false
             )

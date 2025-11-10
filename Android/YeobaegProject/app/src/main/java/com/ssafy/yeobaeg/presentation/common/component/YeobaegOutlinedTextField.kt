@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ssafy.yeobaeg.R
@@ -23,7 +24,7 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 
 @Composable
 fun YeobaegOutlinedTextField(
-    title:String,
+    title:String?,
     essential:Boolean,
     value: String,
     unit:String?=null,
@@ -31,24 +32,28 @@ fun YeobaegOutlinedTextField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     singleLine: Boolean = true,
-    fontFamily: FontFamily = jansilFont
+    fontFamily: FontFamily = jansilFont,
+    visualTransformation: VisualTransformation = VisualTransformation.None
 ) {
-    Row {
-        Text(
-            text = title,
-            fontFamily=jansilFont,
-            fontWeight = FontWeight.Normal
-        )
-        if(essential){
-            Icon(
-                painter = painterResource(id = R.drawable.ic_essential),
-                contentDescription = "essential",
-                tint = Color(0xFFFF5A5A),
-                modifier = Modifier.size(10.dp)
+    if (title != null) {
+        Row {
+            Text(
+                text = title,
+                fontFamily=jansilFont,
+                fontWeight = FontWeight.Normal
             )
+            if(essential){
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_essential),
+                    contentDescription = "essential",
+                    tint = Color(0xFFFF5A5A),
+                    modifier = Modifier.size(10.dp)
+                )
+            }
         }
+        Spacer(Modifier.height(12.dp))
+
     }
-    Spacer(Modifier.height(12.dp))
 
     OutlinedTextField(
         value = value,
@@ -70,6 +75,7 @@ fun YeobaegOutlinedTextField(
             unfocusedContainerColor = Color.White
         ),
         singleLine = singleLine,
+        visualTransformation = visualTransformation,
         trailingIcon = {  // 단위가 있을 때만 표시
             if (!unit.isNullOrBlank()) {
                 Text(
