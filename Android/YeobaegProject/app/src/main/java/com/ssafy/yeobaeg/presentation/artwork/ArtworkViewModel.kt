@@ -143,7 +143,6 @@ class ArtExploreViewModel @Inject constructor(
             maxWidth = _uiState.value.maxWidthCm,
             minHeight = _uiState.value.minWidthCm,
             maxHeight = _uiState.value.maxHeightCm,
-            page = page,
             page = _uiState.value.paginationInfo?.currentPage?.plus(1) ?: 0,
             size = 20
         )
