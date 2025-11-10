@@ -65,4 +65,13 @@ public interface ExhibitionService {
      * @return 현재 진행 중인 전시
      */
     Optional<Exhibition> findOngoingExhibitionBySlot(DisplaySlot displaySlot);
+
+    /**
+     * 특정 작가의 현재 전시 중인 작품 수 조회
+     * - 오늘 날짜 기준으로 전시 중인 작품 수 반환
+     *
+     * @param artistId 작가 ID
+     * @return 현재 전시 중인 작품 수
+     */
+    Integer getCurrentExhibitionCountByArtist(Long artistId);
 }

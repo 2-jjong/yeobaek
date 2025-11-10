@@ -264,4 +264,17 @@ public class ExhibitionServiceImpl implements ExhibitionService {
     public Optional<Exhibition> findOngoingExhibitionBySlot(DisplaySlot displaySlot) {
         return exhibitionRepository.findFirstByDisplaySlotAndStateInOrderByStartDateAsc(displaySlot, List.of(ExhibitionState.ONGOING));
     }
+
+    /**
+     * 특정 작가의 현재 전시 중인 작품 수 조회
+     * - 오늘 날짜 기준으로 전시 중인 작품 수 반환
+     *
+     * @param artistId 작가 ID
+     * @return 현재 전시 중인 작품 수
+     */
+    @Override
+    public Integer getCurrentExhibitionCountByArtist(Long artistId) {
+        LocalDate today = LocalDate.now();
+        return exhibitionRepository.countCurrentExhibitionsByArtistId(artistId, today);
+    }
 }

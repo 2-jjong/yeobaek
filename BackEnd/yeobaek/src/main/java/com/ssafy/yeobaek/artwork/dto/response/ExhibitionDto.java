@@ -15,7 +15,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Exhibition {
+public class ExhibitionDto {
     @Schema(description = "카페 ID", example = "1")
     private Long cafeId;
 

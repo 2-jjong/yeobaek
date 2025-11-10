@@ -1,12 +1,14 @@
 package com.ssafy.yeobaek.chat.controller;
 
 import com.ssafy.yeobaek.chat.dto.request.ChatMessageRequest;
+import com.ssafy.yeobaek.chat.dto.response.ChatMessage;
 import com.ssafy.yeobaek.chat.service.ChatService;
 import com.ssafy.yeobaek.common.security.JwtUserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -19,6 +21,7 @@ import java.util.Map;
 public class WebSocketChatController {
 
     private final ChatService chatService;
+    private final SimpMessageSendingOperations messagingTemplate;
 
     @MessageMapping("/messages")
     public void sendMessage(
@@ -46,6 +49,8 @@ public class WebSocketChatController {
 
         log.info("[WebSocket] Message from userId: {}", userId);
 
-        chatService.sendMessage(userId, chatMessageRequest);
+        ChatMessage chatMessage = chatService.sendMessage(userId, chatMessageRequest);
+
+        messagingTemplate.convertAndSend("/sub/chat/room/" + chatMessageRequest.getChatRoomId(), chatMessage);
     }
 }

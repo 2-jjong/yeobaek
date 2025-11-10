@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.artwork.mapper;
 
-import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
+import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleResponse;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
 import com.ssafy.yeobaek.artwork.entity.ArtworkBookmark;
 import com.ssafy.yeobaek.user.entity.User;
@@ -19,8 +19,8 @@ public class ArtworkBookmarkMapper {
                 .build();
     }
 
-    public BookmarkToggleData toBookmarkToggleData(boolean isBookmarked){
-        return BookmarkToggleData.builder()
+    public BookmarkToggleResponse toBookmarkToggleData(boolean isBookmarked){
+        return BookmarkToggleResponse.builder()
                 .isBookmarked(isBookmarked)
                 .build();
     }

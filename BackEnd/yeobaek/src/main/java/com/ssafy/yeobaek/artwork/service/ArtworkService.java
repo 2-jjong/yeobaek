@@ -2,8 +2,9 @@ package com.ssafy.yeobaek.artwork.service;
 
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
-import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailData;
-import com.ssafy.yeobaek.artwork.dto.response.ArtworkListData;
+import com.ssafy.yeobaek.artwork.dto.response.ArtistHomeResponse;
+import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailResponse;
+import com.ssafy.yeobaek.artwork.dto.response.ArtworkListResponse;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
 
@@ -32,7 +33,7 @@ public interface ArtworkService {
      * @param userId 현재 사용자 ID (북마크 여부 확인용)
      * @return 작품 상세 정보
      */
-    ArtworkDetailData getArtworkDetail(Long artworkId, Long userId);
+    ArtworkDetailResponse getArtworkDetail(Long artworkId, Long userId);
 
     /**
      * 작품 검색 (키워드, 필터, 정렬)
@@ -50,7 +51,7 @@ public interface ArtworkService {
      * @param size 페이지 크기
      * @return 작품 목록 및 작가 목록 (키워드가 있으면 작가 목록 포함, 없으면 null)
      */
-    ArtworkListData searchArtworks(
+    ArtworkListResponse searchArtworks(
             Long userId,
             String keyword,
             List<ArtCategory> categories,
@@ -70,5 +71,15 @@ public interface ArtworkService {
      * @param size 페이지 크기
      * @return 작품 목록 및 페이징 정보
      */
-    ArtworkListData getUserArtworks(Long userId, Integer page, Integer size);
+    ArtworkListResponse getUserArtworks(Long userId, Integer page, Integer size);
+
+    /**
+     * 작가 홈 조회 (인기 작품 상위 3개 + 작가 프로필)
+     * - 인기도 기준: 조회수 × 1 + 북마크수 × 9
+     * - 전시 중인 작품은 카페명 포함
+     * - 모든 작품에 작가 프로필 정보 포함
+     * @param userId 작가 ID
+     * @return 인기 작품 목록 (최대 3개)
+     */
+    ArtistHomeResponse getArtistHome(Long userId);
 }

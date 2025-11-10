@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.cafe.controller;
 
-import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
+import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleResponse;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
@@ -842,12 +842,12 @@ public class CafeController {
             )
     })
     @PostMapping("/{cafeId}/bookmarks")
-    public ResponseEntity<ResponseDto<BookmarkToggleData>> toggleBookmark(
+    public ResponseEntity<ResponseDto<BookmarkToggleResponse>> toggleBookmark(
             @Parameter(description = "북마크 토글할 카페 ID", required = true)
             @PathVariable Long cafeId
     ) {
         // Mock 데이터: 북마크 추가됨
-        BookmarkToggleData data = new BookmarkToggleData(true);
+        BookmarkToggleResponse data = new BookmarkToggleResponse(true);
 
         return ResponseEntity
                 .status(HttpStatus.OK)

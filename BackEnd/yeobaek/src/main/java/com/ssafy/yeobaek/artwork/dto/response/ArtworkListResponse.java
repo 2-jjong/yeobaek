@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.artwork.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,12 +18,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ArtworkListData {
+public class ArtworkListResponse {
     @Schema(description = "작가 목록 (검색 결과에만 포함)")
-    private List<ArtistSummary> artists;
+    private List<ArtistDto> artists;
 
     @Schema(description = "작품 목록")
-    private List<ArtworkSummary> artworks;
+    private List<ArtworkSummaryDto> artworks;
 
     @Schema(description = "페이징 정보")
     private Pagination pagination;

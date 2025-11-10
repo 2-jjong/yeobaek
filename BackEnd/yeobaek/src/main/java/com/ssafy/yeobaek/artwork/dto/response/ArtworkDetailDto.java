@@ -18,7 +18,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ArtworkDetail {
+public class ArtworkDetailDto {
     @Schema(description = "작품 ID", example = "1")
     private Long artworkId;
 
@@ -62,8 +62,8 @@ public class ArtworkDetail {
     private List<String> images;
 
     @Schema(description = "작가 정보")
-    private Artist artist;
+    private ArtistDto artistDto;
 
     @Schema(description = "현재 전시 정보 (전시 중일 때만)")
-    private Exhibition currentExhibition;
+    private ExhibitionDto currentExhibitionDto;
 }

@@ -7,13 +7,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Schema(description = "작품 상세 응답 데이터")
+import java.util.List;
+
+@Schema(description = "작가 홈 응답 데이터")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ArtworkDetailData {
-    @Schema(description = "작품 상세 정보")
-    private ArtworkDetail artwork;
+public class ArtistHomeResponse {
+    @Schema(description = "작가 정보")
+    private ArtistDto artist;
+    
+    @Schema(description = "인기 작품 목록 (최대 3개)")
+    private List<ArtworkSummaryDto> artworks;
 }

@@ -6,7 +6,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 public interface ArtworkRepository extends JpaRepository<Artwork, Long>, JpaSpecificationExecutor<Artwork> {
@@ -25,4 +29,15 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long>, JpaSpec
      * @return 작품 목록 (페이징)
      */
     Page<Artwork> findByArtist(Artist artist, Pageable pageable);
+
+    /**
+     * 작가별 인기 작품 조회 (조회수 1 + 북마크수 9 가중치)
+     * @param artistId 작가 ID
+     * @param pageable 페이징 정보 (상위 N개 조회용)
+     * @return 인기순 작품 목록
+     */
+    @Query("SELECT a FROM Artwork a " +
+           "WHERE a.artist.id = :artistId " +
+           "ORDER BY (a.viewCount * 1 + a.bookmarkCount * 9) DESC")
+    List<Artwork> findTopPopularByArtistId(@Param("artistId") Long artistId, Pageable pageable);
 }

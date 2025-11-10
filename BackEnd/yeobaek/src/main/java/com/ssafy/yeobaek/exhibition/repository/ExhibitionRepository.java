@@ -74,4 +74,20 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
      * @return 조건에 맞는 첫 번째 전시
      */
     Optional<Exhibition> findFirstByDisplaySlotAndStateInOrderByStartDateAsc(DisplaySlot displaySlot, List<ExhibitionState> states);
+
+    /**
+     * 특정 작가의 오늘 날짜 기준 현재 전시 중인 작품 수 조회
+     * @param artistId 작가 ID
+     * @param today 오늘 날짜
+     * @return 현재 전시 중인 작품 수
+     */
+    @Query("SELECT COUNT(e) FROM Exhibition e " +
+           "WHERE e.artwork.artist.id = :artistId " +
+           "AND e.state = 'ONGOING' " +
+           "AND e.startDate <= :today " +
+           "AND e.endDate >= :today")
+    Integer countCurrentExhibitionsByArtistId(
+            @Param("artistId") Long artistId,
+            @Param("today") LocalDate today
+    );
 }
