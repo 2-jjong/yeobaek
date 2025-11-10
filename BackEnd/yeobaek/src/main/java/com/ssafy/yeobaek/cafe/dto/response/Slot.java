@@ -2,7 +2,6 @@ package com.ssafy.yeobaek.cafe.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.ssafy.yeobaek.cafe.dto.Vec2;
-import com.ssafy.yeobaek.common.enums.WallStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -33,8 +32,11 @@ public class Slot {
     @Schema(description = "벽면 높이 (cm)", example = "250")
     private Double height;
 
-    @Schema(description = "전시 상태", example = "AVAILABLE")
-    private WallStatus status;
+    @Schema(description = "전시 슬롯 여부", example = "true")
+    private Boolean isDisplayable;
+
+    @Schema(description = "전시 진행 여부", example = "true")
+    private Boolean isExhibiting;
 
     @Schema(description = "수수료율", example = "15.0")
     private Double commissionRate;

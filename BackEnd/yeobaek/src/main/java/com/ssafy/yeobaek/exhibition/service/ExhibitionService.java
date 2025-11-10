@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.exhibition.service;
 
+import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 
@@ -50,6 +51,20 @@ public interface ExhibitionService {
      * @return 현재 진행 중인 전시
      */
     Optional<Exhibition> getCurrentExhibitionByArtwork(Long artworkId);
+
+    /**
+     * 슬롯의 현재 또는 예정된 전시 조회
+     * @param displaySlot 조회할 슬롯
+     * @return 현재 진행 중이거나 예정된 전시 중 가장 빠른 전시
+     */
+    Optional<Exhibition> findCurrentOrUpcomingExhibitionBySlot(DisplaySlot displaySlot);
+
+    /**
+     * 슬롯의 현재 진행 중인 전시 조회
+     * @param displaySlot 조회할 슬롯
+     * @return 현재 진행 중인 전시
+     */
+    Optional<Exhibition> findOngoingExhibitionBySlot(DisplaySlot displaySlot);
 
     /**
      * 특정 작가의 현재 전시 중인 작품 수 조회

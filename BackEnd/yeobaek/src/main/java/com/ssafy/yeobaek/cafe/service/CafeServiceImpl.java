@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.cafe.service;
 
+import com.ssafy.yeobaek.artwork.entity.Artwork;
 import com.ssafy.yeobaek.cafe.dto.request.UpdateSlotRequest;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.CreateCafeRequest;
@@ -14,6 +15,8 @@ import com.ssafy.yeobaek.cafe.mapper.CafeMapper;
 import com.ssafy.yeobaek.cafe.repository.*;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
+import com.ssafy.yeobaek.exhibition.service.ExhibitionService;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
@@ -25,6 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,6 +46,9 @@ public class CafeServiceImpl implements CafeService {
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
     private final S3Service s3Service;
+    private final ExhibitionService exhibitionService;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 
     /**
      * 카페 등록
@@ -132,11 +139,23 @@ public class CafeServiceImpl implements CafeService {
         // 2. 벽 + 슬롯 조회
         List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafe.getId());
 
-        // 3. 카페 이미지 URL 변환
+        // 3. 전시 정보 조회 및 맵 생성
+        Map<Long, ExhibitionInfo> exhibitionInfoMap = walls.stream()
+                .map(DisplayWall::getSlot)
+                .filter(Objects::nonNull)
+                .map(exhibitionService::findOngoingExhibitionBySlot)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toMap(
+                        exhibition -> exhibition.getDisplaySlot().getId(),
+                        this::createExhibitionInfo
+                ));
+
+        // 4. 카페 이미지 URL 변환
         String primaryImage = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
 
-        // 4. DTO 변환하여 반환
-        return cafeMapper.toMyCafeData(cafe, walls, primaryImage);
+        // 5. DTO 변환하여 반환
+        return cafeMapper.toMyCafeData(cafe, walls, primaryImage, exhibitionInfoMap);
     }
 
 
@@ -240,19 +259,31 @@ public class CafeServiceImpl implements CafeService {
         // 2. 벽, 슬롯, 전시 정보 조회
         List<DisplayWall> walls = displayWallRepository.findAllWithSlotByCafeId(cafeId);
 
-        // 3. 카테고리 정보 조회
+        // 3. 전시 정보 조회 및 맵 생성
+        Map<Long, ExhibitionInfo> exhibitionInfoMap = walls.stream()
+                .map(DisplayWall::getSlot)
+                .filter(Objects::nonNull)
+                .map(exhibitionService::findCurrentOrUpcomingExhibitionBySlot)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toMap(
+                        exhibition -> exhibition.getDisplaySlot().getId(),
+                        this::createExhibitionInfo
+                ));
+
+        // 4. 카테고리 정보 조회
         List<String> categories = cafeCategoryTagRepository.findAllByCafe(cafe).stream()
             .map(tag -> tag.getCategory().getCategoryName())
             .collect(Collectors.toList());
 
-        // 4. 카페 이미지 URL 변환
+        // 5. 카페 이미지 URL 변환
         List<String> images = s3Service.generatePresignedUrlsForDownload(cafe.getImages());
         String profileImage = s3Service.generatePresignedUrlForDownload(cafe.getCafeOwner().getProfileImageUrl());
 
-        // 5. DTO 변환
-        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images, profileImage);
+        // 6. DTO 변환
+        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images, profileImage, exhibitionInfoMap);
 
-        // 6. 조회수 1 증가
+        // 7. 조회수 1 증가
         cafe.increaseViewCount();
         cafeRepository.save(cafe);
 
@@ -299,5 +330,19 @@ public class CafeServiceImpl implements CafeService {
 
         // 6. DTO 반환
         return cafeMapper.toSlotData(slot);
+    }
+
+    private ExhibitionInfo createExhibitionInfo(Exhibition exhibition) {
+        Artwork artwork = exhibition.getArtwork();
+        String artworkImageUrl = artwork.getImages().isEmpty() ? null : s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+
+        return new ExhibitionInfo(
+                exhibition.getId(),
+                artwork.getTitle(),
+                artworkImageUrl,
+                artwork.getArtist().getUser().getNickname(),
+                exhibition.getStartDate().format(DATE_FORMATTER),
+                exhibition.getEndDate().format(DATE_FORMATTER)
+        );
     }
 }

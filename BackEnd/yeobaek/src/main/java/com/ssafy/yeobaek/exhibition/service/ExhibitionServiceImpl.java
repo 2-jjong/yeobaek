@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -240,6 +241,28 @@ public class ExhibitionServiceImpl implements ExhibitionService {
     public Optional<Exhibition> getCurrentExhibitionByArtwork(Long artworkId) {
         LocalDate today = LocalDate.now();
         return exhibitionRepository.findCurrentExhibitionByArtworkId(artworkId, today);
+    }
+
+    /**
+     * 슬롯의 현재 또는 예정된 전시 조회
+     * @param displaySlot 조회할 슬롯
+     * @return 현재 진행 중이거나 예정된 전시 중 가장 빠른 전시
+     */
+    @Override
+    public Optional<Exhibition> findCurrentOrUpcomingExhibitionBySlot(DisplaySlot displaySlot) {
+        return exhibitionRepository.findFirstByDisplaySlotAndStateInOrderByStartDateAsc(
+                displaySlot, List.of(ExhibitionState.ONGOING, ExhibitionState.APPROVED)
+        );
+    }
+
+    /**
+     * 슬롯의 현재 진행 중인 전시 조회
+     * @param displaySlot 조회할 슬롯
+     * @return 현재 진행 중인 전시
+     */
+    @Override
+    public Optional<Exhibition> findOngoingExhibitionBySlot(DisplaySlot displaySlot) {
+        return exhibitionRepository.findFirstByDisplaySlotAndStateInOrderByStartDateAsc(displaySlot, List.of(ExhibitionState.ONGOING));
     }
 
     /**

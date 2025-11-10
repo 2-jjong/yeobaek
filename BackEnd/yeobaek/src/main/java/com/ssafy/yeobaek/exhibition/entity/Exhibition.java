@@ -90,8 +90,6 @@ public class Exhibition {
         if (isBothAgreed()) {
             this.state = ExhibitionState.APPROVED;
             this.agreedAt = LocalDateTime.now();
-            // 예약 상태는 Exhibition의 startDate/endDate로 관리
-            this.displaySlot.setStatus(ExhibitionStatus.SCHEDULED);
         }
     }
 
@@ -103,8 +101,8 @@ public class Exhibition {
     public void start() {
         if (this.state == ExhibitionState.APPROVED) {
             this.state = ExhibitionState.ONGOING;
+            this.displaySlot.setIsExhibiting(true);
             this.artwork.setIsExhibiting(true);
-            this.displaySlot.setStatus(ExhibitionStatus.EXHIBITING);
         }
     }
 
@@ -116,8 +114,8 @@ public class Exhibition {
     public void complete() {
         if (this.state == ExhibitionState.ONGOING) {
             this.state = ExhibitionState.COMPLETED;
+            this.displaySlot.setIsExhibiting(false);
             this.artwork.setIsExhibiting(false);
-            this.displaySlot.setStatus(ExhibitionStatus.AVAILABLE);
         }
     }
 
@@ -129,8 +127,8 @@ public class Exhibition {
     public void cancel() {
         if (this.state.isCancellable()) {
             this.state = ExhibitionState.CANCELLED;
+            this.displaySlot.setIsExhibiting(false);
             this.artwork.setIsExhibiting(false);
-            this.displaySlot.setStatus(ExhibitionStatus.AVAILABLE);
         }
     }
 
@@ -142,8 +140,8 @@ public class Exhibition {
     public void reject() {
         if (this.state == ExhibitionState.PENDING) {
             this.state = ExhibitionState.REJECTED;
+            this.displaySlot.setIsExhibiting(false);
             this.artwork.setIsExhibiting(false);
-            this.displaySlot.setStatus(ExhibitionStatus.AVAILABLE);
         }
     }
 
