@@ -177,4 +177,56 @@ public class ArtworkMapper {
                 .hasNext(page.hasNext())
                 .build();
     }
+
+    /**
+     * Artist 엔티티를 ArtistDto로 변환 (작가 홈용 - 전체 통계 포함)
+     * @param artist Artist 엔티티
+     * @param profileImageUrl 변환된 프로필 이미지 URL (presigned URL)
+     * @param artworkCount 전체 작품 수
+     * @param currentExhibitionCount 현재 전시 중인 작품 수
+     * @return ArtistDto
+     */
+    public ArtistDto toArtistDtoForArtistHome(Artist artist, String profileImageUrl, Integer artworkCount, Integer currentExhibitionCount) {
+        User user = artist.getUser();
+        return ArtistDto.builder()
+                .userId(user.getId())
+                .artistName(user.getNickname())
+                .profileImageUrl(profileImageUrl)
+                .artworkCount(artworkCount)
+                .currentExhibitionCount(currentExhibitionCount)
+                .build();
+    }
+
+    /**
+     * Artwork 엔티티를 ArtworkSummaryDto로 변환 (작가 홈용 - 작가 정보 및 카페명 포함)
+     * @param artwork Artwork 엔티티
+     * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
+     * @param cafeName 전시 장소(카페명)
+     * @return ArtworkSummaryDto
+     */
+    public ArtworkSummaryDto toArtworkSummaryDtoForArtistHome(Artwork artwork, String thumbnailUrl, String cafeName) {
+        return ArtworkSummaryDto.builder()
+                .artworkId(artwork.getId())
+                .title(artwork.getTitle())
+                .thumbnailUrl(thumbnailUrl)
+                .price(artwork.getPrice())
+                .category(artwork.getArtCategory().name())
+                .cafeName(cafeName)
+                .isExhibiting(artwork.getIsExhibiting())
+                .bookmarkCount(artwork.getBookmarkCount())
+                .build();
+    }
+
+    /**
+     * artist와 artworks를 ArtistHomeResponse로 변환
+     * @param artist 작가
+     * @param artworks 인기 작품 목록(3개)
+     * @return ArtistHomeResponse
+     */
+    public ArtistHomeResponse toArtistHomeResponse(ArtistDto artist, List<ArtworkSummaryDto> artworks) {
+        return ArtistHomeResponse.builder()
+                .artist(artist)
+                .artworks(artworks)
+                .build();
+    }
 }

@@ -321,4 +321,56 @@ public class ArtworkServiceImpl implements ArtworkService {
         // artists는 null로 설정 (작가 검색이 아니므로)
         return artworkMapper.toArtworkListData(null, artworkSummaries, pagination);
     }
+
+    /**
+     * 작가 홈 조회 (인기 작품 상위 3개 + 작가 프로필)
+     * - 인기도 기준: 조회수 × 1 + 북마크수 × 9
+     * - 전시 중인 작품은 카페명 포함
+     * - 모든 작품에 작가 프로필 정보 포함
+     * @param userId 작가 ID
+     * @return 인기 작품 목록 (최대 3개)
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ArtistHomeResponse getArtistHome(Long userId) {
+        // 1. Artist 엔티티 조회
+        Artist artist = userService.getArtistReference(userId);
+
+        // 2. 작가 통계 조회
+        Integer artworkCount = artworkRepository.countByArtist(artist);
+        Integer currentExhibitionCount = exhibitionService.getCurrentExhibitionCountByArtist(userId);
+
+        // 3. 작가 프로필 이미지 URL 변환
+        String profileImageUrl = s3Service.generatePresignedUrlForDownload(artist.getUser().getProfileImageUrl());
+
+        // 4. ArtistDto 생성
+        ArtistDto artistDto = artworkMapper.toArtistDtoForArtistHome(artist, profileImageUrl, artworkCount, currentExhibitionCount);
+
+        // 5. 인기 작품 상위 3개 조회 (조회수 1 + 북마크수 9 가중치)
+        Pageable top3 = PageRequest.of(0, 3);
+        List<Artwork> popularArtworks = artworkRepository.findTopPopularByArtistId(userId, top3);
+
+        // 6. 작품 DTO 변환
+        List<ArtworkSummaryDto> artworkSummaries = popularArtworks.stream()
+                .map(artwork -> {
+                    // 썸네일 URL 변환
+                    String thumbnailUrl = null;
+                    if (artwork.getImages() != null && !artwork.getImages().isEmpty()) {
+                        thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                    }
+
+                    // 전시 중이면 카페명 조회
+                    String cafeName = null;
+                    if (artwork.getIsExhibiting()) {
+                        Optional<Exhibition> exhibition = exhibitionService.getCurrentExhibitionByArtwork(artwork.getId());
+                        cafeName = exhibition.map(e -> e.getCafe().getCafeName()).orElse(null);
+                    }
+
+                    // DTO 변환
+                    return artworkMapper.toArtworkSummaryDtoForArtistHome(artwork, thumbnailUrl, cafeName);
+                })
+                .collect(Collectors.toList());
+
+        return artworkMapper.toArtistHomeResponse(artistDto, artworkSummaries);
+    }
 }

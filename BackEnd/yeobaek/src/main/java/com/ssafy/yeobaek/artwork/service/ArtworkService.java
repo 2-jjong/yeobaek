@@ -2,6 +2,7 @@ package com.ssafy.yeobaek.artwork.service;
 
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
+import com.ssafy.yeobaek.artwork.dto.response.ArtistHomeResponse;
 import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailResponse;
 import com.ssafy.yeobaek.artwork.dto.response.ArtworkListResponse;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
@@ -71,4 +72,14 @@ public interface ArtworkService {
      * @return 작품 목록 및 페이징 정보
      */
     ArtworkListResponse getUserArtworks(Long userId, Integer page, Integer size);
+
+    /**
+     * 작가 홈 조회 (인기 작품 상위 3개 + 작가 프로필)
+     * - 인기도 기준: 조회수 × 1 + 북마크수 × 9
+     * - 전시 중인 작품은 카페명 포함
+     * - 모든 작품에 작가 프로필 정보 포함
+     * @param userId 작가 ID
+     * @return 인기 작품 목록 (최대 3개)
+     */
+    ArtistHomeResponse getArtistHome(Long userId);
 }
