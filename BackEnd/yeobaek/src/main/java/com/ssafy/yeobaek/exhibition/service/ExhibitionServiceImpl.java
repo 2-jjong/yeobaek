@@ -28,6 +28,7 @@ public class ExhibitionServiceImpl implements ExhibitionService {
     private final ExhibitionRepository exhibitionRepository;
     private final ExhibitionMapper exhibitionMapper;
 
+    // TODO: 순환 참조 문제 해결 후 Service 의존성 변경
     // 다른 도메인의 Repository 의존성
     private final UserRepository userRepository;
     private final CafeRepository cafeRepository;
