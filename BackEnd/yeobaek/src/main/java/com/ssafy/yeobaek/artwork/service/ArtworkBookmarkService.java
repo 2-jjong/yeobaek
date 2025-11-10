@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.artwork.service;
 
-import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
+import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleResponse;
 
 public interface ArtworkBookmarkService {
 
@@ -18,5 +18,5 @@ public interface ArtworkBookmarkService {
      * @param artworkId 작품 ID
      * @return BookmarkToggleData (현재 북마크 상태)
      */
-    BookmarkToggleData toggleBookmark(Long userId, Long artworkId);
+    BookmarkToggleResponse toggleBookmark(Long userId, Long artworkId);
 }

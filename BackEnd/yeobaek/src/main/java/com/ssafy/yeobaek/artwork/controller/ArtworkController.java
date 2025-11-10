@@ -5,11 +5,11 @@ import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.service.ArtworkBookmarkService;
 import com.ssafy.yeobaek.artwork.service.ArtworkService;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
-import com.ssafy.yeobaek.common.validation.ValidEnum;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,7 +21,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -418,14 +417,14 @@ public class ArtworkController {
     })
     @GetMapping("/me")
     @PreAuthorize("hasRole('ARTIST')")
-    public ResponseEntity<ResponseDto<ArtworkListData>> getMyArtworks(
+    public ResponseEntity<ResponseDto<ArtworkListResponse>> getMyArtworks(
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
             @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
-        ArtworkListData data = artworkService.getUserArtworks(userId, page, size);
+        ArtworkListResponse data = artworkService.getUserArtworks(userId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -498,7 +497,7 @@ public class ArtworkController {
             )
     })
     @GetMapping("/users/{userId}")
-    public ResponseEntity<ResponseDto<ArtworkListData>> getUserArtworks(
+    public ResponseEntity<ResponseDto<ArtworkListResponse>> getUserArtworks(
             @Parameter(description = "작가 회원 ID", required = true)
             @PathVariable Long userId,
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
@@ -506,7 +505,7 @@ public class ArtworkController {
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        ArtworkListData data = artworkService.getUserArtworks(userId, page, size);
+        ArtworkListResponse data = artworkService.getUserArtworks(userId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -664,7 +663,7 @@ public class ArtworkController {
             )
     })
     @GetMapping
-    public ResponseEntity<ResponseDto<ArtworkListData>> searchArtworks(
+    public ResponseEntity<ResponseDto<ArtworkListResponse>> searchArtworks(
             @Parameter(description = "작품명, 작가명 검색 키워드 (최대 100자)")
             @Size(max = 100, message = "INVALID_INPUT_VALUE")
             @RequestParam(required = false) String keyword,
@@ -706,7 +705,7 @@ public class ArtworkController {
             @RequestParam(defaultValue = "20") Integer size
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
-        ArtworkListData data = artworkService.searchArtworks(
+        ArtworkListResponse data = artworkService.searchArtworks(
                 userId, keyword, categories,
                 minWidth, maxWidth, minHeight, maxHeight,
                 sortBy, page, size
@@ -742,7 +741,7 @@ public class ArtworkController {
             )
     })
     @GetMapping("/recommendations")
-    public ResponseEntity<ResponseDto<ArtworkListData>> getRecommendedArtworks(
+    public ResponseEntity<ResponseDto<ArtworkListResponse>> getRecommendedArtworks(
             @Parameter(description = "카페 ID", required = true)
             @RequestParam Long cafeId,
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
@@ -751,11 +750,11 @@ public class ArtworkController {
             @RequestParam(defaultValue = "20") Integer size
     ) {
         // Mock 데이터 - 20개로 증가
-        List<ArtworkSummary> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 300L); // 다른 ID로 시작
+        List<ArtworkSummaryDto> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 300L); // 다른 ID로 시작
 
         // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
         Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
-        ArtworkListData data = new ArtworkListData(null, artworks, pagination);
+        ArtworkListResponse data = new ArtworkListResponse(null, artworks, pagination);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -808,13 +807,13 @@ public class ArtworkController {
             )
     })
     @GetMapping("/{artworkId}")
-    public ResponseEntity<ResponseDto<ArtworkDetailData>> getArtworkDetail(
+    public ResponseEntity<ResponseDto<ArtworkDetailResponse>> getArtworkDetail(
             @Parameter(description = "조회할 작품 ID", required = true)
             @PathVariable Long artworkId
     ) {
         // 현재 로그인한 사용자 ID 가져오기
         Long userId = SecurityUtil.getCurrentUserId();
-        ArtworkDetailData data = artworkService.getArtworkDetail(artworkId, userId);
+        ArtworkDetailResponse data = artworkService.getArtworkDetail(artworkId, userId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -838,15 +837,15 @@ public class ArtworkController {
             )
     })
     @GetMapping("/popular")
-    public ResponseEntity<ResponseDto<PopularArtworksData>> getPopularArtworks(
+    public ResponseEntity<ResponseDto<PopularArtworksResponse>> getPopularArtworks(
             @Parameter(description = "조회할 작품 수 (기본값: 10, 최대: 20)")
             @RequestParam(defaultValue = "10") Integer size
     ) {
         // Mock 데이터 - size에 따라 최대 20개까지 생성
         int count = Math.min(size, MOCK_ARTWORK_COUNT);
-        List<ArtworkSummary> artworks = createMockArtworks(count, 400L);
+        List<ArtworkSummaryDto> artworks = createMockArtworks(count, 400L);
 
-        PopularArtworksData data = new PopularArtworksData(artworks);
+        PopularArtworksResponse data = new PopularArtworksResponse(artworks);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -915,12 +914,12 @@ public class ArtworkController {
             )
     })
     @PostMapping("/{artworkId}/bookmarks")
-    public ResponseEntity<ResponseDto<BookmarkToggleData>> toggleBookmark(
+    public ResponseEntity<ResponseDto<BookmarkToggleResponse>> toggleBookmark(
             @Parameter(description = "북마크 토글할 작품 ID", required = true)
             @PathVariable Long artworkId
     ) {
         Long userId = SecurityUtil.getCurrentUserId();
-        BookmarkToggleData data = artworkBookmarkService.toggleBookmark(userId, artworkId);
+        BookmarkToggleResponse data = artworkBookmarkService.toggleBookmark(userId, artworkId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -955,25 +954,25 @@ public class ArtworkController {
             )
     })
     @GetMapping("/bookmarks")
-    public ResponseEntity<ResponseDto<ArtworkListData>> getBookmarkedArtworks(
+    public ResponseEntity<ResponseDto<ArtworkListResponse>> getBookmarkedArtworks(
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
             @RequestParam(defaultValue = "0") Integer page,
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
         // Mock 데이터 - 20개로 증가
-        List<ArtworkSummary> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 500L);
+        List<ArtworkSummaryDto> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 500L);
 
         // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
         Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
-        ArtworkListData data = new ArtworkListData(null, artworks, pagination);
+        ArtworkListResponse data = new ArtworkListResponse(null, artworks, pagination);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
     }
 
-    private List<ArtworkSummary> createMockArtworks(int count, Long startId) {
+    private List<ArtworkSummaryDto> createMockArtworks(int count, Long startId) {
         String[] titles = {"여름의 여백", "가을의 정적", "봄날의 꿈", "겨울의 침묵", "도시의 밤", "산속의 오두막", "추상의 세계", "바다의 속삭임", "황혼의 노래", "새벽의 기도", "꽃병과 과일", "푸른 하늘", "고요한 아침", "빛과 그림자", "시간의 흐름", "미지의 공간", "노을 진 풍경", "밤하늘의 별", "꿈속의 정원", "자유로운 영혼"};
 
         return IntStream.range(0, count)
@@ -982,7 +981,7 @@ public class ArtworkController {
                     String title = titles[i % titles.length] + " #" + id;
                     String thumbnailUrl = "https://example.com/artwork" + (i + 1) + ".jpg";
 
-                    return ArtworkSummary.builder()
+                    return ArtworkSummaryDto.builder()
                             .artworkId(id)
                             .title(title)
                             .thumbnailUrl(thumbnailUrl)

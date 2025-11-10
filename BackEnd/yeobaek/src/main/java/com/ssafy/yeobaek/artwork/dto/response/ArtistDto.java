@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.artwork.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +14,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Artist {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ArtistDto {
     @Schema(description = "작가 회원 ID", example = "1")
     private Long userId;
 
@@ -22,4 +24,13 @@ public class Artist {
 
     @Schema(description = "프로필 이미지 URL", example = "https://example.com/profile.jpg")
     private String profileImageUrl;
+
+    @Schema(description = "작가 소개", example = "현대 미술을 전공한 신진 작가입니다.")
+    private String introduction;
+
+    @Schema(description = "전체 작품 수", example = "15")
+    private Integer artworkCount;
+
+    @Schema(description = "현재 전시 중인 작품 수", example = "3")
+    private Integer currentExhibitionCount;
 }

@@ -1,6 +1,6 @@
 package com.ssafy.yeobaek.artwork.service;
 
-import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleData;
+import com.ssafy.yeobaek.artwork.dto.response.BookmarkToggleResponse;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
 import com.ssafy.yeobaek.artwork.entity.ArtworkBookmark;
 import com.ssafy.yeobaek.artwork.mapper.ArtworkBookmarkMapper;
@@ -43,7 +43,7 @@ public class ArtworkBookmarkServiceImpl implements ArtworkBookmarkService {
      */
     @Override
     @Transactional
-    public BookmarkToggleData toggleBookmark(Long userId, Long artworkId) {
+    public BookmarkToggleResponse toggleBookmark(Long userId, Long artworkId) {
 
         // 북마크 여부 확인
         boolean isBookmarked = isBookmarked(userId, artworkId);

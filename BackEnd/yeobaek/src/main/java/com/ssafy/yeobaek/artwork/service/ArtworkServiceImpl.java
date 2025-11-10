@@ -8,10 +8,12 @@ import com.ssafy.yeobaek.artwork.mapper.ArtworkMapper;
 import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
 import com.ssafy.yeobaek.artwork.repository.ArtworkSpecification;
 import com.ssafy.yeobaek.common.code.ResponseCode;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.exhibition.service.ExhibitionService;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.Artist;
@@ -142,7 +144,7 @@ public class ArtworkServiceImpl implements ArtworkService {
      */
     @Override
     @Transactional
-    public ArtworkDetailData getArtworkDetail(Long artworkId, Long userId) {
+    public ArtworkDetailResponse getArtworkDetail(Long artworkId, Long userId) {
         // 작품 조회 (없으면 예외 발생)
         Artwork artwork = artworkRepository.findById(artworkId)
                 .orElseThrow(() -> new CustomException(ResponseCode.ARTWORK_NOT_FOUND));
@@ -158,18 +160,18 @@ public class ArtworkServiceImpl implements ArtworkService {
         String artistProfileImageUrl = s3Service.generatePresignedUrlForDownload(artwork.getArtist().getUser().getProfileImageUrl());
 
         // 현재 진행 중인 전시 조회
-        Exhibition exhibition = null;
-        Optional<com.ssafy.yeobaek.exhibition.entity.Exhibition> currentExhibition = exhibitionService.getCurrentExhibitionByArtwork(artworkId);
+        ExhibitionDto exhibitionDto = null;
+        Optional<Exhibition> currentExhibition = exhibitionService.getCurrentExhibitionByArtwork(artworkId);
 
         if (currentExhibition.isPresent()) {
             // 카페 대표 이미지 URL 변환
             String cafeImageUrl = s3Service.generatePresignedUrlForDownload(currentExhibition.get().getCafe().getImages().get(0));
             // Exhibition 엔티티를 DTO로 변환
-            exhibition = artworkMapper.toExhibition(currentExhibition.get(), cafeImageUrl);
+            exhibitionDto = artworkMapper.toExhibition(currentExhibition.get(), cafeImageUrl);
         }
 
         // DTO로 변환하여 반환
-        return artworkMapper.toArtworkDetailData(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl, exhibition);
+        return artworkMapper.toArtworkDetailData(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl, exhibitionDto);
     }
 
     /**
@@ -190,7 +192,7 @@ public class ArtworkServiceImpl implements ArtworkService {
      */
     @Override
     @Transactional(readOnly = true)
-    public ArtworkListData searchArtworks(
+    public ArtworkListResponse searchArtworks(
             Long userId,
             String keyword,
             List<ArtCategory> categories,
@@ -216,24 +218,18 @@ public class ArtworkServiceImpl implements ArtworkService {
         Page<Artwork> artworkPage = artworkRepository.findAll(spec, pageable);
 
         // 작품을 ArtworkSummary로 변환
-        List<ArtworkSummary> artworkSummaries = convertToArtworkSummaries(artworkPage.getContent());
+        List<ArtworkSummaryDto> artworkSummaries = convertToArtworkSummaries(artworkPage.getContent());
 
         // 키워드가 있으면 작가 검색도 수행
-        List<ArtistSummary> artistSummaries = new ArrayList<>();
+        List<ArtistDto> artistRespons = new ArrayList<>();
         if (keyword != null && !keyword.trim().isEmpty()) {
-            artistSummaries = searchArtistsByKeyword(keyword);
+            artistRespons = searchArtistsByKeyword(keyword);
         }
 
         // Pagination DTO 생성
-        Pagination pagination = new Pagination(
-                artworkPage.getNumber(),
-                artworkPage.getSize(),
-                artworkPage.getTotalElements(),
-                artworkPage.getTotalPages(),
-                artworkPage.hasNext()
-        );
+        Pagination pagination = artworkMapper.toPagination(artworkPage);
 
-        return artworkMapper.toArtworkListData(artistSummaries, artworkSummaries, pagination);
+        return artworkMapper.toArtworkListData(artistRespons, artworkSummaries, pagination);
     }
 
     /**
@@ -254,7 +250,7 @@ public class ArtworkServiceImpl implements ArtworkService {
     /**
      * 작품 엔티티를 ArtworkSummary DTO로 변환 (S3 presigned URL 포함)
      */
-    private List<ArtworkSummary> convertToArtworkSummaries(List<Artwork> artworks) {
+    private List<ArtworkSummaryDto> convertToArtworkSummaries(List<Artwork> artworks) {
         return artworks.stream()
                 .map(artwork -> {
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
@@ -268,23 +264,22 @@ public class ArtworkServiceImpl implements ArtworkService {
     }
 
     /**
-     * 키워드로 작가 검색 및 ArtistSummary로 변환 (S3 presigned URL 포함)
+     * 키워드로 작가 검색 및 Artist DTO로 변환 (S3 presigned URL 포함)
      */
-    private List<ArtistSummary> searchArtistsByKeyword(String keyword) {
+    private List<ArtistDto> searchArtistsByKeyword(String keyword) {
         List<Artist> artists = userService.searchArtistsByKeyword(keyword);
 
         return artists.stream()
                 .map(artist -> {
                     int artworkCount = artworkRepository.countByArtist(artist);
-                    ArtistSummary summary = artworkMapper.toArtistSummary(artist, artworkCount);
 
                     // 프로필 이미지 URL을 presigned URL로 변환
-                    if (summary.getProfileImageUrl() != null && !summary.getProfileImageUrl().isEmpty()) {
-                        String presignedUrl = s3Service.generatePresignedUrlForDownload(summary.getProfileImageUrl());
-                        summary.setProfileImageUrl(presignedUrl);
+                    String profileImageUrl = null;
+                    if (artist.getUser().getProfileImageUrl() != null && !artist.getUser().getProfileImageUrl().isEmpty()) {
+                        profileImageUrl = s3Service.generatePresignedUrlForDownload(artist.getUser().getProfileImageUrl());
                     }
 
-                    return summary;
+                    return artworkMapper.toArtist(artist, artworkCount, profileImageUrl);
                 })
                 .collect(Collectors.toList());
     }
@@ -298,7 +293,7 @@ public class ArtworkServiceImpl implements ArtworkService {
      */
     @Override
     @Transactional(readOnly = true)
-    public ArtworkListData getUserArtworks(Long userId, Integer page, Integer size) {
+    public ArtworkListResponse getUserArtworks(Long userId, Integer page, Integer size) {
         // Artist 엔티티 조회
         Artist artist = userService.getArtistReference(userId);
 
@@ -309,7 +304,7 @@ public class ArtworkServiceImpl implements ArtworkService {
         Page<Artwork> artworkPage = artworkRepository.findByArtist(artist, pageable);
 
         // 작품을 ArtworkSummary로 변환
-        List<ArtworkSummary> artworkSummaries = artworkPage.getContent().stream()
+        List<ArtworkSummaryDto> artworkSummaries = artworkPage.getContent().stream()
                 .map(artwork -> {
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
                     String thumbnailUrl = null;
@@ -321,13 +316,7 @@ public class ArtworkServiceImpl implements ArtworkService {
                 .collect(Collectors.toList());
 
         // Pagination DTO 생성
-        Pagination pagination = new Pagination(
-                artworkPage.getNumber(),
-                artworkPage.getSize(),
-                artworkPage.getTotalElements(),
-                artworkPage.getTotalPages(),
-                artworkPage.hasNext()
-        );
+        Pagination pagination = artworkMapper.toPagination(artworkPage);
 
         // artists는 null로 설정 (작가 검색이 아니므로)
         return artworkMapper.toArtworkListData(null, artworkSummaries, pagination);
