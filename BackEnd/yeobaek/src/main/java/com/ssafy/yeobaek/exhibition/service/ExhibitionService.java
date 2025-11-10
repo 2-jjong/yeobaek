@@ -58,4 +58,11 @@ public interface ExhibitionService {
      * @return 현재 진행 중이거나 예정된 전시 중 가장 빠른 전시
      */
     Optional<Exhibition> findCurrentOrUpcomingExhibitionBySlot(DisplaySlot displaySlot);
+
+    /**
+     * 슬롯의 현재 진행 중인 전시 조회
+     * @param displaySlot 조회할 슬롯
+     * @return 현재 진행 중인 전시
+     */
+    Optional<Exhibition> findOngoingExhibitionBySlot(DisplaySlot displaySlot);
 }

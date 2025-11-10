@@ -254,4 +254,14 @@ public class ExhibitionServiceImpl implements ExhibitionService {
                 displaySlot, List.of(ExhibitionState.ONGOING, ExhibitionState.APPROVED)
         );
     }
+
+    /**
+     * 슬롯의 현재 진행 중인 전시 조회
+     * @param displaySlot 조회할 슬롯
+     * @return 현재 진행 중인 전시
+     */
+    @Override
+    public Optional<Exhibition> findOngoingExhibitionBySlot(DisplaySlot displaySlot) {
+        return exhibitionRepository.findFirstByDisplaySlotAndStateInOrderByStartDateAsc(displaySlot, List.of(ExhibitionState.ONGOING));
+    }
 }

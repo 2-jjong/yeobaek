@@ -143,7 +143,7 @@ public class CafeServiceImpl implements CafeService {
         Map<Long, ExhibitionInfo> exhibitionInfoMap = walls.stream()
                 .map(DisplayWall::getSlot)
                 .filter(Objects::nonNull)
-                .map(exhibitionService::findCurrentOrUpcomingExhibitionBySlot)
+                .map(exhibitionService::findOngoingExhibitionBySlot)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toMap(
