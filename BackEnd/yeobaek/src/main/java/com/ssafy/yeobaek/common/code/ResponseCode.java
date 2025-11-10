@@ -112,9 +112,9 @@ public enum ResponseCode {
     REVIEW_ALREADY_EXISTS("RV4091", "이미 작성한 평가입니다", HttpStatus.CONFLICT),
 
     // 전시 관련 에러 (400 Bad Request)
-    INVALID_COMMISSION_RATE("EX4001", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
-    INVALID_REQUIREMENTS_LENGTH("EX4002", "추가 조건은 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
-    INVALID_EXHIBITION_DATE("EX4003", "전시 종료일은 시작일보다 늦어야 합니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_INVALID_COMMISSION_RATE("EX4001", "수수료율은 0~15 사이여야 합니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_INVALID_REQUIREMENTS_LENGTH("EX4002", "추가 조건은 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_INVALID_EXHIBITION_DATE("EX4003", "전시 종료일은 시작일보다 늦어야 합니다", HttpStatus.BAD_REQUEST),
     EXHIBITION_DATE_PAST("EX4004", "전시 시작일은 오늘 이후여야 합니다", HttpStatus.BAD_REQUEST),
 
     // 전시 관련 에러 (404 Not Found)

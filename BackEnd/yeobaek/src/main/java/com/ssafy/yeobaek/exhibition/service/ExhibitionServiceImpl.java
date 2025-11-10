@@ -63,7 +63,7 @@ public class ExhibitionServiceImpl implements ExhibitionService {
         LocalDate endDate = request.getEndDate();
 
         if (endDate.isBefore(startDate)) {
-            throw new CustomException(ResponseCode.INVALID_EXHIBITION_DATE);
+            throw new CustomException(ResponseCode.EXHIBITION_INVALID_EXHIBITION_DATE);
         }
 
         if (startDate.isBefore(LocalDate.now())) {
