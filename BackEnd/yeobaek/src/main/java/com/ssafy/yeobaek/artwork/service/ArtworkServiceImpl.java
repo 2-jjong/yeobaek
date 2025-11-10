@@ -10,7 +10,6 @@ import com.ssafy.yeobaek.artwork.repository.ArtworkSpecification;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.storage.service.S3Service;
@@ -91,11 +90,10 @@ public class ArtworkServiceImpl implements ArtworkService {
         }
 
         // 전시 중인 작품의 규격 변경 검증
-        boolean isExhibiting = artwork.getExhibitionStatus().equals(ExhibitionStatus.EXHIBITING);
         boolean isSizeChanging = (request.getWidthCm() != null && !request.getWidthCm().equals(artwork.getWidthCm().intValue())) ||
                                  (request.getHeightCm() != null && !request.getHeightCm().equals(artwork.getHeightCm().intValue()));
 
-        if (isExhibiting && isSizeChanging) {
+        if (artwork.getIsExhibiting() && isSizeChanging) {
             throw new CustomException(ResponseCode.ARTWORK_EXHIBITING_SIZE_CHANGE);
         }
 

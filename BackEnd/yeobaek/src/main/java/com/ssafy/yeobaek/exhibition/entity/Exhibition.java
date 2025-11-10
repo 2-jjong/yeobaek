@@ -84,14 +84,13 @@ public class Exhibition {
     /**
      * 전시 승인 처리 (양쪽 모두 동의 시 자동 호출)
      * Exhibition: PENDING → APPROVED
-     * Artwork/DisplaySlot: AVAILABLE → SCHEDULED
+     * Artwork/DisplaySlot: 예약 상태는 Exhibition의 날짜로 관리
      */
     public void approve() {
         if (isBothAgreed()) {
             this.state = ExhibitionState.APPROVED;
             this.agreedAt = LocalDateTime.now();
-            // 작품과 슬롯 상태를 SCHEDULED로 변경
-            this.artwork.setExhibitionStatus(ExhibitionStatus.SCHEDULED);
+            // 예약 상태는 Exhibition의 startDate/endDate로 관리
             this.displaySlot.setStatus(ExhibitionStatus.SCHEDULED);
         }
     }
@@ -99,12 +98,12 @@ public class Exhibition {
     /**
      * 전시 시작 처리
      * Exhibition: APPROVED → ONGOING
-     * Artwork/DisplaySlot: SCHEDULED → EXHIBITING
+     * Artwork/DisplaySlot: 전시 중으로 변경
      */
     public void start() {
         if (this.state == ExhibitionState.APPROVED) {
             this.state = ExhibitionState.ONGOING;
-            this.artwork.setExhibitionStatus(ExhibitionStatus.EXHIBITING);
+            this.artwork.setIsExhibiting(true);
             this.displaySlot.setStatus(ExhibitionStatus.EXHIBITING);
         }
     }
@@ -112,12 +111,12 @@ public class Exhibition {
     /**
      * 전시 종료 처리
      * Exhibition: ONGOING → COMPLETED
-     * Artwork/DisplaySlot: EXHIBITING → AVAILABLE
+     * Artwork/DisplaySlot: 사용 가능 상태로 변경
      */
     public void complete() {
         if (this.state == ExhibitionState.ONGOING) {
             this.state = ExhibitionState.COMPLETED;
-            this.artwork.setExhibitionStatus(ExhibitionStatus.AVAILABLE);
+            this.artwork.setIsExhibiting(false);
             this.displaySlot.setStatus(ExhibitionStatus.AVAILABLE);
         }
     }
@@ -125,12 +124,12 @@ public class Exhibition {
     /**
      * 전시 취소 처리
      * Exhibition: PENDING/APPROVED → CANCELLED
-     * Artwork/DisplaySlot: → AVAILABLE
+     * Artwork/DisplaySlot: 사용 가능 상태로 변경
      */
     public void cancel() {
         if (this.state.isCancellable()) {
             this.state = ExhibitionState.CANCELLED;
-            this.artwork.setExhibitionStatus(ExhibitionStatus.AVAILABLE);
+            this.artwork.setIsExhibiting(false);
             this.displaySlot.setStatus(ExhibitionStatus.AVAILABLE);
         }
     }
@@ -138,12 +137,12 @@ public class Exhibition {
     /**
      * 전시 제안 거절 처리
      * Exhibition: PENDING → REJECTED
-     * Artwork/DisplaySlot: → AVAILABLE
+     * Artwork/DisplaySlot: 사용 가능 상태로 변경
      */
     public void reject() {
         if (this.state == ExhibitionState.PENDING) {
             this.state = ExhibitionState.REJECTED;
-            this.artwork.setExhibitionStatus(ExhibitionStatus.AVAILABLE);
+            this.artwork.setIsExhibiting(false);
             this.displaySlot.setStatus(ExhibitionStatus.AVAILABLE);
         }
     }

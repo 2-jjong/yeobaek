@@ -27,7 +27,7 @@ public class ArtworkMapper {
 
         // 전시 중일 때만 Exhibition 정보 포함 (현재는 더미 데이터)
         Exhibition exhibition = null;
-        if (artwork.getExhibitionStatus().name().equals("EXHIBITING")) {
+        if (artwork.getIsExhibiting()) {
             exhibition = toDummyExhibition();
         }
 
@@ -41,7 +41,7 @@ public class ArtworkMapper {
                 .heightCm(artwork.getHeightCm().intValue())
                 .weightKg(artwork.getWeightKg())
                 .productionYear(artwork.getProductionYear())
-                .status(artwork.getExhibitionStatus())
+                .isExhibiting(artwork.getIsExhibiting())
                 .viewCount(artwork.getViewCount())
                 .bookmarkCount(artwork.getBookmarkCount())
                 .isBookmarked(isBookmarked)
@@ -127,7 +127,7 @@ public class ArtworkMapper {
                 .category(artwork.getArtCategory().name())
                 .widthCm(artwork.getWidthCm().intValue())
                 .heightCm(artwork.getHeightCm().intValue())
-                .exhibitionStatus(artwork.getExhibitionStatus().name())
+                .isExhibiting(artwork.getIsExhibiting())
                 .bookmarkCount(artwork.getBookmarkCount())
                 .build();
     }
@@ -148,7 +148,7 @@ public class ArtworkMapper {
                 artwork.getArtCategory(),
                 artwork.getWidthCm().intValue(),
                 artwork.getHeightCm().intValue(),
-                artwork.getExhibitionStatus(),
+                artwork.getIsExhibiting(),
                 artwork.getBookmarkCount(),
                 null  // TODO: cafeName은 추후 Exhibition 연동 시 추가
         );
