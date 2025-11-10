@@ -7,13 +7,13 @@ import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.cafe.entity.DisplayWall;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.WallStatus;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -83,7 +83,7 @@ public class CafeMapper {
      * @param displayWalls 카페 공간 정보
      * @return MyCafeData DTO
      */
-    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> displayWalls, String primaryImage) {
+    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> displayWalls, String primaryImage, Map<Long, ExhibitionInfo> exhibitionInfoMap) {
 
         // 통계 계산
         long totalSlots = displayWalls.size();
@@ -96,7 +96,7 @@ public class CafeMapper {
 
         // 슬롯 정보
         List<Slot> slots = displayWalls.stream()
-                .map(this::toSlotDto)
+                .map(wall -> toSlotDto(wall, exhibitionInfoMap.get(wall.getSlot().getId())))
                 .collect(Collectors.toList());
 
         // 내 카페 정보
@@ -146,11 +146,11 @@ public class CafeMapper {
      * @param categories 카페 카테고리 목록
      * @return CafeDetailData DTO
      */
-    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage) {
+    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage, Map<Long, ExhibitionInfo> exhibitionInfoMap) {
 
         // 1. 슬롯 정보
         List<Slot> slots = displayWalls.stream()
-                .map(this::toSlotDto)
+                .map(wall -> toSlotDto(wall, exhibitionInfoMap.get(wall.getSlot().getId())))
                 .toList();
 
         // 2. 카페 사장 정보 DTO 생성
@@ -185,22 +185,9 @@ public class CafeMapper {
      * @param displayWall 벽 정보
      * @return Slot DTO
      */
-    public Slot toSlotDto(DisplayWall displayWall){
+    public Slot toSlotDto(DisplayWall displayWall, ExhibitionInfo exhibitionInfo){
 
-        ExhibitionInfo exhibitionInfo = null;
         DisplaySlot displaySlot = displayWall.getSlot();
-
-        // TODO: 진행 중인 전시 정보 or 예정된 전시 중 가장 빠른 정보
-        if (displaySlot != null && displaySlot.getIsExhibiting()) {
-            exhibitionInfo = new ExhibitionInfo(
-                    1L,
-                    "여름의 여백",
-                    "https://example.com/artwork1.jpg",
-                    "홍길동",
-                    "2024-01-01",
-                    "2024-03-31"
-            );
-        }
 
         return Slot.builder()
                 .wallId(displayWall.getId())

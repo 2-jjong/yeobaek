@@ -92,7 +92,6 @@ public class Exhibition {
             this.agreedAt = LocalDateTime.now();
             // 작품과 슬롯 상태를 SCHEDULED로 변경
             this.artwork.setExhibitionStatus(ExhibitionStatus.SCHEDULED);
-            this.displaySlot.setIsExhibiting(ExhibitionStatus.SCHEDULED);
         }
     }
 
@@ -105,7 +104,7 @@ public class Exhibition {
         if (this.state == ExhibitionState.APPROVED) {
             this.state = ExhibitionState.ONGOING;
             this.artwork.setExhibitionStatus(ExhibitionStatus.EXHIBITING);
-            this.displaySlot.setIsExhibiting(ExhibitionStatus.EXHIBITING);
+            this.displaySlot.setIsExhibiting(true);
         }
     }
 
@@ -118,7 +117,7 @@ public class Exhibition {
         if (this.state == ExhibitionState.ONGOING) {
             this.state = ExhibitionState.COMPLETED;
             this.artwork.setExhibitionStatus(ExhibitionStatus.AVAILABLE);
-            this.displaySlot.setIsExhibiting(ExhibitionStatus.AVAILABLE);
+            this.displaySlot.setIsExhibiting(false);
         }
     }
 
@@ -131,7 +130,7 @@ public class Exhibition {
         if (this.state.isCancellable()) {
             this.state = ExhibitionState.CANCELLED;
             this.artwork.setExhibitionStatus(ExhibitionStatus.AVAILABLE);
-            this.displaySlot.setIsExhibiting(ExhibitionStatus.AVAILABLE);
+            this.displaySlot.setIsExhibiting(false);
         }
     }
 
@@ -144,7 +143,7 @@ public class Exhibition {
         if (this.state == ExhibitionState.PENDING) {
             this.state = ExhibitionState.REJECTED;
             this.artwork.setExhibitionStatus(ExhibitionStatus.AVAILABLE);
-            this.displaySlot.setIsExhibiting(ExhibitionStatus.AVAILABLE);
+            this.displaySlot.setIsExhibiting(false);
         }
     }
 

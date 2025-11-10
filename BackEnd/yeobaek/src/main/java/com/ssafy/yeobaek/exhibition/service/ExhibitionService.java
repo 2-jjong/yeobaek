@@ -1,6 +1,10 @@
 package com.ssafy.yeobaek.exhibition.service;
 
+import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
+
+import java.util.Optional;
 
 public interface ExhibitionService {
 
@@ -37,4 +41,11 @@ public interface ExhibitionService {
      * @param exhibitionId 전시 ID
      */
     void rejectExhibition(Long userId, Long exhibitionId);
+
+    /**
+     * 슬롯의 현재 또는 예정된 전시 조회
+     * @param displaySlot 조회할 슬롯
+     * @return 현재 진행 중이거나 예정된 전시 중 가장 빠른 전시
+     */
+    Optional<Exhibition> findCurrentOrUpcomingExhibitionBySlot(DisplaySlot displaySlot);
 }
