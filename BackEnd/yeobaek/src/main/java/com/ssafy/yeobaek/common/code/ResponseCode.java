@@ -127,6 +127,11 @@ public enum ResponseCode {
     EXHIBITION_INVALID_REQUIREMENTS_LENGTH("EX4002", "추가 조건은 최대 500자까지 입력 가능합니다", HttpStatus.BAD_REQUEST),
     EXHIBITION_INVALID_EXHIBITION_DATE("EX4003", "전시 종료일은 시작일보다 늦어야 합니다", HttpStatus.BAD_REQUEST),
     EXHIBITION_DATE_PAST("EX4004", "전시 시작일은 오늘 이후여야 합니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_NOT_PENDING("EX4005", "대기 중인 전시 제안만 동의/거절할 수 있습니다", HttpStatus.BAD_REQUEST),
+    EXHIBITION_ALREADY_AGREED("EX4006", "이미 동의한 전시 제안입니다", HttpStatus.BAD_REQUEST),
+
+    // 전시 관련 에러 (403 Forbidden)
+    EXHIBITION_FORBIDDEN("EX4031", "해당 전시에 대한 권한이 없습니다", HttpStatus.FORBIDDEN),
 
     // 전시 관련 에러 (404 Not Found)
     EXHIBITION_NOT_FOUND("EX4041", "존재하지 않는 전시입니다", HttpStatus.NOT_FOUND),

@@ -19,6 +19,29 @@ public interface ExhibitionService {
     void createExhibitionProposal(Long userId, CreateExhibitionRequest request);
 
     /**
+     * 전시 제안 동의
+     * - PENDING 상태의 전시만 동의 가능
+     * - 카페 사장: 본인 카페의 전시인지 확인 후 동의
+     * - 작가: 본인 작품의 전시인지 확인 후 동의
+     * - 양쪽 모두 동의 시 자동으로 APPROVED 상태로 변경
+     *
+     * @param userId 현재 사용자 ID
+     * @param exhibitionId 전시 ID
+     */
+    void agreeExhibition(Long userId, Long exhibitionId);
+
+    /**
+     * 전시 제안 거절
+     * - PENDING 상태의 전시만 거절 가능
+     * - 카페 사장 또는 작가만 거절 가능
+     * - 거절 시 전시가 REJECTED 상태로 변경
+     *
+     * @param userId 현재 사용자 ID
+     * @param exhibitionId 전시 ID
+     */
+    void rejectExhibition(Long userId, Long exhibitionId);
+
+    /**
      * 특정 작품의 현재 진행 중인 전시 조회
      * - 오늘 날짜 기준으로 진행 중인 전시 반환
      * - 전시가 없으면 Optional.empty() 반환

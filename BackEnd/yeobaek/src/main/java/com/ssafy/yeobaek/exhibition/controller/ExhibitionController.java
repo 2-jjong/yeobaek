@@ -183,4 +183,202 @@ public class ExhibitionController {
                 .status(HttpStatus.CREATED)
                 .body(ResponseDto.created());
     }
+
+    @Operation(
+            summary = "전시 제안 동의",
+            description = "제안받은 전시에 동의합니다. 카페 사장과 작가 모두 동의하면 전시가 확정됩니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "전시 제안 동의 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "대기 중이 아닌 전시",
+                                            value = "{\"code\": \"EX4005\", \"message\": \"대기 중인 전시 제안만 동의/거절할 수 있습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "이미 동의한 전시",
+                                            value = "{\"code\": \"EX4006\", \"message\": \"이미 동의한 전시 제안입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "전시 권한 없음",
+                                            description = "해당 전시의 카페 사장 또는 작가가 아닌 경우",
+                                            value = "{\"code\": \"EX4031\", \"message\": \"해당 전시에 대한 권한이 없습니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "전시를 찾을 수 없음",
+                                    value = "{\"code\": \"EX4041\", \"message\": \"존재하지 않는 전시입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @PostMapping("/{exhibitionId}/agree")
+    @PreAuthorize("hasAnyRole('CAFE_OWNER', 'ARTIST')")
+    public ResponseEntity<ResponseDto<Void>> agreeExhibition(
+            @PathVariable Long exhibitionId
+    ) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        exhibitionService.agreeExhibition(userId, exhibitionId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success());
+    }
+
+    @Operation(
+            summary = "전시 제안 거절",
+            description = "제안받은 전시를 거절합니다. 거절하면 전시가 REJECTED 상태로 변경됩니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "전시 제안 거절 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "대기 중이 아닌 전시",
+                                    value = "{\"code\": \"EX4005\", \"message\": \"대기 중인 전시 제안만 동의/거절할 수 있습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "전시 권한 없음",
+                                    description = "해당 전시의 카페 사장 또는 작가가 아닌 경우",
+                                    value = "{\"code\": \"EX4031\", \"message\": \"해당 전시에 대한 권한이 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "전시를 찾을 수 없음",
+                                    value = "{\"code\": \"EX4041\", \"message\": \"존재하지 않는 전시입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @PostMapping("/{exhibitionId}/reject")
+    @PreAuthorize("hasAnyRole('CAFE_OWNER', 'ARTIST')")
+    public ResponseEntity<ResponseDto<Void>> rejectExhibition(
+            @PathVariable Long exhibitionId
+    ) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        exhibitionService.rejectExhibition(userId, exhibitionId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success());
+    }
 }
