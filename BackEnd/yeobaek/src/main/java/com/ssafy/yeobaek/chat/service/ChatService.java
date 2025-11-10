@@ -31,8 +31,9 @@ public interface ChatService {
      * 채팅 메시지 전송
      * @param userId 발신자 ID
      * @param chatMessageRequest 채팅 메시지 요청
+     * @return
      */
-    void sendMessage(Long userId, ChatMessageRequest chatMessageRequest);
+    ChatMessage sendMessage(Long userId, ChatMessageRequest chatMessageRequest);
 
     /**
      * 채팅방 목록 조회
