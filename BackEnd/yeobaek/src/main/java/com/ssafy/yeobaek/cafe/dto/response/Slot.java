@@ -33,7 +33,7 @@ public class Slot {
     private Double height;
 
     @Schema(description = "전시 슬롯 여부", example = "true")
-    private Boolean isDisplaySlot;
+    private Boolean isDisplayable;
 
     @Schema(description = "전시 진행 여부", example = "true")
     private Boolean isExhibiting;

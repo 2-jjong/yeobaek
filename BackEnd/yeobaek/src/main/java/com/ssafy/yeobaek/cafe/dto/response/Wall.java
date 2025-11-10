@@ -27,5 +27,5 @@ public class Wall {
 	private Vec2 end;
 
 	@Schema(description = "전시 슬롯 여부", example = "true")
-	private Boolean isDisplaySlot;
+	private Boolean isDisplayable;
 }
