@@ -27,6 +27,7 @@ android {
             load(rootProject.file("local.properties").inputStream())
         }
         buildConfigField("String", "BASE_URL", "\"${props["BASE_URL"]}\"")
+        buildConfigField("String", "WS_URL", "\"${props["WS_URL"]}\"")
     }
     buildFeatures {
         buildConfig=true
@@ -103,6 +104,12 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.serialization.converter)
     implementation(libs.kotlinx.serialization.json)
+
+    //stomp
+    implementation(libs.stomp.android)
+    implementation(libs.rxjava2)
+    implementation(libs.rxandroid)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

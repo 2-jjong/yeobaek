@@ -27,6 +27,8 @@ import com.ssafy.yeobaeg.presentation.arcore.edit.WallEditScreen
 import com.ssafy.yeobaeg.presentation.arcore.horizontal.HorizontalMeasureCamera
 import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
+import com.ssafy.yeobaeg.presentation.chat.ChatListScreen
+import com.ssafy.yeobaeg.presentation.chat.ChattingScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtworkRegisterScreen
@@ -132,6 +134,10 @@ fun NavGraph(
 
                     }
 
+                    is BottomNavScreen.Chat -> NavEntry(key) {
+                        ChatListScreen()
+                    }
+
                     is FullScreen.ProfileEdit -> NavEntry(key) {
                         ProfileEditScreen(key.userInfo, key.introduction)
                     }
@@ -169,7 +175,9 @@ fun NavGraph(
                             key.requirements
                         )
                     }
-
+                    is FullScreen.ChattingScreen-> NavEntry(key){
+                        ChattingScreen(key.chatRoomId)
+                    }
                     else -> throw IllegalArgumentException("Unknown route: $key")
                 }
             }
