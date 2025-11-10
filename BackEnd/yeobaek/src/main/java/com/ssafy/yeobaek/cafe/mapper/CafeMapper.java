@@ -7,7 +7,6 @@ import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.cafe.entity.DisplayWall;
-import com.ssafy.yeobaek.common.enums.WallStatus;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
@@ -73,7 +72,7 @@ public class CafeMapper {
                 displayWall.getWallName(),
                 new Vec2(displayWall.getStartX(), displayWall.getStartY()),
                 new Vec2(displayWall.getEndX(), displayWall.getEndY()),
-                displayWall.getStatus() ? WallStatus.AVAILABLE : WallStatus.UNAVAILABLE
+                displayWall.getStatus()
         );
     }
 
@@ -196,7 +195,8 @@ public class CafeMapper {
                 .end(new Vec2(displayWall.getEndX(), displayWall.getEndY()))
                 .width(displayWall.getWidthCm())
                 .height(displayWall.getHeightCm())
-                .status(displaySlot != null ? (displaySlot.getIsExhibiting() ? WallStatus.EXHIBITING : WallStatus.AVAILABLE) : WallStatus.UNAVAILABLE)
+                .isDisplaySlot(displayWall.getStatus())
+                .isExhibiting(displaySlot != null ? displaySlot.getIsExhibiting() : null)
                 .commissionRate(displaySlot != null ? displaySlot.getCommissionRate() : null)
                 .requirements(displaySlot != null ? displaySlot.getRequirements() : null)
                 .currentExhibition(exhibitionInfo)
@@ -214,8 +214,9 @@ public class CafeMapper {
                 .wallId(displaySlot.getId())
                 .wallName(displaySlot.getWall().getWallName())
                 .width(displaySlot.getWall().getWidthCm())
-                .status(displaySlot.getIsExhibiting() ? WallStatus.EXHIBITING : WallStatus.AVAILABLE)
                 .height(displaySlot.getWall().getHeightCm())
+                .isDisplaySlot(true)
+                .isExhibiting(displaySlot.getIsExhibiting())
                 .commissionRate(displaySlot.getCommissionRate())
                 .requirements(displaySlot.getRequirements())
                 .build();
