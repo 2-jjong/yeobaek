@@ -33,8 +33,8 @@ public class ArtworkSummary {
     @Schema(description = "작품 세로 (cm)", example = "150")
     private Integer heightCm;
 
-    @Schema(description = "작품 상태 (AVAILABLE: 전시 가능, EXHIBITING: 전시 중)", example = "AVAILABLE")
-    private String exhibitionStatus;
+    @Schema(description = "전시 중 여부", example = "false")
+    private Boolean isExhibiting;
 
     @Schema(description = "북마크 수", example = "42")
     private Integer bookmarkCount;

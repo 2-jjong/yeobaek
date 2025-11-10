@@ -10,9 +10,9 @@ import com.ssafy.yeobaek.artwork.repository.ArtworkSpecification;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.exhibition.service.ExhibitionService;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.entity.User;
@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,6 +41,7 @@ public class ArtworkServiceImpl implements ArtworkService {
     private final UserService userService;
     private final ArtworkMapper artworkMapper;
     private final S3Service s3Service;
+    private final ExhibitionService exhibitionService;
 
     /**
      * 작품 등록
@@ -91,11 +93,10 @@ public class ArtworkServiceImpl implements ArtworkService {
         }
 
         // 전시 중인 작품의 규격 변경 검증
-        boolean isExhibiting = artwork.getExhibitionStatus().equals(ExhibitionStatus.EXHIBITING);
         boolean isSizeChanging = (request.getWidthCm() != null && !request.getWidthCm().equals(artwork.getWidthCm().intValue())) ||
                                  (request.getHeightCm() != null && !request.getHeightCm().equals(artwork.getHeightCm().intValue()));
 
-        if (isExhibiting && isSizeChanging) {
+        if (artwork.getIsExhibiting() && isSizeChanging) {
             throw new CustomException(ResponseCode.ARTWORK_EXHIBITING_SIZE_CHANGE);
         }
 
@@ -156,8 +157,19 @@ public class ArtworkServiceImpl implements ArtworkService {
         List<String> artworkImageUrls = s3Service.generatePresignedUrlsForDownload(artwork.getImages());
         String artistProfileImageUrl = s3Service.generatePresignedUrlForDownload(artwork.getArtist().getUser().getProfileImageUrl());
 
+        // 현재 진행 중인 전시 조회
+        Exhibition exhibition = null;
+        Optional<com.ssafy.yeobaek.exhibition.entity.Exhibition> currentExhibition = exhibitionService.getCurrentExhibitionByArtwork(artworkId);
+
+        if (currentExhibition.isPresent()) {
+            // 카페 대표 이미지 URL 변환
+            String cafeImageUrl = s3Service.generatePresignedUrlForDownload(currentExhibition.get().getCafe().getImages().get(0));
+            // Exhibition 엔티티를 DTO로 변환
+            exhibition = artworkMapper.toExhibition(currentExhibition.get(), cafeImageUrl);
+        }
+
         // DTO로 변환하여 반환
-        return artworkMapper.toArtworkDetailData(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl);
+        return artworkMapper.toArtworkDetailData(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl, exhibition);
     }
 
     /**

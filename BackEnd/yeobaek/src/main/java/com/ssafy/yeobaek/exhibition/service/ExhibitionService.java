@@ -1,6 +1,9 @@
 package com.ssafy.yeobaek.exhibition.service;
 
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
+
+import java.util.Optional;
 
 public interface ExhibitionService {
 
@@ -37,4 +40,14 @@ public interface ExhibitionService {
      * @param exhibitionId 전시 ID
      */
     void rejectExhibition(Long userId, Long exhibitionId);
+
+    /**
+     * 특정 작품의 현재 진행 중인 전시 조회
+     * - 오늘 날짜 기준으로 진행 중인 전시 반환
+     * - 전시가 없으면 Optional.empty() 반환
+     *
+     * @param artworkId 작품 ID
+     * @return 현재 진행 중인 전시
+     */
+    Optional<Exhibition> getCurrentExhibitionByArtwork(Long artworkId);
 }

@@ -21,9 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ExhibitionServiceImpl implements ExhibitionService {
 
     private final ExhibitionRepository exhibitionRepository;
@@ -224,5 +226,19 @@ public class ExhibitionServiceImpl implements ExhibitionService {
         }
 
         return exhibition;
+    }
+
+    /**
+     * 특정 작품의 현재 진행 중인 전시 조회
+     * - 오늘 날짜 기준으로 진행 중인 전시 반환
+     * - 전시가 없으면 Optional.empty() 반환
+     *
+     * @param artworkId 작품 ID
+     * @return 현재 진행 중인 전시
+     */
+    @Override
+    public Optional<Exhibition> getCurrentExhibitionByArtwork(Long artworkId) {
+        LocalDate today = LocalDate.now();
+        return exhibitionRepository.findCurrentExhibitionByArtworkId(artworkId, today);
     }
 }
