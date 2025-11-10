@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,8 @@ data class ArtworkDetailUiState(
 @HiltViewModel
 class ArtworkDetailViewModel @Inject constructor(
     private val artRepository: ArtRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val snackBarController: SnackBarController
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ArtworkDetailUiState())
@@ -50,6 +52,7 @@ class ArtworkDetailViewModel @Inject constructor(
                             error = error.message ?: "알 수 없는 오류"
                         )
                     }
+                    snackBarController.showError(error.message ?: "오류")
                 }
         }
     }
@@ -66,6 +69,7 @@ class ArtworkDetailViewModel @Inject constructor(
                 _uiState.update { it.copy(artwork = d.copy(isBookmarked = response)) }
             }.onFailure {
                 _uiState.update { it.copy(artwork = d.copy(isBookmarked = b)) }
+                snackBarController.showError(it.message ?: "오류")
             }
         }
     }

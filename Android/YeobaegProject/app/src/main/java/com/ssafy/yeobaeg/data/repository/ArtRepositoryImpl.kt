@@ -1,7 +1,9 @@
 package com.ssafy.yeobaeg.data.repository
 
 import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
+import com.ssafy.yeobaeg.data.model.art.request.toDto
 import com.ssafy.yeobaeg.data.model.response.toDomain
+import com.ssafy.yeobaeg.domain.model.artist.ArtworkRegister
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import javax.inject.Inject
 
@@ -9,20 +11,19 @@ class ArtRepositoryImpl @Inject constructor(
     private val artworkApiService: ArtworkApiService
 ) : ArtRepository {
 
-    override suspend fun getArtworks(category: String) =
+    override suspend fun getArtworks(category: List<String>, page: Int, size: Int) =
         runCatching {
-            val response = artworkApiService.getArtworks()
-            response.data?.artworks?.map { it.toDomain() }
-                ?: throw Exception(response.message)
+            val response = artworkApiService.getArtworks(categories = category, page = page, size = size)
+            response.data?.toDomain() ?: throw Exception(response.message)
         }
 
     override suspend fun searchArt(
         keyword: String,
         categories: List<String>,
-        minWidth: Int,
-        maxWidth: Int,
-        minHeight: Int,
-        maxHeight: Int,
+        minWidth: Int?,
+        maxWidth: Int?,
+        minHeight: Int?,
+        maxHeight: Int?,
         sortBy: String,
         page: Int,
         size: Int
@@ -58,4 +59,8 @@ class ArtRepositoryImpl @Inject constructor(
             val response = artworkApiService.getPopularArtworks(size)
             response.data?.artworks?.map { it.toDomain() } ?: emptyList()
         }
+
+    override suspend fun registerArtwork(request: ArtworkRegister) {
+        runCatching { artworkApiService.registerArtwork(request.toDto()) }
+    }
 }

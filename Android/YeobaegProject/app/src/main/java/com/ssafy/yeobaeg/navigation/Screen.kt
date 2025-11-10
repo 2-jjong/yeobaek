@@ -1,7 +1,7 @@
 package com.ssafy.yeobaeg.navigation
 
 import androidx.navigation3.runtime.NavKey
-import com.ssafy.yeobaeg.domain.model.DisplayWall
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.profile.UserInfo
 import kotlinx.serialization.Serializable
 
@@ -21,13 +21,16 @@ sealed interface FullScreen : Screen {
     data object SignUp : FullScreen
 
     @Serializable
-    data class  ProfileEdit(val userInfo: UserInfo, val introduction:String?): FullScreen
+    data class ProfileEdit(val userInfo: UserInfo, val introduction: String?) : FullScreen
 
     @Serializable
     data object SpaceScan : FullScreen
 
     @Serializable
-    data object RegisterCafe: FullScreen
+    data object RegisterCafe : FullScreen
+
+    @Serializable
+    data object RegisterArtwork : FullScreen
 
     @Serializable
     data class ArtworkDetail(val artworkId: Long) : FullScreen
@@ -36,13 +39,24 @@ sealed interface FullScreen : Screen {
     data class CafeDetail(val cafeId: Long) : FullScreen
 
     @Serializable
-    data object BookmarkList: FullScreen
+    data object BookmarkList : FullScreen
 
     @Serializable
-    data object ReviewManagementScreen: FullScreen
+    data object ReviewManagementScreen : FullScreen
 
     @Serializable
-    data class EditDisplaySlotScreen(val slotId: Long): FullScreen
+    data class ChattingScreen(val chatRoomId:Long): FullScreen
+
+    @Serializable
+    data class EditDisplaySlotScreen(
+        val cafeId: Long,
+        val slotId: Long,
+        val commissionRate: Int,
+        val requirements: String
+    ) : FullScreen
+
+    @Serializable
+    data class WallEdit(val displayWalls: List<DisplaySlot>) : FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {
@@ -61,7 +75,4 @@ sealed interface BottomNavScreen : Screen {
 
     @Serializable
     data class Profile(val userId: Long?) : BottomNavScreen
-
-    @Serializable
-    data class SpaceScanPreview(val displayWalls: List<DisplayWall>) : BottomNavScreen
 }

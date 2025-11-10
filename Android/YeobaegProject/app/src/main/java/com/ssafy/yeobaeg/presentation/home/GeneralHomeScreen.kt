@@ -490,7 +490,7 @@ fun GeneralHomeScreenPreview() {
                         category = "추상화",
                         widthCm = 50,
                         heightCm = 70,
-                        status = SlotStatus.ONGOING,
+                        status = SlotStatus.EXHIBITING,
                         bookmarkCount = 189,
                         cafeName = null
                     )
