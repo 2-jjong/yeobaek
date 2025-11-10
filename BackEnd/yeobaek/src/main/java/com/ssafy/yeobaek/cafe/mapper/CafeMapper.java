@@ -88,7 +88,7 @@ public class CafeMapper {
         // 통계 계산
         long totalSlots = displayWalls.size();
         long exhibitingSlots = displayWalls.stream()
-                .filter(w -> w.getSlot() != null && w.getSlot().getStatus() == ExhibitionStatus.EXHIBITING)
+                .filter(w -> w.getSlot() != null && w.getSlot().getIsExhibiting())
                 .count();
 
         // 협업 작가 수 (임시)
@@ -190,8 +190,8 @@ public class CafeMapper {
         ExhibitionInfo exhibitionInfo = null;
         DisplaySlot displaySlot = displayWall.getSlot();
 
-        if (displaySlot != null && (displaySlot.getStatus() == ExhibitionStatus.EXHIBITING
-                || displaySlot.getStatus() == ExhibitionStatus.SCHEDULED)) {
+        // TODO: 진행 중인 전시 정보 or 예정된 전시 중 가장 빠른 정보
+        if (displaySlot != null && displaySlot.getIsExhibiting()) {
             exhibitionInfo = new ExhibitionInfo(
                     1L,
                     "여름의 여백",
@@ -209,7 +209,7 @@ public class CafeMapper {
                 .end(new Vec2(displayWall.getEndX(), displayWall.getEndY()))
                 .width(displayWall.getWidthCm())
                 .height(displayWall.getHeightCm())
-                .status(displaySlot != null ? displaySlot.getStatus().toWallStatus() : WallStatus.UNAVAILABLE)
+                .status(displaySlot != null ? (displaySlot.getIsExhibiting() ? WallStatus.EXHIBITING : WallStatus.AVAILABLE) : WallStatus.UNAVAILABLE)
                 .commissionRate(displaySlot != null ? displaySlot.getCommissionRate() : null)
                 .requirements(displaySlot != null ? displaySlot.getRequirements() : null)
                 .currentExhibition(exhibitionInfo)
@@ -227,7 +227,7 @@ public class CafeMapper {
                 .wallId(displaySlot.getId())
                 .wallName(displaySlot.getWall().getWallName())
                 .width(displaySlot.getWall().getWidthCm())
-                .status(displaySlot.getStatus().toWallStatus())
+                .status(displaySlot.getIsExhibiting() ? WallStatus.EXHIBITING : WallStatus.AVAILABLE)
                 .height(displaySlot.getWall().getHeightCm())
                 .commissionRate(displaySlot.getCommissionRate())
                 .requirements(displaySlot.getRequirements())

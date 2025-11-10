@@ -21,9 +21,9 @@ public class DisplaySlot {
     @JoinColumn(name = "id")
     private DisplayWall wall;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "is_exhibiting", nullable = false)
     @Builder.Default
-    private ExhibitionStatus status = ExhibitionStatus.AVAILABLE;
+    private Boolean isExhibiting = false;
 
     @Column(name = "commission_rate", nullable = false)
     @Builder.Default
