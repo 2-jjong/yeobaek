@@ -7,6 +7,7 @@ import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.cafe.repository.DisplaySlotRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
+import com.ssafy.yeobaek.common.enums.ExhibitionState;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
@@ -35,6 +36,15 @@ public class ExhibitionServiceImpl implements ExhibitionService {
     private final ArtworkRepository artworkRepository;
     private final DisplaySlotRepository displaySlotRepository;
 
+    /**
+     * 전시 제안 생성
+     * - 카페 사장 또는 작가가 전시를 제안
+     * - 제안자는 자동으로 동의 상태가 되며, 상대방이 동의하면 전시가 확정
+     * - 전시 기간 검증 및 슬롯/작품 중복 체크 수행
+     *
+     * @param userId 현재 사용자 ID (제안자)
+     * @param request 전시 제안 요청 정보
+     */
     @Override
     @Transactional
     public void createExhibitionProposal(Long userId, CreateExhibitionRequest request) {
@@ -110,5 +120,109 @@ public class ExhibitionServiceImpl implements ExhibitionService {
 
         // 8. 저장
         exhibitionRepository.save(exhibition);
+    }
+
+    /**
+     * 전시 제안 동의
+     * - PENDING 상태의 전시만 동의 가능
+     * - 카페 사장: 본인 카페의 전시인지 확인 후 동의
+     * - 작가: 본인 작품의 전시인지 확인 후 동의
+     * - 양쪽 모두 동의 시 자동으로 APPROVED 상태로 변경
+     *
+     * @param userId 현재 사용자 ID
+     * @param exhibitionId 전시 ID
+     */
+    @Override
+    @Transactional
+    public void agreeExhibition(Long userId, Long exhibitionId) {
+        // 1. 전시 조회 및 PENDING 상태 검증
+        Exhibition exhibition = validatePendingExhibition(exhibitionId);
+
+        // 2. 현재 사용자 조회
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 3. 권한 확인 및 동의 처리
+        if (currentUser.getUserType() == UserRole.CAFE_OWNER) {
+            // 카페 사장: 해당 전시의 카페 소유자인지 확인
+            if (!exhibition.getCafe().getCafeOwner().getId().equals(userId)) {
+                throw new CustomException(ResponseCode.EXHIBITION_FORBIDDEN);
+            }
+
+            // 이미 동의했는지 확인
+            if (exhibition.getCafeAgreed()) {
+                throw new CustomException(ResponseCode.EXHIBITION_ALREADY_AGREED);
+            }
+
+            // 카페 사장 동의 처리
+            exhibition.agreeByCafe();
+
+        } else if (currentUser.getUserType() == UserRole.ARTIST) {
+            // 작가: 해당 전시의 작품 작가인지 확인
+            if (!exhibition.getArtwork().getArtist().getUser().getId().equals(userId)) {
+                throw new CustomException(ResponseCode.EXHIBITION_FORBIDDEN);
+            }
+
+            // 이미 동의했는지 확인
+            if (exhibition.getArtistAgreed()) {
+                throw new CustomException(ResponseCode.EXHIBITION_ALREADY_AGREED);
+            }
+
+            // 작가 동의 처리
+            exhibition.agreeByArtist();
+
+        } else {
+            // 카페 사장도 작가도 아닌 경우
+            throw new CustomException(ResponseCode.EXHIBITION_FORBIDDEN);
+        }
+    }
+
+    /**
+     * 전시 제안 거절
+     * - PENDING 상태의 전시만 거절 가능
+     * - 카페 사장 또는 작가만 거절 가능
+     * - 거절 시 전시가 REJECTED 상태로 변경
+     *
+     * @param userId 현재 사용자 ID
+     * @param exhibitionId 전시 ID
+     */
+    @Override
+    @Transactional
+    public void rejectExhibition(Long userId, Long exhibitionId) {
+        // 1. 전시 조회 및 PENDING 상태 검증
+        Exhibition exhibition = validatePendingExhibition(exhibitionId);
+
+        // 2. 현재 사용자 조회
+        User currentUser = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 3. 권한 확인
+        boolean isCafeOwner = currentUser.getUserType() == UserRole.CAFE_OWNER
+                && exhibition.getCafe().getCafeOwner().getId().equals(userId);
+        boolean isArtist = currentUser.getUserType() == UserRole.ARTIST
+                && exhibition.getArtwork().getArtist().getUser().getId().equals(userId);
+
+        if (!isCafeOwner && !isArtist) {
+            throw new CustomException(ResponseCode.EXHIBITION_FORBIDDEN);
+        }
+
+        // 4. 거절 처리
+        exhibition.reject();
+    }
+
+    /**
+     * 전시 조회 및 PENDING 상태 검증
+     * @param exhibitionId 전시 ID
+     * @return 검증된 Exhibition 엔티티
+     */
+    private Exhibition validatePendingExhibition(Long exhibitionId) {
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new CustomException(ResponseCode.EXHIBITION_NOT_FOUND));
+
+        if (exhibition.getState() != ExhibitionState.PENDING) {
+            throw new CustomException(ResponseCode.EXHIBITION_NOT_PENDING);
+        }
+
+        return exhibition;
     }
 }
