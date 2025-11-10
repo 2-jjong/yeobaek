@@ -1,10 +1,13 @@
 // presentation/artwork/detail/ArtworkDetailViewModel.kt
 package com.ssafy.yeobaeg.presentation.artwork.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
+import com.ssafy.yeobaeg.domain.repository.ChatRepository
+import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +29,8 @@ data class ArtworkDetailUiState(
 class ArtworkDetailViewModel @Inject constructor(
     private val artRepository: ArtRepository,
     private val navigator: Navigator,
-    private val snackBarController: SnackBarController
+    private val snackBarController: SnackBarController,
+    private val chatRepository: ChatRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ArtworkDetailUiState())
@@ -73,4 +77,15 @@ class ArtworkDetailViewModel @Inject constructor(
             }
         }
     }
+    fun onInquiryClick(artistId: Long) = viewModelScope.launch {
+        chatRepository.createChatRoom(artistId)
+            .onSuccess { chatRoom ->
+                navigator.navigate(FullScreen.ChattingScreen(chatRoom.chatRoomId))
+            }
+            .onFailure { e ->
+                Log.e("ArtworkDetailViewModel", "채팅방 생성 실패: ${e.message}")
+                snackBarController.showError("채팅방 생성 중 오류가 발생했습니다")
+            }
+    }
+
 }

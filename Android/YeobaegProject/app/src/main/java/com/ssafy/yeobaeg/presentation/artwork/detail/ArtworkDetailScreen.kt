@@ -77,13 +77,17 @@ fun ArtworkDetailScreen(
         }
     }
 
-    state.artwork?.let {
+    state.artwork?.let { artwork ->
         ArtworkDetailScreen(
-            artwork = it,
+            artwork = artwork,
             onBackClick = viewModel::onBackClick,
-            toggleBookmark = viewModel::toggleBookmark
+            toggleBookmark = viewModel::toggleBookmark,
+            onInquiryClick = {
+                viewModel.onInquiryClick(artistId = artwork.artist.artistId)
+            }
         )
     }
+
 }
 
 @Composable
@@ -91,6 +95,7 @@ fun ArtworkDetailScreen(
     modifier: Modifier = Modifier,
     artwork: ArtworkDetail,
     onBackClick: () -> Unit = {},
+    onInquiryClick: () -> Unit = {},
     toggleBookmark: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
@@ -108,7 +113,7 @@ fun ArtworkDetailScreen(
         bottomBar = {
             YeobaegButton(
                 text = "문의",
-                onClick = {},
+                onClick = onInquiryClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp, horizontal = 16.dp),
