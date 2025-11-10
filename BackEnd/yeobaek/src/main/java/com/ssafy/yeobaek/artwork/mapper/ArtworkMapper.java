@@ -19,17 +19,11 @@ public class ArtworkMapper {
      * @param isBookmarked 현재 사용자의 북마크 여부
      * @param artworkImageUrls 변환된 작품 이미지 URL 리스트 (presigned URL)
      * @param artistProfileImageUrl 변환된 작가 프로필 이미지 URL (presigned URL)
+     * @param exhibition 현재 전시 정보 (없으면 null)
      * @return ArtworkDetail DTO
      */
-    public ArtworkDetail toArtworkDetail(Artwork artwork, boolean isBookmarked,
-                                         List<String> artworkImageUrls, String artistProfileImageUrl) {
+    public ArtworkDetail toArtworkDetail(Artwork artwork, boolean isBookmarked, List<String> artworkImageUrls, String artistProfileImageUrl, Exhibition exhibition) {
         Artist artist = toArtist(artwork.getArtist(), artistProfileImageUrl);
-
-        // 전시 중일 때만 Exhibition 정보 포함 (현재는 더미 데이터)
-        Exhibition exhibition = null;
-        if (artwork.getIsExhibiting()) {
-            exhibition = toDummyExhibition();
-        }
 
         return ArtworkDetail.builder()
                 .artworkId(artwork.getId())
@@ -57,11 +51,11 @@ public class ArtworkMapper {
      * @param isBookmarked 현재 사용자의 북마크 여부
      * @param artworkImageUrls 변환된 작품 이미지 URL 리스트 (presigned URL)
      * @param artistProfileImageUrl 변환된 작가 프로필 이미지 URL (presigned URL)
+     * @param exhibition 현재 전시 정보 (없으면 null)
      * @return ArtworkDetailData
      */
-    public ArtworkDetailData toArtworkDetailData(Artwork artwork, boolean isBookmarked,
-                                                 List<String> artworkImageUrls, String artistProfileImageUrl) {
-        ArtworkDetail artworkDetail = toArtworkDetail(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl);
+    public ArtworkDetailData toArtworkDetailData(Artwork artwork, boolean isBookmarked, List<String> artworkImageUrls, String artistProfileImageUrl, Exhibition exhibition) {
+        ArtworkDetail artworkDetail = toArtworkDetail(artwork, isBookmarked, artworkImageUrls, artistProfileImageUrl, exhibition);
         return ArtworkDetailData.builder()
                 .artwork(artworkDetail)
                 .build();
@@ -82,19 +76,19 @@ public class ArtworkMapper {
     }
 
     /**
-     * 더미 Exhibition 생성
-     * TODO: Exhibition 엔티티 및 Repository 구현 후 toExhibition(Exhibition exhibition) 메서드로 변경
-     * @return 더미 Exhibition
+     * Exhibition 엔티티를 Exhibition DTO로 변환
+     * @param exhibition Exhibition 엔티티
+     * @param cafeImageUrl 카페 이미지 URL (presigned URL)
+     * @return Exhibition DTO
      */
-    public Exhibition toDummyExhibition() {
+    public Exhibition toExhibition(com.ssafy.yeobaek.exhibition.entity.Exhibition exhibition, String cafeImageUrl) {
         return Exhibition.builder()
-                .cafeId(1L)
-                .cafeName("카페 여백")
-                .cafeAddress("서울시 강남구 테헤란로 123")
-                .cafeImageUrl("https://example.com/cafe.jpg")
-                .slotName("메인 전시 공간")
-                .exhibitionStartDate(java.time.LocalDate.of(2025, 1, 1))
-                .exhibitionEndDate(java.time.LocalDate.of(2025, 12, 31))
+                .cafeId(exhibition.getCafe().getId())
+                .cafeName(exhibition.getCafe().getCafeName())
+                .cafeAddress(exhibition.getCafe().getAddress())
+                .cafeImageUrl(cafeImageUrl)
+                .exhibitionStartDate(exhibition.getStartDate())
+                .exhibitionEndDate(exhibition.getEndDate())
                 .build();
     }
 
@@ -133,28 +127,6 @@ public class ArtworkMapper {
     }
 
     /**
-     * Artwork 엔티티를 ArtworkSummaryDetail DTO로 변환 (상세 버전)
-     * @param artwork Artwork 엔티티
-     * @return ArtworkSummaryDetail DTO
-     */
-    public ArtworkSummaryDetail toArtworkSummaryDetail(Artwork artwork) {
-        return new ArtworkSummaryDetail(
-                artwork.getId(),
-                artwork.getTitle(),
-                artwork.getImages().isEmpty() ? null : artwork.getImages().get(0),
-                artwork.getArtist().getUser().getNickname(),
-                artwork.getArtist().getUser().getProfileImageUrl(),
-                artwork.getPrice(),
-                artwork.getArtCategory(),
-                artwork.getWidthCm().intValue(),
-                artwork.getHeightCm().intValue(),
-                artwork.getIsExhibiting(),
-                artwork.getBookmarkCount(),
-                null  // TODO: cafeName은 추후 Exhibition 연동 시 추가
-        );
-    }
-
-    /**
      * Artist 엔티티를 ArtistSummary DTO로 변환
      * @param artist Artist 엔티티
      * @param artworkCount 작품 수
@@ -178,31 +150,11 @@ public class ArtworkMapper {
      * @param pagination 페이징 정보
      * @return ArtworkListData DTO
      */
-    public ArtworkListData toArtworkListData(List<ArtistSummary> artists,
-                                              List<ArtworkSummary> artworks,
-                                              Pagination pagination) {
+    public ArtworkListData toArtworkListData(List<ArtistSummary> artists, List<ArtworkSummary> artworks, Pagination pagination) {
         return ArtworkListData.builder()
                 .artists(artists)
                 .artworks(artworks)
                 .pagination(pagination)
                 .build();
     }
-
-    // TODO: Exhibition 엔티티 구현 후 아래 메서드 추가
-    // /**
-    //  * Exhibition 엔티티를 Exhibition DTO로 변환
-    //  * @param exhibition Exhibition 엔티티
-    //  * @return Exhibition DTO
-    //  */
-    // public Exhibition toExhibition(com.ssafy.yeobaek.exhibition.entity.Exhibition exhibition) {
-    //     return Exhibition.builder()
-    //             .cafeId(exhibition.getCafe().getCafeId())
-    //             .cafeName(exhibition.getCafe().getCafeName())
-    //             .cafeAddress(exhibition.getCafe().getAddress())
-    //             .cafeImageUrl(exhibition.getCafe().getMainImageUrl())
-    //             .slotName(exhibition.getSlot().getSlotName())
-    //             .exhibitionStartDate(exhibition.getStartDate())
-    //             .exhibitionEndDate(exhibition.getEndDate())
-    //             .build();
-    // }
 }
