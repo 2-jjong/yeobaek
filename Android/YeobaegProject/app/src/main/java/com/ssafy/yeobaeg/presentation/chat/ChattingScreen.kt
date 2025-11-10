@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -59,12 +60,9 @@ fun ChattingScreen(
         inputText = inputText,
         onInputChange = { inputText = it },
         onSendClick = {
-            coroutineScope.launch {
-                // TODO: 메시지 전송 로직 추가
-                inputText = ""
-            }
-        },
-        onBackClick = viewModel::navigateBack
+            viewModel.sendMessage(inputText)
+            inputText = ""
+        },        onBackClick = viewModel::navigateBack
     )
 }
 
@@ -80,9 +78,28 @@ fun ChattingScreenContent(
     errorMessage: String? = null,
     inputText: String = "",
     onInputChange: (String) -> Unit = {},
-    onSendClick: () -> Unit = {},
+    onSendClick: (String) -> Unit = {},
     onBackClick: (() -> Unit)? = null
 ) {
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    //1분마다 강제 recomposition 트리거
+    var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(60_000L)
+            currentTime = System.currentTimeMillis()
+        }
+    }
+
+    // 새 메시지가 추가될 때마다 가장 마지막으로 스크롤
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            coroutineScope.launch {
+                listState.animateScrollToItem(messages.lastIndex)
+            }
+        }
+    }
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
@@ -113,6 +130,7 @@ fun ChattingScreenContent(
             }
 
             else -> LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .background(YeobaegWhite)
@@ -210,7 +228,7 @@ fun MyMessageBubble(message: ChatMessage) {
 fun ChatInputBar(
     value: String,
     onValueChange: (String) -> Unit,
-    onSendClick: () -> Unit,
+    onSendClick: (String) -> Unit,
     onAddClick: () -> Unit = {}
 ) {
     Row(
@@ -273,13 +291,10 @@ fun ChatInputBar(
             shape = CircleShape,
             color = YeobaegBrown
         ) {
-            IconButton(onClick = onSendClick) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = "보내기",
-                    tint = Color.White
-                )
+            IconButton(onClick = { onSendClick(value) }) {
+                Icon(imageVector = Icons.Default.Send, contentDescription = "보내기", tint = Color.White)
             }
+
         }
     }
 }

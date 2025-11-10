@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.data.repository
 
 import com.ssafy.yeobaeg.data.datasource.remote.ChatWebSocketService
 import com.ssafy.yeobaeg.data.model.ws.resquest.SendMessageRequest
+import com.ssafy.yeobaeg.domain.model.ws.SendMessage
 import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -15,7 +16,13 @@ class ChatWebSocketRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun sendMessage(request: SendMessageRequest) {
+    override fun sendMessage(message: SendMessage) {
+        val request = SendMessageRequest(
+            chatRoomId = message.chatRoomId,
+            messageType = message.messageType,
+            content = message.content,
+            imageUrl = message.imageUrl
+        )
         chatWebSocketService.sendMessage(request)
     }
 
