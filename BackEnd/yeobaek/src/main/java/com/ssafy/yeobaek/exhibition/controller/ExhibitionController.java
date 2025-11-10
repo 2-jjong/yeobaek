@@ -59,6 +59,10 @@ public class ExhibitionController {
                                             value = "{\"code\": \"EX4001\", \"message\": \"수수료율은 0~15 사이여야 합니다\"}"
                                     ),
                                     @ExampleObject(
+                                            name = "추가 조건 길이 초과",
+                                            value = "{\"code\": \"EX4002\", \"message\": \"추가 조건은 최대 500자까지 입력 가능합니다\"}"
+                                    ),
+                                    @ExampleObject(
                                             name = "전시 기간 오류",
                                             value = "{\"code\": \"EX4003\", \"message\": \"전시 종료일은 시작일보다 늦어야 합니다\"}"
                                     ),
