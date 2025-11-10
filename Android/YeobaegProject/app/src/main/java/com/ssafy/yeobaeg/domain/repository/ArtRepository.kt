@@ -8,7 +8,7 @@ import com.ssafy.yeobaeg.domain.model.art.PopularArtwork
 
 interface ArtRepository {
 
-    suspend fun getArtworks(category: String): Result<List<ArtworkSummary>>
+    suspend fun getArtworks(category: List<String>, page: Int, size: Int): Result<ArtSearchResult>
 
     suspend fun searchArt(
         keyword: String = "",

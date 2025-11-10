@@ -37,26 +37,66 @@ class ArtExploreViewModel @Inject constructor(
         }
     }
 
-    private fun loadArtworks(category: ArtworkCategory = ArtworkCategory.ALL) {
+    private fun loadArtworks(
+        category: ArtworkCategory = _uiState.value.selectedCategory,
+    ) {
         viewModelScope.launch {
+            update { copy(isSearchLoading = true) }
+
             artRepository.getArtworks(
-                category = when (category) {
-                    ArtworkCategory.ALL -> ""
-                    else -> category.label
-                }
+                category = listOf(
+                    when (category) {
+                        ArtworkCategory.ALL -> ""
+                        else -> category.label
+                    }
+                ),
+                page = (_uiState.value.paginationInfo?.currentPage?.plus(1)) ?: 0,
+                size = _uiState.value.paginationInfo?.pageSize ?: 20,
             )
-                .onSuccess {
-                    update { copy(artworks = it) }
+                .onSuccess { response ->
+                    update {
+                        copy(
+                            artworks = artworks + response.artworkSummaries,
+                            paginationInfo = response.paginationInfo,
+                            isSearchLoading = false
+                        )
+                    }
                 }
-                .onFailure {
-                    Log.d("ArtExploreViewModel init", "search error: ${it.message}")
-                    snackBarController.showError(it.message ?: "오류")
+                .onFailure { error ->
+                    Log.d("ArtExploreViewModel", "loadArtworks error: ${error.message}")
+                    snackBarController.showError(error.message ?: "오류")
+                    update { copy(isSearchLoading = false) }
                 }
         }
     }
 
-    fun selectTabSearch() = update { copy(mode = SearchMode.RECENT) }
-    fun selectTabBrowse() = update { copy(mode = SearchMode.BROWSE) }
+    fun loadNextPage() {
+        val currentMode = _uiState.value.mode
+        val hasNext = _uiState.value.paginationInfo?.hasNext ?: false
+
+        if (_uiState.value.isSearchLoading || !hasNext) return
+
+        when (currentMode) {
+            SearchMode.BROWSE -> loadArtworks()
+            SearchMode.RESULT -> search()
+            SearchMode.RECENT -> {} // 최근 검색어는 페이지네이션 없음
+        }
+    }
+
+    fun selectTabSearch() = update {
+        copy(
+            mode = SearchMode.RECENT,
+            paginationInfo = null // 페이지네이션 초기화
+        )
+    }
+
+    fun selectTabBrowse() = update {
+        copy(
+            mode = SearchMode.BROWSE,
+            paginationInfo = null // 페이지네이션 초기화
+        )
+    }
+
     fun setQuery(q: String) = update { copy(query = q) }
 
     fun setSizeFilter(maxWidth: Int?, maxHeight: Int?) {
@@ -65,21 +105,37 @@ class ArtExploreViewModel @Inject constructor(
         }
 
         if (_uiState.value.mode == SearchMode.RESULT) {
-            search()
+            search() // 필터 변경 시 첫 페이지부터 다시 검색
         }
     }
 
     fun selectCategory(cat: ArtworkCategory) {
-        update { copy(selectedCategory = cat) }
-        loadArtworks()
+        update {
+            copy(
+                selectedCategory = cat,
+                paginationInfo = null // 카테고리 변경 시 페이지네이션 초기화
+            )
+        }
+        loadArtworks(category = cat)
     }
 
-    fun search(page: Int = 0) = viewModelScope.launch {
+    fun search() = viewModelScope.launch {
         val q = _uiState.value.query.trim()
         if (q.isEmpty()) return@launch
+
         recentSearchRepository.add(q)
 
-        update { copy(mode = SearchMode.RESULT) }
+        if (_uiState.value.mode != SearchMode.RESULT) {
+            update {
+                copy(
+                    mode = SearchMode.RESULT,
+                    isSearchLoading = true,
+                    paginationInfo = null // 새 검색 시 페이지네이션 초기화
+                )
+            }
+        } else {
+            update { copy(isSearchLoading = true) }
+        }
 
         val result = artRepository.searchArt(
             keyword = q,
@@ -88,15 +144,15 @@ class ArtExploreViewModel @Inject constructor(
             minHeight = _uiState.value.minWidthCm,
             maxHeight = _uiState.value.maxHeightCm,
             page = page,
+            page = _uiState.value.paginationInfo?.currentPage?.plus(1) ?: 0,
             size = 20
         )
 
         result.onSuccess { searchResult ->
             update {
                 copy(
-                    resultArtists = if (page == 0) searchResult.artistSummaries else resultArtists,
-                    resultArtworks = if (page == 0) searchResult.artworkSummaries
-                    else resultArtworks + searchResult.artworkSummaries,
+                    resultArtists = searchResult.artistSummaries,
+                    resultArtworks = resultArtworks + searchResult.artworkSummaries,
                     paginationInfo = searchResult.paginationInfo,
                     isSearchLoading = false
                 )
@@ -105,15 +161,6 @@ class ArtExploreViewModel @Inject constructor(
             Log.d("ArtExploreViewModel", "search error: ${error.message}")
             update { copy(isSearchLoading = false) }
             snackBarController.showError(error.message ?: "오류")
-        }
-    }
-
-    fun loadSearchNextPage() {
-        val currentPage = _uiState.value.paginationInfo?.currentPage ?: 0
-        val hasNext = _uiState.value.paginationInfo?.hasNext ?: true
-
-        if (!_uiState.value.isSearchLoading && hasNext) {
-            search(currentPage + 1)
         }
     }
 

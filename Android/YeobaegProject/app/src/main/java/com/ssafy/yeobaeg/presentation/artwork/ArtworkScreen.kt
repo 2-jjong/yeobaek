@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.artwork
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -114,7 +115,10 @@ fun ArtExploreScreen(
                 selected = state.selectedCategory,
                 onCategory = viewModel::selectCategory,
                 onClickArtwork = viewModel::navigateToDetail,
-                artworks = state.artworks
+                artworks = state.artworks,
+                hasNext = state.paginationInfo?.hasNext ?: false,
+                isLoading = state.isSearchLoading,
+                onLoadNextPage = viewModel::loadNextPage
             )
 
             SearchMode.RECENT -> RecentSearchContent(
@@ -138,7 +142,9 @@ fun ArtExploreScreen(
                 artists = state.resultArtists,
                 artworks = state.resultArtworks,
                 onClickArtwork = viewModel::navigateToDetail,
-                onLoadNextPage = viewModel::loadSearchNextPage
+                onLoadNextPage = viewModel::loadNextPage,
+                hasNext = state.paginationInfo?.hasNext ?: true,
+                isLoading = state.isSearchLoading
             )
         }
     }
@@ -178,7 +184,6 @@ private fun SearchBar(
         }
     )
 }
-
 @Composable
 private fun BrowseContent(
     modifier: Modifier,
@@ -186,8 +191,29 @@ private fun BrowseContent(
     selected: ArtworkCategory,
     onCategory: (ArtworkCategory) -> Unit,
     onClickArtwork: (Long) -> Unit = {},
-    artworks: List<ArtworkSummary>
+    artworks: List<ArtworkSummary>,
+    hasNext: Boolean = false,
+    isLoading: Boolean = false,
+    onLoadNextPage: () -> Unit = {}
 ) {
+    val listState = rememberLazyGridState()
+
+    // 무한 스크롤 로직
+    LaunchedEffect(listState, hasNext, isLoading) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            last >= total - 3
+        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+                if (shouldLoadMore && hasNext && !isLoading) {
+                    onLoadNextPage()
+                }
+            }
+    }
+
     Column(modifier = modifier) {
         Spacer(Modifier.height(8.dp))
         CategoryChips(
@@ -202,13 +228,13 @@ private fun BrowseContent(
         ArtworkGrid(
             items = artworks,
             onClickArtwork = onClickArtwork,
+            listState = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 8.dp),
         )
     }
 }
-
 
 @Composable
 private fun RecentSearchContent(
@@ -295,7 +321,7 @@ fun SearchResultContent(
     modifier: Modifier,
     artists: List<ArtistSummary>,
     artworks: List<ArtworkSummary>,
-    hasNext: Boolean = false,
+    hasNext: Boolean = true,
     isLoading: Boolean = false,
     onClickArtwork: (Long) -> Unit = {},
     onLoadNextPage: () -> Unit = {}
@@ -312,6 +338,7 @@ fun SearchResultContent(
         }
             .distinctUntilChanged()
             .collect { shouldLoadMore ->
+                Log.d("more http", "$shouldLoadMore / $hasNext / $isLoading")
                 if (shouldLoadMore && hasNext && !isLoading) {
                     onLoadNextPage()
                 }
@@ -322,7 +349,7 @@ fun SearchResultContent(
         items = artworks,
         onClickArtwork = onClickArtwork,
         listState = listState,
-        columns = 2,
+        columns = 3,
         modifier = modifier
             .fillMaxSize(),
         topContent = {
