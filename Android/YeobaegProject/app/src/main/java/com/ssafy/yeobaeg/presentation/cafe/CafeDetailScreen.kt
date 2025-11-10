@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.SlotStatus as DisplaySlotStatus
 import com.ssafy.yeobaeg.domain.model.cafe.*
 import com.ssafy.yeobaeg.domain.model.cafe.SlotStatus.*
 import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwner
@@ -38,26 +39,21 @@ fun CafeDetailScreen(
     viewModel: CafeDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    
+
     LaunchedEffect(cafeId) {
         viewModel.loadCafeDetail(cafeId)
     }
-    
+
     Scaffold(
-        topBar = {
-            CafeDetailTopBar(onNavigateBack = viewModel::navigateBack)
-        },
         bottomBar = {
             if (uiState.cafeDetail != null) {
-                CafeDetailBottomBar(
-                )
+                CafeDetailBottomBar()
             }
         }
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
         ) {
             when {
                 uiState.isLoading -> {
@@ -89,7 +85,9 @@ fun CafeDetailScreen(
                         cafeDetail = uiState.cafeDetail!!,
                         selectedTab = uiState.selectedTab,
                         onTabSelected = viewModel::selectTab,
-                        onBookmarkClick = viewModel::toggleBookmark
+                        onBookmarkClick = viewModel::toggleBookmark,
+                        onNavigateBack = viewModel::navigateBack,
+                        bottomPadding = paddingValues.calculateBottomPadding()
                     )
                 }
             }
@@ -97,43 +95,30 @@ fun CafeDetailScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CafeDetailTopBar(
-    onNavigateBack: () -> Unit
-) {
-    TopAppBar(
-        title = { },
-        navigationIcon = {
-            IconButton(onClick = onNavigateBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "뒤로가기"
-                )
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color.Transparent
-        )
-    )
-}
-
 @Composable
 fun CafeDetailContent(
     cafeDetail: CafeDetail,
     selectedTab: CafeDetailTab,
     onTabSelected: (CafeDetailTab) -> Unit,
-    onBookmarkClick: () -> Unit
+    onBookmarkClick: () -> Unit,
+    onNavigateBack: () -> Unit,
+    bottomPadding: androidx.compose.ui.unit.Dp
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // 이미지 갤러리
-        item {
-            CafeImageGallery(
-                images = cafeDetail.images
-            )
-        }
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = bottomPadding)
+        ) {
+            // 이미지 갤러리
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                ) {
+                    CafeImageGallery(images = cafeDetail.images)
+                }
+            }
         
         // 카페 기본 정보
         item {
@@ -161,23 +146,23 @@ fun CafeDetailContent(
                 }
 
                 item {
-                    ExhibitionSlotSectionHeader(slotCount = cafeDetail.slots.size)
+                    ExhibitionSlotSectionHeader(slotCount = cafeDetail.displaySlots.size)
                 }
 
-                if (cafeDetail.slots.isEmpty()) {
+                if (cafeDetail.displaySlots.isEmpty()) {
                     item {
                         ExhibitionSlotEmptyState()
                     }
                 } else {
                     items(
-                        items = cafeDetail.slots,
-                        key = { it.slotId }
+                        items = cafeDetail.displaySlots,
+                        key = { it.wid }
                     ) { slot ->
                         Box(
                             modifier = Modifier
                                 .padding(horizontal = 16.dp, vertical = 6.dp)
                         ) {
-                            SlotItem(slot = slot)
+                            DisplaySlotItem(slot = slot)
                         }
                     }
                 }
@@ -190,30 +175,27 @@ fun CafeDetailContent(
                 }
             }
         }
-
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CafeImageGallery(
-    images: List<CafeImage>
+    images: List<String>
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp)
+        modifier = Modifier.fillMaxSize()
     ) {
         // 이미지 페이저
-        val sortedImages = images.sortedBy { it.displayOrder }
-        val pagerState = rememberPagerState(pageCount = { sortedImages.size })
-        
+        val pagerState = rememberPagerState(pageCount = { images.size })
+
         HorizontalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize()
         ) { page ->
             AsyncImage(
-                model = sortedImages[page].imageUrl,
+                model = images[page],
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -221,14 +203,14 @@ fun CafeImageGallery(
         }
         
         // 페이지 인디케이터
-        if (sortedImages.size > 1) {
+        if (images.size > 1) {
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                repeat(sortedImages.size) { index ->
+                repeat(images.size) { index ->
                     Box(
                         modifier = Modifier
                             .size(if (pagerState.currentPage == index) 8.dp else 6.dp)
@@ -377,7 +359,7 @@ fun ExhibitionSlotEmptyState() {
 
 @Composable
 fun FloorPlanSection(
-    floorPlanSlots: List<DisplaySlot>?
+    floorPlanSlots: List<DisplaySlot>
 ) {
     Column(
         modifier = Modifier
@@ -432,7 +414,7 @@ fun FloorPlanSection(
                 .background(Color.White),
             contentAlignment = Alignment.Center
         ) {
-            if (floorPlanSlots.isNullOrEmpty()) {
+            if (floorPlanSlots.isEmpty()) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -461,6 +443,206 @@ fun FloorPlanSection(
                     modifier = Modifier.fillMaxSize(),
                     readOnly = true
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun DisplaySlotItem(slot: DisplaySlot) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(12.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // 슬롯 이미지 또는 작품 이미지
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFFF5F5F5))
+                ) {
+                    if (slot.exhibition != null) {
+                        AsyncImage(
+                            model = slot.exhibition.artImgUrl,
+                            contentDescription = slot.wName,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        // 빈 슬롯 아이콘
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Image,
+                                contentDescription = null,
+                                tint = Color(0xFFBDBDBD),
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    }
+
+                    // 상태 배지 (좌측 상단)
+                    Surface(
+                        shape = RoundedCornerShape(bottomEnd = 8.dp),
+                        color = when (slot.status) {
+                            DisplaySlotStatus.AVAILABLE -> Color(0xFF4CAF50)
+                            DisplaySlotStatus.EXHIBITING -> Color(0xFFFFC107)
+                            DisplaySlotStatus.RESERVED -> Color(0xFFFF5252)
+                            DisplaySlotStatus.UNAVAILABLE -> Color(0xFF9E9E9E)
+                        },
+                        modifier = Modifier.align(Alignment.TopStart)
+                    ) {
+                        Text(
+                            text = when (slot.status) {
+                                DisplaySlotStatus.AVAILABLE -> "전시가능"
+                                DisplaySlotStatus.EXHIBITING -> "전시중"
+                                DisplaySlotStatus.RESERVED -> "예약됨"
+                                DisplaySlotStatus.UNAVAILABLE -> "불가능"
+                            },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                // 슬롯 정보
+                Column(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // 슬롯명 또는 작품명
+                    Text(
+                        text = slot.exhibition?.artTitle ?: slot.wName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A1A1A),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    if (slot.exhibition != null) {
+                        // 작가명
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = Color(0xFF757575),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = slot.exhibition.artist,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF757575)
+                            )
+                        }
+
+                        // 전시 기간
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = null,
+                                tint = Color(0xFF757575),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "${slot.exhibition.startDate} - ${slot.exhibition.endDate}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF757575)
+                            )
+                        }
+                    } else {
+                        // 크기 정보
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AspectRatio,
+                                contentDescription = null,
+                                tint = Color(0xFF757575),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = slot.sizeText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF757575),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        // 요구 사항
+                        if (slot.requirements.isNotEmpty()) {
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = null,
+                                    tint = Color(0xFF757575),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = slot.requirements,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF757575),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
+                    // 수수료
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Color(0xFFFFF3E0)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Percent,
+                                contentDescription = null,
+                                tint = Color(0xFFFF6F00),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "수수료 ${slot.commission.toInt()}%",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color(0xFFFF6F00),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
         }
     }

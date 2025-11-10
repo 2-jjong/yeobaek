@@ -23,9 +23,8 @@ data class CafeDetailDto(
     val viewCount: Int,
     val isBookmarked: Boolean,
     val categories: List<String>,
-    val images: List<CafeImageDto>,
-    val slots: List<SlotDetailDto> = emptyList(),
-    val displaySlots: List<DisplaySlotResponse>? = null,
+    val images: List<String>,
+    val displaySlots: List<DisplaySlotResponse>,
     val cafeOwner: CafeOwnerDto
 )
 
@@ -42,9 +41,8 @@ fun CafeDetailDto.toDomain(): CafeDetail {
         viewCount = viewCount,
         isBookmarked = isBookmarked,
         categories = categories,
-        images = images.map { it.toDomain() },
-        slots = slots.map { it.toDomain() },
-        displaySlots = displaySlots?.map { it.toDomain() } ?: emptyList(),
+        images = images,
+        displaySlots = displaySlots.map { it.toDomain() },
         cafeOwner = cafeOwner.toDomain()
     )
 }

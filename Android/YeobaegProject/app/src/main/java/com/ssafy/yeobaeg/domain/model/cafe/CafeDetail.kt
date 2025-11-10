@@ -18,9 +18,8 @@ data class CafeDetail(
     val viewCount: Int,
     val isBookmarked: Boolean,
     val categories: List<String>,
-    val images: List<CafeImage>,
-    val slots: List<SlotDetail>,
-    val displaySlots: List<DisplaySlot> = emptyList(),
+    val images: List<String>,
+    val displaySlots: List<DisplaySlot>,
     val cafeOwner: CafeOwner
 )
 

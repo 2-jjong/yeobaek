@@ -1,8 +1,6 @@
 package com.ssafy.yeobaeg.presentation.cafe
 
 import android.Manifest
-import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
@@ -10,17 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,30 +16,8 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -69,25 +37,16 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MapUiSettings
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerInfoWindowContent
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
-import androidx.core.content.ContextCompat
-import coil.compose.AsyncImage
-import androidx.compose.foundation.border
+import com.google.maps.android.compose.*
 import com.ssafy.yeobaeg.domain.model.UserRole
-import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import androidx.core.graphics.createBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CafeMapScreen(
     viewModel: CafeMapViewModel = hiltViewModel(),
-
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -99,7 +58,7 @@ fun CafeMapScreen(
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = bottomSheetState
     )
-    
+
     // 위치 권한 요청
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -108,7 +67,7 @@ fun CafeMapScreen(
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         viewModel.updateLocationPermission(granted)
     }
-    
+
     // 초기 권한 요청
     LaunchedEffect(Unit) {
         locationPermissionLauncher.launch(
@@ -118,7 +77,7 @@ fun CafeMapScreen(
             )
         )
     }
-    
+
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         topBar = {
@@ -132,9 +91,10 @@ fun CafeMapScreen(
             )
         },
         sheetContent = {
+            // 네가 가진 실제 구현이 있으면 그걸 사용해도 됨
             CafeListBottomSheetContent(
                 cafes = uiState.cafes,
-                onCafeClick = viewModel::navigateToCafeDetail
+                onCafeClick = { viewModel.navigateToCafeDetail(it) }
             )
         },
         sheetPeekHeight = 200.dp,
@@ -147,16 +107,16 @@ fun CafeMapScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Google Map
             GoogleMapView(
                 cafes = uiState.cafes,
                 currentLocation = uiState.currentLocation,
                 cameraPosition = uiState.cameraPosition,
                 currentZoomLevel = uiState.currentZoomLevel,
+                // ★ 카메라 이동 종료 시 “이동 이유”까지 함께 전달
                 onCameraPositionChanged = viewModel::onCameraPositionChanged
             )
-            
-            // 현재 위치로 이동 버튼
+
+            // 현재 위치로 이동
             FloatingActionButton(
                 onClick = { viewModel.loadCurrentLocation() },
                 modifier = Modifier
@@ -176,8 +136,7 @@ fun CafeMapScreen(
                     tint = YeobaegDarkBrown
                 )
             }
-            
-            // 필터 다이얼로그
+
             if (uiState.isFilterDialogVisible) {
                 CafeFilterDialog(
                     currentFilter = uiState.filter,
@@ -186,15 +145,13 @@ fun CafeMapScreen(
                     onClear = viewModel::clearFilter
                 )
             }
-            
-            // 로딩 인디케이터 (초기 로딩시만 표시)
+
             if (uiState.isInitialLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
-            
-            // 에러 스낵바
+
             uiState.error?.let { error ->
                 Snackbar(
                     modifier = Modifier
@@ -224,6 +181,8 @@ fun CafeSearchBar(
     onFilterClick: () -> Unit,
     isFilterActive: Boolean
 ) {
+    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shadowElevation = 2.dp,
@@ -234,7 +193,6 @@ fun CafeSearchBar(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            // 상단: 제목과 필터 버튼
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -247,7 +205,6 @@ fun CafeSearchBar(
                     color = YeobaegDarkBrown
                 )
 
-                // 필터 버튼 (작가만)
                 if (showFilterButton) {
                     Surface(
                         onClick = onFilterClick,
@@ -256,10 +213,7 @@ fun CafeSearchBar(
                         color = if (isFilterActive) YeobaegDarkBrown else Color(0xFFF5F5F5),
                         shadowElevation = if (isFilterActive) 4.dp else 0.dp
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Icon(
                                 imageVector = Icons.Default.FilterList,
                                 contentDescription = "필터",
@@ -273,7 +227,6 @@ fun CafeSearchBar(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 검색 입력 필드 - 더 모던한 디자인
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -292,9 +245,7 @@ fun CafeSearchBar(
                         tint = Color(0xFF9E9E9E),
                         modifier = Modifier.size(22.dp)
                     )
-
                     Spacer(modifier = Modifier.width(12.dp))
-
                     androidx.compose.foundation.text.BasicTextField(
                         value = searchKeyword,
                         onValueChange = onSearchKeywordChanged,
@@ -303,7 +254,16 @@ fun CafeSearchBar(
                             color = Color(0xFF212121)
                         ),
                         singleLine = true,
-                        decorationBox = { innerTextField ->
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            imeAction = androidx.compose.ui.text.input.ImeAction.Search
+                        ),
+                        keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                            onSearch = {
+                                keyboardController?.hide()
+                                onSearch()
+                            }
+                        ),
+                        decorationBox = { inner ->
                             Box {
                                 if (searchKeyword.isEmpty()) {
                                     Text(
@@ -312,7 +272,7 @@ fun CafeSearchBar(
                                         color = Color(0xFFBDBDBD)
                                     )
                                 }
-                                innerTextField()
+                                inner()
                             }
                         }
                     )
@@ -324,13 +284,12 @@ fun CafeSearchBar(
 
 @Composable
 fun GoogleMapView(
-    cafes: List<com.ssafy.yeobaeg.domain.model.cafe.CafeSummary>,
+    cafes: List<CafeSummary>,
     currentLocation: LatLng?,
     cameraPosition: LatLng?,
     currentZoomLevel: Float,
-    onCameraPositionChanged: (LatLng, Float) -> Unit
+    onCameraPositionChanged: (LatLng, Float, CameraMoveStartedReason) -> Unit
 ) {
-    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val defaultPosition = remember { LatLng(37.5665, 126.9780) } // 서울 시청
     val initialPosition = cameraPosition ?: currentLocation ?: defaultPosition
@@ -339,32 +298,33 @@ fun GoogleMapView(
         position = CameraPosition.fromLatLngZoom(initialPosition, currentZoomLevel)
     }
 
-    // 마커 아이콘 캐시 (lazy 초기화)
+    // 단일 마커 기본 아이콘(갈색 계열)
     var singleMarkerIcon by remember { mutableStateOf<BitmapDescriptor?>(null) }
     val markerIconCache = remember { mutableMapOf<Int, BitmapDescriptor>() }
 
-    // 카메라 위치 또는 줌이 변경될 때마다 콜백 호출
     LaunchedEffect(cameraPositionState.isMoving) {
         if (!cameraPositionState.isMoving) {
+            val reason = cameraPositionState.cameraMoveStartedReason
             onCameraPositionChanged(
                 cameraPositionState.position.target,
-                cameraPositionState.position.zoom
+                cameraPositionState.position.zoom,
+                reason
             )
         }
     }
 
-    // currentLocation이 변경되면 카메라 이동
+    // 현재 위치가 강제 변경되었을 때는 프로그램적 애니메이션 → API 호출 안 됨
     LaunchedEffect(currentLocation) {
         currentLocation?.let {
             cameraPositionState.animate(
                 CameraUpdateFactory.newLatLngZoom(it, currentZoomLevel),
-                durationMs = 1000
+                durationMs = 600
             )
         }
     }
 
-    // 클러스터링을 위한 카페 그룹화
-    val clusters = remember(cafes, cameraPositionState.position.zoom) {
+    // 클러스터 재계산: cafes와 줌 레벨 변경시에만 재계산
+    val clusters = remember(cafes, (cameraPositionState.position.zoom * 2).toInt()) {
         clusterCafes(cafes, cameraPositionState.position.zoom)
     }
 
@@ -379,66 +339,54 @@ fun GoogleMapView(
             myLocationButtonEnabled = false
         )
     ) {
-        // 클러스터 마커들
         clusters.forEach { cluster ->
             if (cluster.cafes.size == 1) {
-                // 단일 카페 마커
                 val cafe = cluster.cafes.first()
-                cafe.latitude?.let { lat ->
-                    cafe.longitude?.let { lng ->
-                        // 기본 갈색 마커 핀 사용
-                        if (singleMarkerIcon == null) {
-                            singleMarkerIcon = try {
-                                BitmapDescriptorFactory.defaultMarker(15f) // 갈색 (HUE 15도)
-                            } catch (e: Exception) {
-                                null
-                            }
-                        }
+                val lat = cafe.latitude ?: return@forEach
+                val lng = cafe.longitude ?: return@forEach
+                val pos = LatLng(lat, lng)
 
-                        MarkerInfoWindowContent(
-                            state = MarkerState(position = LatLng(lat, lng)),
-                            icon = singleMarkerIcon
-                        ) {
-                            CafeInfoWindow(cafe = cafe)
-                        }
-                    }
+                if (singleMarkerIcon == null) {
+                    singleMarkerIcon = BitmapDescriptorFactory.defaultMarker(15f)
+                }
+
+                // MarkerInfoWindow 사용 (MarkerState는 매번 새로 생성)
+                MarkerInfoWindow(
+                    state = MarkerState(position = pos),
+                    icon = singleMarkerIcon
+                ) {
+                    CafeInfoWindow(cafe = cafe)
                 }
             } else {
-                // 클러스터 마커 (여러 카페)
-                // 캐시에서 아이콘 가져오기 또는 생성
-                val clusterIcon = markerIconCache.getOrPut(cluster.cafes.size) {
-                    try {
-                        createClusterMarkerIcon(context, cluster.cafes.size)
-                    } catch (e: Exception) {
-                        // 초기화 실패 시 기본 마커 사용
-                        BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)
-                    }
+                // 클러스터 마커: 임시 객체이므로 자체 MarkerState를 생성해서 사용
+                val count = cluster.cafes.size
+                val clusterIcon = markerIconCache.getOrPut(count) {
+                    try { createClusterMarkerIcon(count) }
+                    catch (_: Exception) { BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE) }
                 }
 
                 Marker(
                     state = MarkerState(position = cluster.position),
-                    title = "${cluster.cafes.size}개 카페",
+                    title = "${count}개 카페",
                     snippet = "탭하여 확대",
                     icon = clusterIcon,
                     onClick = {
-                        // 클러스터 내 모든 카페를 포함하는 영역으로 줌
+                        // 프로그램적 애니메이션 → VM에서 reason으로 필터되어 API 호출 안 됨
                         val builder = LatLngBounds.Builder()
-                        cluster.cafes.forEach { cafe ->
-                            cafe.latitude?.let { lat ->
-                                cafe.longitude?.let { lng ->
-                                    builder.include(LatLng(lat, lng))
-                                }
-                            }
+                        cluster.cafes.forEach { c ->
+                            val la = c.latitude ?: return@forEach
+                            val lo = c.longitude ?: return@forEach
+                            builder.include(LatLng(la, lo))
                         }
                         val bounds = builder.build()
-                        val padding = 150 // 패딩 (픽셀)
+                        val padding = 150
                         coroutineScope.launch {
                             cameraPositionState.animate(
                                 CameraUpdateFactory.newLatLngBounds(bounds, padding),
                                 durationMs = 500
                             )
                         }
-                        true // 이벤트 소비
+                        true
                     }
                 )
             }
@@ -446,83 +394,71 @@ fun GoogleMapView(
     }
 }
 
-/**
- * 카페 정보 윈도우 (마커 클릭 시 표시)
- */
+/** 카페 정보 윈도우 (마커 클릭 시 표시) */
 @Composable
-fun CafeInfoWindow(cafe: com.ssafy.yeobaeg.domain.model.cafe.CafeSummary) {
+fun CafeInfoWindow(cafe: CafeSummary) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = Color.White,
         shadowElevation = 8.dp,
         modifier = Modifier.width(280.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(12.dp)
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 썸네일 이미지
+            // 썸네일 이미지 (왼쪽)
             cafe.primaryImageUrl?.let { imageUrl ->
                 AsyncImage(
-                    model = imageUrl,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(imageUrl)
+                        .allowHardware(false)
+                        .build(),
                     contentDescription = cafe.cafeName,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
+                        .size(70.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color(0xFFF5F5F5)),
                     contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.height(10.dp))
             }
 
-            // 카페명
-            Text(
-                text = cafe.cafeName,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = YeobaegDarkBrown,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            // 주소
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            // 카페 정보 (오른쪽)
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.LocationOn,
-                    contentDescription = null,
-                    tint = Color(0xFF9E9E9E),
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = cafe.address,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF757575),
+                    text = cafe.cafeName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = YeobaegDarkBrown,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        tint = Color(0xFF9E9E9E),
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(
+                        text = cafe.address,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF757575),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
-            // 슬롯 정보와 거리
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 슬롯 정보
-                Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = YeobaegDarkBrown.copy(alpha = 0.1f)
-                ) {
+                Surface(shape = RoundedCornerShape(6.dp), color = YeobaegDarkBrown.copy(alpha = 0.1f)) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
                         Text(
                             text = "슬롯",
@@ -530,46 +466,42 @@ fun CafeInfoWindow(cafe: com.ssafy.yeobaeg.domain.model.cafe.CafeSummary) {
                             color = YeobaegDarkBrown,
                             fontWeight = FontWeight.Medium
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "${cafe.availableSlotCount}/${cafe.totalSlotCount}",
-                            style = MaterialTheme.typography.labelMedium,
+                            style = MaterialTheme.typography.labelSmall,
                             color = YeobaegDarkBrown,
                             fontWeight = FontWeight.Bold
                         )
                     }
                 }
 
-                // 거리
                 cafe.distance?.let { distance ->
                     Text(
                         text = "${String.format("%.1f", distance)}km",
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = Color(0xFF616161),
                         fontWeight = FontWeight.Medium
                     )
                 }
-            }
 
-            // 카테고리
-            if (cafe.categories.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    cafe.categories.take(3).forEach { category ->
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = Color(0xFFF5F5F5),
-                            modifier = Modifier.padding(end = 4.dp)
-                        ) {
-                            Text(
-                                text = category,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = Color(0xFF757575),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                            )
+                if (cafe.categories.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        cafe.categories.take(2).forEach { category ->
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color(0xFFF5F5F5),
+                                modifier = Modifier.padding(end = 4.dp)
+                            ) {
+                                Text(
+                                    text = category,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFF757575),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -578,90 +510,64 @@ fun CafeInfoWindow(cafe: com.ssafy.yeobaeg.domain.model.cafe.CafeSummary) {
     }
 }
 
-/**
- * 카페 클러스터 데이터 클래스
- */
+/** 카페 클러스터 데이터 클래스 */
 data class CafeCluster(
     val position: LatLng,
-    val cafes: List<com.ssafy.yeobaeg.domain.model.cafe.CafeSummary>
+    val cafes: List<CafeSummary>
 )
 
-/**
- * 줌 레벨에 따라 카페를 클러스터링
- */
+/** 줌 레벨에 따라 카페를 단순 클러스터링 */
 fun clusterCafes(
-    cafes: List<com.ssafy.yeobaeg.domain.model.cafe.CafeSummary>,
+    cafes: List<CafeSummary>,
     zoomLevel: Float
 ): List<CafeCluster> {
-    // 줌 레벨이 높으면 (확대) 클러스터링 하지 않음
     if (zoomLevel >= 15f) {
         return cafes.mapNotNull { cafe ->
-            cafe.latitude?.let { lat ->
-                cafe.longitude?.let { lng ->
-                    CafeCluster(
-                        position = LatLng(lat, lng),
-                        cafes = listOf(cafe)
-                    )
-                }
-            }
+            val lat = cafe.latitude ?: return@mapNotNull null
+            val lng = cafe.longitude ?: return@mapNotNull null
+            CafeCluster(LatLng(lat, lng), listOf(cafe))
         }
     }
 
-    // 클러스터링 거리 (줌 레벨에 따라 조정)
     val clusterDistance = when {
-        zoomLevel >= 13f -> 0.01  // 약 1km
-        zoomLevel >= 11f -> 0.05  // 약 5km
-        zoomLevel >= 9f -> 0.1    // 약 10km
-        else -> 0.2               // 약 20km
+        zoomLevel >= 13f -> 0.01  // ~1km
+        zoomLevel >= 11f -> 0.05  // ~5km
+        zoomLevel >= 9f  -> 0.1   // ~10km
+        else -> 0.2               // ~20km
     }
 
     val clusters = mutableListOf<CafeCluster>()
-    val processed = mutableSetOf<com.ssafy.yeobaeg.domain.model.cafe.CafeSummary>()
+    val processed = mutableSetOf<CafeSummary>()
 
     cafes.forEach { cafe ->
         if (cafe in processed) return@forEach
+        val lat = cafe.latitude ?: return@forEach
+        val lng = cafe.longitude ?: return@forEach
 
-        cafe.latitude?.let { lat ->
-            cafe.longitude?.let { lng ->
-                val nearby = mutableListOf(cafe)
-                processed.add(cafe)
+        val nearby = mutableListOf(cafe)
+        processed.add(cafe)
 
-                // 근처 카페 찾기
-                cafes.forEach { other ->
-                    if (other !in processed && other.latitude != null && other.longitude != null) {
-                        val distance = kotlin.math.sqrt(
-                            (lat - other.latitude!!).let { it * it } +
-                                    (lng - other.longitude!!).let { it * it }
-                        )
-                        if (distance < clusterDistance) {
-                            nearby.add(other)
-                            processed.add(other)
-                        }
-                    }
+        cafes.forEach { other ->
+            val la = other.latitude
+            val lo = other.longitude
+            if (other !in processed && la != null && lo != null) {
+                val d = kotlin.math.sqrt((lat - la) * (lat - la) + (lng - lo) * (lng - lo))
+                if (d < clusterDistance) {
+                    nearby.add(other); processed.add(other)
                 }
-
-                // 클러스터 중심 계산
-                val centerLat = nearby.mapNotNull { it.latitude }.average()
-                val centerLng = nearby.mapNotNull { it.longitude }.average()
-
-                clusters.add(
-                    CafeCluster(
-                        position = LatLng(centerLat, centerLng),
-                        cafes = nearby
-                    )
-                )
             }
         }
+
+        val centerLat = nearby.mapNotNull { it.latitude }.average()
+        val centerLng = nearby.mapNotNull { it.longitude }.average()
+        clusters.add(CafeCluster(LatLng(centerLat, centerLng), nearby))
     }
 
     return clusters
 }
 
-/**
- * 클러스터 마커 아이콘 생성 (간단한 갈색 원)
- */
-fun createClusterMarkerIcon(context: Context, count: Int): BitmapDescriptor {
-    // 클러스터 크기는 카페 개수에 따라 동적으로 조정 (마커 핀보다 크게)
+/** 클러스터 마커 아이콘 생성 (갈색 원 + 숫자) */
+fun createClusterMarkerIcon(count: Int): BitmapDescriptor {
     val baseSize = 180
     val size = when {
         count >= 50 -> (baseSize * 1.5f).toInt()
@@ -670,52 +576,44 @@ fun createClusterMarkerIcon(context: Context, count: Int): BitmapDescriptor {
         else -> baseSize
     }
 
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size)
     val canvas = Canvas(bitmap)
+    val cx = size / 2f
+    val cy = size / 2f
 
-    val centerX = size / 2f
-    val centerY = size / 2f
+    val brown = android.graphics.Color.rgb(101, 67, 33)
+    val white = android.graphics.Color.WHITE
 
-    // YeobaegDarkBrown 색상
-    val brownColor = android.graphics.Color.rgb(101, 67, 33)
-    val whiteColor = android.graphics.Color.WHITE
-
-    // 그림자
-    val shadowPaint = Paint().apply {
+    val shadow = Paint().apply {
         color = android.graphics.Color.argb(70, 0, 0, 0)
         isAntiAlias = true
         style = Paint.Style.FILL
     }
-    canvas.drawCircle(centerX, centerY + 3f, size / 2.4f, shadowPaint)
+    canvas.drawCircle(cx, cy + 3f, size / 2.4f, shadow)
 
-    // 갈색 원
-    val circlePaint = Paint().apply {
-        color = brownColor
+    val circle = Paint().apply {
+        color = brown
         isAntiAlias = true
         style = Paint.Style.FILL
     }
-    canvas.drawCircle(centerX, centerY, size / 2.5f, circlePaint)
+    canvas.drawCircle(cx, cy, size / 2.5f, circle)
 
-    // 숫자 텍스트
     val text = if (count > 999) "999+" else count.toString()
-
-    // 텍스트 크기 동적 조정
     val fontSize = when {
         count >= 100 -> size / 3.5f
         count >= 10 -> size / 3.0f
         else -> size / 2.5f
     }
 
-    val textPaint = Paint().apply {
-        color = whiteColor
+    val tp = Paint().apply {
+        color = white
         isAntiAlias = true
         textAlign = Paint.Align.CENTER
         textSize = fontSize
         typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
     }
-    val yPos = centerY - ((textPaint.descent() + textPaint.ascent()) / 2)
-    canvas.drawText(text, centerX, yPos, textPaint)
+    val y = cy - ((tp.descent() + tp.ascent()) / 2)
+    canvas.drawText(text, cx, y, tp)
 
     return BitmapDescriptorFactory.fromBitmap(bitmap)
 }
-
