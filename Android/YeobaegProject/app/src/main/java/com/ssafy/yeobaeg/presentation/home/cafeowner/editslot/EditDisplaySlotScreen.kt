@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,17 +68,25 @@ import java.util.Locale
 // EditDisplaySlotScreen.kt 수정
 @Composable
 fun EditDisplaySlotScreen(
+    cafeId: Long,
     slotId: Long,
+    commissionRate: Int,
+    requirements: String,
     viewModel: EditDisplaySlotViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(slotId) {
+        viewModel.initSlotId(cafeId, slotId, commissionRate, requirements)
+    }
+
     EditDisplaySlotScreen(
         state = state,
         onChangeDateRange = viewModel::updateDateRange,
         onChangeFee = viewModel::updateFeePercent,
         onChangeNote = viewModel::updateNote,
         onPrev = viewModel::onBackPressed,
-        onSubmit = viewModel::registerSlot
+        onSubmit = viewModel::patchSlotInfo
     )
 }
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,12 +141,12 @@ fun EditDisplaySlotScreen(
             Spacer(Modifier.height(16.dp))
             SectionHeader("전시 조건", "전시 운영 조건을 설정해주세요")
             Spacer(Modifier.height(8.dp))
-            FieldTitle("기본 전시 기간 *")
-            PeriodRangeField(
-                startAtMillis = state.startAtMillis,
-                endAtMillis = state.endAtMillis,
-                onSelected = onChangeDateRange
-            )
+//            FieldTitle("기본 전시 기간 *")
+//            PeriodRangeField(
+//                startAtMillis = state.startAtMillis,
+//                endAtMillis = state.endAtMillis,
+//                onSelected = onChangeDateRange
+//            )
             Spacer(Modifier.height(8.dp))
             FieldTitle("수수료율 (%) *")
             FeeDropdown(

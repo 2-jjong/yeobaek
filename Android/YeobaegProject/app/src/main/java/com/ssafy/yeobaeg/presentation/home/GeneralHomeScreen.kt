@@ -40,7 +40,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -491,7 +490,7 @@ fun GeneralHomeScreenPreview() {
                         category = "추상화",
                         widthCm = 50,
                         heightCm = 70,
-                        status = SlotStatus.ONGOING,
+                        status = SlotStatus.EXHIBITING,
                         bookmarkCount = 189,
                         cafeName = null
                     )

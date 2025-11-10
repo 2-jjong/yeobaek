@@ -23,8 +23,8 @@ import com.ssafy.yeobaeg.navigation.BottomNavScreen
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.bottomnav.MainBottomBar
 import com.ssafy.yeobaeg.navigation.bottomnav.MainTab
-import com.ssafy.yeobaeg.presentation.arcore.ARMeasureScreen
-import com.ssafy.yeobaeg.presentation.arcore.FloorPlanPreview
+import com.ssafy.yeobaeg.presentation.arcore.edit.WallEditScreen
+import com.ssafy.yeobaeg.presentation.arcore.horizontal.HorizontalMeasureCamera
 import com.ssafy.yeobaeg.presentation.artwork.ArtExploreScreen
 import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
 import com.ssafy.yeobaeg.presentation.chat.ChatListScreen
@@ -39,9 +39,9 @@ import com.ssafy.yeobaeg.presentation.login.LoginScreen
 import com.ssafy.yeobaeg.presentation.onboarding.OnboardingScreen
 import com.ssafy.yeobaeg.presentation.profile.BookmarkScreen
 import com.ssafy.yeobaeg.presentation.profile.ProfileEditScreen
-import com.ssafy.yeobaeg.presentation.profile.ReviewManagementScreen
 import com.ssafy.yeobaeg.presentation.profile.artist.ArtistProfileScreen
 import com.ssafy.yeobaeg.presentation.profile.cafe.CafeOwnerProfileScreen
+import com.ssafy.yeobaeg.presentation.review.ReviewManagementScreen
 import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
@@ -110,7 +110,7 @@ fun NavGraph(
                     is BottomNavScreen.Home -> NavEntry(key) {
                         when (LocalUserRole.current) {
                             UserRole.CAFE_OWNER -> CafeOwnerHomeScreen()
-                            UserRole.ARTIST-> ArtistHomeScreen()
+                            UserRole.ARTIST -> ArtistHomeScreen()
                             UserRole.GENERAL, null -> GeneralHomeScreen()
                         }
                     }
@@ -120,15 +120,15 @@ fun NavGraph(
                         ArtExploreScreen()
                     }
 
-                    is BottomNavScreen.SpaceScanPreview -> NavEntry(key) {
-                        FloorPlanPreview(key.displayWalls)
+                    is FullScreen.WallEdit -> NavEntry(key) {
+                        WallEditScreen(key.displayWalls)
                     }
 
                     is BottomNavScreen.Profile -> NavEntry(key) {
                         Log.d("NavGraph", "Current UserRole: ${LocalUserRole.current?.displayName}")
                         when (LocalUserRole.current) {
                             UserRole.CAFE_OWNER -> CafeOwnerProfileScreen()
-                            UserRole.ARTIST-> ArtistProfileScreen(key.userId)
+                            UserRole.ARTIST -> ArtistProfileScreen(key.userId)
                             UserRole.GENERAL, null -> GeneralProfileScreen()
                         }
 
@@ -143,16 +143,18 @@ fun NavGraph(
                     }
 
                     is FullScreen.SpaceScan -> NavEntry(key) {
-                        ARMeasureScreen()
+                        HorizontalMeasureCamera()
                     }
 
                     is FullScreen.RegisterCafe -> NavEntry(key) {
                         // Cafe Registration Screen Composable
                         RegisterCafeScreen()
                     }
+
                     is FullScreen.RegisterArtwork -> NavEntry(key) {
                         ArtworkRegisterScreen()
                     }
+
                     is FullScreen.ArtworkDetail -> NavEntry(key) {
                         ArtworkDetailScreen(artworkId = key.artworkId)
                     }
@@ -161,12 +163,17 @@ fun NavGraph(
                         BookmarkScreen()
                     }
 
-                    is FullScreen.ReviewManagementScreen-> NavEntry(key){
+                    is FullScreen.ReviewManagementScreen -> NavEntry(key) {
                         ReviewManagementScreen()
                     }
 
                     is FullScreen.EditDisplaySlotScreen -> NavEntry(key) {
-                        EditDisplaySlotScreen(key.slotId)
+                        EditDisplaySlotScreen(
+                            key.cafeId,
+                            key.slotId,
+                            key.commissionRate,
+                            key.requirements
+                        )
                     }
                     is FullScreen.ChattingScreen-> NavEntry(key){
                         ChattingScreen(key.chatRoomId)

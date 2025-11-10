@@ -10,5 +10,5 @@ data class ArtistProfileResponse(
     val introduction: String,
     val artworkCount: Int,
     val exhibitingCount: Int,
-    val ratingStats: RatingStatsResponse
+    val ratingStats: ProfileRatingSummaryResponse
 )

@@ -2,12 +2,12 @@
 
 package com.ssafy.yeobaeg.presentation.home.cafeowner
 
+import android.R.attr.fontWeight
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -34,6 +34,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.Exhibition
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
@@ -120,9 +121,38 @@ private fun SlotDetailContent(
                 }
                 StatusChip(status = slot.status)
             }
-        }
 
-        if (slot.status == SlotStatus.ONGOING || slot.artTitle.isNotBlank()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("수수료", color = Color(0xFF7A7F87), fontSize = 12.sp)
+                    Text(
+                        "${slot.commission.toInt()}%",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("추가 요청사항", color = Color(0xFF7A7F87), fontSize = 12.sp)
+                    Text(
+                        slot.requirements,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+        }
+        val exhibition = slot.exhibition
+        if (exhibition != null) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -132,9 +162,9 @@ private fun SlotDetailContent(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text("현재 전시 중", color = YeobaegBrown, fontWeight = FontWeight.SemiBold)
-                Text(slot.artTitle, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-                if (slot.artist.isNotBlank()) Text("작가: ${slot.artist}", color = YeobaegBrown)
-                if (slot.deadline.isNotBlank()) Text("종료일: ${slot.deadline}", color = YeobaegBrown)
+                Text(exhibition.artTitle, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                Text("작가: ${exhibition.artist}", color = YeobaegBrown)
+                Text("종료일: ${exhibition.endDate}", color = YeobaegBrown)
             }
         }
 
@@ -204,16 +234,19 @@ private fun PreviewSlotDetailContent_Ongoing() {
                 slot = DisplaySlot(
                     wid = 2L,
                     wName = "메인 전시 공간",
-                    width = 150f,
-                    height = 100f,
-                    status = SlotStatus.ONGOING,
+                    width = 1.5f,
+                    height = 1.0f,
+                    status = SlotStatus.EXHIBITING,
                     commission = 20f,
                     requirements = "대형 작품 가능",
-                    deadline = "2024-12-31",
-                    artId = 101L,
-                    artTitle = "푸른 밤의 꿈",
-                    artist = "김예술",
-                    artImgUrl = "https://picsum.photos/seed/art1/400"
+                    exhibition = Exhibition(
+                        startDate = "2024-01-01",
+                        endDate = "2024-12-31",
+                        artId = 101L,
+                        artTitle = "푸른 밤의 꿈",
+                        artist = "김예술",
+                        artImgUrl = "https://picsum.photos/seed/art1/400"
+                    )
                 ),
                 onDismissRequest = {},
                 onClickClose = {},
