@@ -38,4 +38,10 @@ public class ArtworkSummaryDto {
 
     @Schema(description = "북마크 수", example = "42")
     private Integer bookmarkCount;
+
+    @Schema(description = "전시 장소(카페명)", example = "카페 여백")
+    private String cafeName;
+
+    @Schema(description = "작가 프로필")
+    private ArtistDto artistDto;
 }
