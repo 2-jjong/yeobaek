@@ -13,10 +13,10 @@ interface ArtRepository {
     suspend fun searchArt(
         keyword: String = "",
         categories: List<String> = emptyList(),
-        minWidth: Int = 0,
-        maxWidth: Int = Integer.MAX_VALUE,
-        minHeight: Int = 0,
-        maxHeight: Int = Integer.MAX_VALUE,
+        minWidth: Int? = null,
+        maxWidth: Int? = null,
+        minHeight: Int? = null,
+        maxHeight: Int? = null,
         sortBy: String = "LATEST",
         page: Int = 0,
         size: Int = 20

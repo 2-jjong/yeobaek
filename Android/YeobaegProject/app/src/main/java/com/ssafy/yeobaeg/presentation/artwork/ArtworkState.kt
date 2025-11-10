@@ -30,4 +30,7 @@ data class ArtExploreState(
     val paginationInfo: Pagination? = null,
     val maxWidthCm: Int? = null,
     val maxHeightCm: Int? = null,
+    val minWidthCm: Int? = null,
+    val minHeightCm: Int? = null,
+    val isSearchLoading: Boolean = false
 )

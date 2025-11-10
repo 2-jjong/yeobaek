@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ArtSearchResponse(
     val artists: List<Artist>,
-    val artworks: List<Artwork>,
+    val artworks: List<ArtworkSummaryResponse>,
     val pagination: PaginationResponse
 )
 
@@ -19,27 +19,23 @@ data class ArtSearchResponse(
 data class Artist(
     val artistName: String,
     val artworkCount: Int = 0,
-    val introduction: String,
+    val introduction: String="",
     val profileImageUrl: String,
     val userId: Long
 )
 
 @Serializable
-data class Artwork(
-    val artistName: String,
-    val artistProfileImageUrl: String,
+data class ArtworkSummaryResponse(
     val artworkId: Long,
-    val bookmarkCount: Int,
-    val cafeName: String? = null,
-    val category: String,
-    val heightCm: Int,
-    val price: Int,
-    val status: String,
-    val thumbnailUrl: String,
     val title: String,
-    val widthCm: Int
+    val thumbnailUrl: String? = null
 )
 
+fun ArtworkSummaryResponse.toDomain() = ArtworkSummary(
+    artworkId = artworkId,
+    title = title,
+    thumbnailUrl = thumbnailUrl ?: ""
+)
 fun ArtSearchResponse.toDomain() = ArtSearchResult(
     artistSummaries = artists.map { it.toDomain() },
     artworkSummaries =  artworks.map { it.toDomain() },
@@ -51,20 +47,4 @@ fun Artist.toDomain() = ArtistSummary(
     profileImageUrl = profileImageUrl,
     introduction = introduction,
     artworkCount = artworkCount
-)
-
-fun Artwork.toDomain() = ArtworkSummary(
-    artworkId = artworkId,
-    title = title,
-    thumbnailUrl = thumbnailUrl,
-    price = price,
-    category = category,
-    widthCm = widthCm,
-    heightCm = heightCm,
-    status = when (status) {
-        "AVAILABLE" -> SlotStatus.AVAILABLE
-        "EXHIBITING" -> SlotStatus.EXHIBITING
-        else -> SlotStatus.RESERVED
-    },
-    bookmarkCount = bookmarkCount
 )

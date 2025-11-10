@@ -19,16 +19,19 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +59,7 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkRed
 import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegYellow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 @Composable
 fun ArtExploreScreen(
@@ -133,7 +137,8 @@ fun ArtExploreScreen(
                     .fillMaxSize(),
                 artists = state.resultArtists,
                 artworks = state.resultArtworks,
-                onClickArtwork = viewModel::navigateToDetail
+                onClickArtwork = viewModel::navigateToDetail,
+                onLoadNextPage = viewModel::loadSearchNextPage
             )
         }
     }
@@ -290,20 +295,43 @@ fun SearchResultContent(
     modifier: Modifier,
     artists: List<ArtistSummary>,
     artworks: List<ArtworkSummary>,
-    onClickArtwork : (Long) -> Unit = {}
+    hasNext: Boolean = false,
+    isLoading: Boolean = false,
+    onClickArtwork: (Long) -> Unit = {},
+    onLoadNextPage: () -> Unit = {}
 ) {
+    val listState = rememberLazyGridState()
+
+    // 무한 스크롤 로직
+    LaunchedEffect(listState, hasNext, isLoading) {
+        snapshotFlow {
+            val info = listState.layoutInfo
+            val last = info.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val total = info.totalItemsCount
+            last >= total - 3
+        }
+            .distinctUntilChanged()
+            .collect { shouldLoadMore ->
+                if (shouldLoadMore && hasNext && !isLoading) {
+                    onLoadNextPage()
+                }
+            }
+    }
+
     ArtworkGrid(
         items = artworks,
         onClickArtwork = onClickArtwork,
+        listState = listState,
+        columns = 2,
         modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp),
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            ArtistResultSection(artists = artists)
-            Text(text = "작품", modifier = Modifier.padding(8.dp), color = YeobaegTextGray)
+            .fillMaxSize(),
+        topContent = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                ArtistResultSection(artists = artists)
+                Text(text = "작품", modifier = Modifier.padding(8.dp), color = YeobaegTextGray)
+            }
         }
-    }
+    )
 }
 
 @Composable

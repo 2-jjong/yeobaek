@@ -21,10 +21,10 @@ class ArtRepositoryImpl @Inject constructor(
     override suspend fun searchArt(
         keyword: String,
         categories: List<String>,
-        minWidth: Int,
-        maxWidth: Int,
-        minHeight: Int,
-        maxHeight: Int,
+        minWidth: Int?,
+        maxWidth: Int?,
+        minHeight: Int?,
+        maxHeight: Int?,
         sortBy: String,
         page: Int,
         size: Int

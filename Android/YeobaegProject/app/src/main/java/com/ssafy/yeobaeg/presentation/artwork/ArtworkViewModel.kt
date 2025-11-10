@@ -1,16 +1,14 @@
 // ArtExploreViewModel.kt
 package com.ssafy.yeobaeg.presentation.artwork
 
-import android.R.attr.mode
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
-import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.domain.repository.RecentSearchRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,12 +17,12 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 class ArtExploreViewModel @Inject constructor(
     private val recentSearchRepository: RecentSearchRepository,
     private val artRepository: ArtRepository,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val snackBarController: SnackBarController
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ArtExploreState())
     val uiState: StateFlow<ArtExploreState> = _uiState.asStateFlow()
@@ -52,6 +50,7 @@ class ArtExploreViewModel @Inject constructor(
                 }
                 .onFailure {
                     Log.d("ArtExploreViewModel init", "search error: ${it.message}")
+                    snackBarController.showError(it.message ?: "오류")
                 }
         }
     }
@@ -75,7 +74,7 @@ class ArtExploreViewModel @Inject constructor(
         loadArtworks()
     }
 
-    fun search() = viewModelScope.launch {
+    fun search(page: Int = 0) = viewModelScope.launch {
         val q = _uiState.value.query.trim()
         if (q.isEmpty()) return@launch
         recentSearchRepository.add(q)
@@ -84,22 +83,37 @@ class ArtExploreViewModel @Inject constructor(
 
         val result = artRepository.searchArt(
             keyword = q,
-            minWidth = 0,
-            maxWidth = _uiState.value.maxWidthCm ?: Int.MAX_VALUE,
-            minHeight = 0,
-            maxHeight = _uiState.value.maxHeightCm ?: Int.MAX_VALUE,
+            minWidth = _uiState.value.minWidthCm,
+            maxWidth = _uiState.value.maxWidthCm,
+            minHeight = _uiState.value.minWidthCm,
+            maxHeight = _uiState.value.maxHeightCm,
+            page = page,
+            size = 20
         )
 
         result.onSuccess { searchResult ->
             update {
                 copy(
-                    resultArtists = searchResult.artistSummaries,
-                    resultArtworks = searchResult.artworkSummaries,
-                    paginationInfo = searchResult.paginationInfo
+                    resultArtists = if (page == 0) searchResult.artistSummaries else resultArtists,
+                    resultArtworks = if (page == 0) searchResult.artworkSummaries
+                    else resultArtworks + searchResult.artworkSummaries,
+                    paginationInfo = searchResult.paginationInfo,
+                    isSearchLoading = false
                 )
             }
         }.onFailure { error ->
             Log.d("ArtExploreViewModel", "search error: ${error.message}")
+            update { copy(isSearchLoading = false) }
+            snackBarController.showError(error.message ?: "오류")
+        }
+    }
+
+    fun loadSearchNextPage() {
+        val currentPage = _uiState.value.paginationInfo?.currentPage ?: 0
+        val hasNext = _uiState.value.paginationInfo?.hasNext ?: true
+
+        if (!_uiState.value.isSearchLoading && hasNext) {
+            search(currentPage + 1)
         }
     }
 
@@ -109,6 +123,7 @@ class ArtExploreViewModel @Inject constructor(
     fun navigateToDetail(artWorkId: Long) = viewModelScope.launch {
         navigator.navigate(FullScreen.ArtworkDetail(artWorkId))
     }
+
     private inline fun update(block: ArtExploreState.() -> ArtExploreState) {
         _uiState.update(block)
     }
