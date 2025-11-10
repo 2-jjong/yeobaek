@@ -1,5 +1,6 @@
 package com.ssafy.yeobaek.cafe.controller;
 
+import com.ssafy.yeobaek.cafe.service.CafeBookmarkService;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.cafe.dto.request.*;
 import com.ssafy.yeobaek.cafe.dto.response.*;
@@ -39,6 +40,7 @@ public class CafeController {
 
     private final CafeService cafeService;
     private final CafeCategoryService cafeCategoryService;
+    private final CafeBookmarkService cafeBookmarkService;
 
     @Operation(summary = "카페 정보 등록", description = "카페 사장이 매장 상세 정보, 전시 슬롯, 전시 조건을 등록합니다. 회원가입 후 처음 카페 정보를 등록할 때 사용합니다. 이미지는 최소 3장, 최대 10장까지 등록 가능합니다.")
     @ApiResponses(value = {
@@ -849,7 +851,8 @@ public class CafeController {
             @Parameter(description = "북마크 토글할 카페 ID", required = true)
             @PathVariable Long cafeId
     ) {
-        BookmarkToggleResponse data = new BookmarkToggleResponse(true);
+        Long userId = SecurityUtil.getCurrentUserId();
+        BookmarkToggleResponse data = cafeBookmarkService.toggleBookmark(userId, cafeId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
