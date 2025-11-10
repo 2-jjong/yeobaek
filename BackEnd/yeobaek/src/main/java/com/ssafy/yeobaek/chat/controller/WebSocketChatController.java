@@ -28,7 +28,7 @@ public class WebSocketChatController {
             StompHeaderAccessor accessor,
             @Payload ChatMessageRequest chatMessageRequest
     ) {
-        log.info("[WebSocket] Received message payload: {}", chatMessageRequest);
+        log.info("[WebSocket] Received message: {}", chatMessageRequest.getContent());
 
         // StompHeaderAccessor에서 세션 속성을 직접 꺼내 사용
         Map<String, Object> sessionAttributes = accessor.getSessionAttributes();
