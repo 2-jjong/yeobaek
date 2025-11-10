@@ -35,7 +35,11 @@ data class SignUpUiState(
     val passwordError: String? = null,
     val passwordConfirmError: String? = null,
     val birthDateError: String? = null,
-    val nicknameError: String? = null
+    val nicknameError: String? = null,
+    // 이메일 중복 확인 상태
+    val isEmailChecking: Boolean = false,
+    val isEmailAvailable: Boolean? = null,
+    val emailCheckMessage: String? = null
 )
 
 @HiltViewModel
@@ -53,11 +57,62 @@ class SignUpViewModel @Inject constructor(
         val errorMessage = if (email.isNotBlank()) {
             ValidationUtils.getEmailErrorMessage(email)
         } else null
-        
-        _uiState.update { 
+
+        _uiState.update {
             it.copy(
                 email = email,
-                emailError = errorMessage
+                emailError = errorMessage,
+                // 이메일이 변경되면 중복 확인 상태 초기화
+                isEmailAvailable = null,
+                emailCheckMessage = null
+            )
+        }
+    }
+
+    fun checkEmailAvailability() {
+        viewModelScope.launch {
+            val email = _uiState.value.email
+
+            // 이메일 형식 검증
+            val emailError = ValidationUtils.getEmailErrorMessage(email)
+            if (emailError != null) {
+                _uiState.update {
+                    it.copy(
+                        emailError = emailError,
+                        isEmailAvailable = null,
+                        emailCheckMessage = null
+                    )
+                }
+                return@launch
+            }
+
+            _uiState.update { it.copy(isEmailChecking = true) }
+
+            val result = authRepository.checkEmailAvailability(email)
+
+            result.fold(
+                onSuccess = { available ->
+                    _uiState.update {
+                        it.copy(
+                            isEmailChecking = false,
+                            isEmailAvailable = available,
+                            emailCheckMessage = if (available) {
+                                "사용 가능한 이메일입니다"
+                            } else {
+                                "이미 사용 중인 이메일입니다"
+                            }
+                        )
+                    }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isEmailChecking = false,
+                            isEmailAvailable = null,
+                            emailCheckMessage = exception.message ?: "이메일 확인에 실패했습니다"
+                        )
+                    }
+                }
             )
         }
     }
@@ -277,12 +332,13 @@ class SignUpViewModel @Inject constructor(
     
     fun canProceedFromEmailPasswordStep(): Boolean {
         val state = _uiState.value
-        return state.emailError == null && 
-               state.passwordError == null && 
+        return state.emailError == null &&
+               state.passwordError == null &&
                state.passwordConfirmError == null &&
                state.email.isNotBlank() &&
                state.password.isNotBlank() &&
-               state.passwordConfirm.isNotBlank()
+               state.passwordConfirm.isNotBlank() &&
+               state.isEmailAvailable == true  // 이메일 중복 확인 필수
     }
     
     fun canProceedFromRoleSelectionStep(): Boolean {
