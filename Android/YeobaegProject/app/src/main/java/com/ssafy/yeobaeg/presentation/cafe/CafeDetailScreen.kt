@@ -308,21 +308,120 @@ fun ExhibitionTabContent(
     slots: List<SlotDetail>
 ) {
     Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        // 도면 섹션
+        FloorPlanSection()
+
+        // 슬롯 리스트
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // 슬롯 제목
+            Text(
+                text = "전시 슬롯",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF654321),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            if (slots.isEmpty()) {
+                Text(
+                    text = "등록된 전시 슬롯이 없습니다",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(vertical = 32.dp)
+                )
+            } else {
+                slots.forEach { slot ->
+                    SlotItem(slot = slot)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FloorPlanSection() {
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .background(Color(0xFFF5F1ED))
+            .padding(16.dp)
     ) {
-        if (slots.isEmpty()) {
+        // 제목
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = "등록된 전시 슬롯이 없습니다",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 32.dp)
+                text = "카페 도면",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF654321)
             )
-        } else {
-            slots.forEach { slot ->
-                SlotItem(slot = slot)
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = Color.White
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFF654321),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "슬롯 위치 확인",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color(0xFF654321),
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // 도면 이미지 플레이스홀더
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.White),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Map,
+                    contentDescription = "도면",
+                    tint = Color(0xFFBDBDBD),
+                    modifier = Modifier.size(64.dp)
+                )
+                Text(
+                    text = "카페 도면",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFF9E9E9E),
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = "슬롯 위치를 확인할 수 있습니다",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFFBDBDBD)
+                )
             }
         }
     }
@@ -332,74 +431,60 @@ fun ExhibitionTabContent(
 fun SlotItem(slot: SlotDetail) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(16.dp)
         ) {
-            // 슬롯 이미지 또는 작품 이미지
-            AsyncImage(
-                model = slot.currentExhibition?.artworkImageUrl,
-                contentDescription = slot.slotName,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentScale = ContentScale.Crop
-            )
-            
-            // 슬롯 정보
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(100.dp),
-                verticalArrangement = Arrangement.SpaceBetween
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        text = slot.currentExhibition?.artworkTitle ?: slot.slotName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    
+                // 슬롯 이미지 또는 작품 이미지
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFFF5F5F5))
+                ) {
                     if (slot.currentExhibition != null) {
-                        Text(
-                            text = slot.currentExhibition.artistName,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = "${slot.currentExhibition.exhibitionStartDate} - ${slot.currentExhibition.exhibitionEndDate}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        AsyncImage(
+                            model = slot.currentExhibition.artworkImageUrl,
+                            contentDescription = slot.slotName,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
                     } else {
-                        Text(
-                            text = "${slot.widthCm}cm × ${slot.heightCm}cm",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                
-                // 상태 및 수수료
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = when (slot.status) {
-                            AVAILABLE -> MaterialTheme.colorScheme.primaryContainer
-                            EXHIBITING -> Color(0xFFFFF59D)
-                            SCHEDULED -> MaterialTheme.colorScheme.errorContainer
+                        // 빈 슬롯 아이콘
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Image,
+                                contentDescription = null,
+                                tint = Color(0xFFBDBDBD),
+                                modifier = Modifier.size(48.dp)
+                            )
                         }
+                    }
+
+                    // 상태 배지 (좌측 상단)
+                    Surface(
+                        shape = RoundedCornerShape(bottomEnd = 8.dp),
+                        color = when (slot.status) {
+                            AVAILABLE -> Color(0xFF4CAF50)
+                            EXHIBITING -> Color(0xFFFFC107)
+                            SCHEDULED -> Color(0xFFFF5252)
+                        },
+                        modifier = Modifier.align(Alignment.TopStart)
                     ) {
                         Text(
                             text = when (slot.status) {
@@ -408,21 +493,132 @@ fun SlotItem(slot: SlotDetail) {
                                 SCHEDULED -> "예약 됨"
                             },
                             style = MaterialTheme.typography.labelSmall,
-                            color = when (slot.status) {
-                                AVAILABLE -> MaterialTheme.colorScheme.onPrimaryContainer
-                                EXHIBITING -> Color(0xFF5D4037)
-                                SCHEDULED -> MaterialTheme.colorScheme.onErrorContainer
-                            },
+                            color = Color.White,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Bold
                         )
                     }
-                    
+                }
+
+                // 슬롯 정보
+                Column(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // 슬롯명 또는 작품명
                     Text(
-                        text = "수수료 ${slot.commissionRate}%",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = slot.currentExhibition?.artworkTitle ?: slot.slotName,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A1A1A),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
+
+                    if (slot.currentExhibition != null) {
+                        // 작가명
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = Color(0xFF757575),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = slot.currentExhibition.artistName,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF757575)
+                            )
+                        }
+
+                        // 전시 기간
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DateRange,
+                                contentDescription = null,
+                                tint = Color(0xFF757575),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "${slot.currentExhibition.exhibitionStartDate} - ${slot.currentExhibition.exhibitionEndDate}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF757575)
+                            )
+                        }
+                    } else {
+                        // 크기 정보
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AspectRatio,
+                                contentDescription = null,
+                                tint = Color(0xFF757575),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Text(
+                                text = "${slot.widthCm}cm × ${slot.heightCm}cm",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF757575),
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        // 위치 설명
+                        if (slot.locationDescription.isNotEmpty()) {
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = null,
+                                    tint = Color(0xFF757575),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = slot.locationDescription,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Color(0xFF757575),
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    }
+
+                    // 수수료
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Color(0xFFFFF3E0)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Percent,
+                                contentDescription = null,
+                                tint = Color(0xFFFF6F00),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "수수료 ${slot.commissionRate.toInt()}%",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = Color(0xFFFF6F00),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
             }
         }

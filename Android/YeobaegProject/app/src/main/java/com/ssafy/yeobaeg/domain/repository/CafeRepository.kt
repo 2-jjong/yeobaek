@@ -19,16 +19,22 @@ interface CafeRepository {
      * 카페 목록 조회
      *
      * @param keyword 카페명 검색 키워드
-     * @param latitude 위도
-     * @param longitude 경도
+     * @param centerLatitude 지도 중심 위도
+     * @param centerLongitude 지도 중심 경도
+     * @param myLatitude 내 위치 위도
+     * @param myLongitude 내 위치 경도
+     * @param radiusKm 반경 km
      * @param filter 카페 필터 (작가 전용)
      * @param page 페이지 번호
      * @param size 페이지 크기
      */
     suspend fun getCafes(
         keyword: String? = null,
-        latitude: Double,
-        longitude: Double,
+        centerLatitude: Double,
+        centerLongitude: Double,
+        myLatitude: Double,
+        myLongitude: Double,
+        radiusKm: Double,
         filter: CafeFilter? = null,
         page: Int = 0,
         size: Int = 20

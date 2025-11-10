@@ -14,6 +14,8 @@ import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +25,7 @@ import javax.inject.Inject
 
 data class CafeMapUiState(
     val cafes: List<CafeSummary> = emptyList(),
-    val isLoading: Boolean = false,
+    val isInitialLoading: Boolean = true,
     val error: String? = null,
     val currentLocation: LatLng? = null,
     val cameraPosition: LatLng? = null,
@@ -32,7 +34,8 @@ data class CafeMapUiState(
     val isFilterDialogVisible: Boolean = false,
     val isBottomSheetExpanded: Boolean = false,
     val userRole: UserRole? = null,
-    val hasLocationPermission: Boolean = false
+    val hasLocationPermission: Boolean = false,
+    val currentZoomLevel: Float = 15f
 )
 
 @HiltViewModel
@@ -42,10 +45,13 @@ class CafeMapViewModel @Inject constructor(
     private val authSessionManager: AuthSessionManager,
     private val navigator: Navigator
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(CafeMapUiState())
     val uiState: StateFlow<CafeMapUiState> = _uiState.asStateFlow()
-    
+
+    private var cameraMovementJob: Job? = null
+    private val CAMERA_MOVEMENT_DEBOUNCE_MS = 800L
+
     init {
         observeUserRole()
     }
@@ -68,13 +74,13 @@ class CafeMapViewModel @Inject constructor(
             // 권한이 없으면 기본 위치 사용
             val defaultLocation = locationService.getDefaultLocation()
             val defaultLatLng = LatLng(defaultLocation.latitude, defaultLocation.longitude)
-            _uiState.update { 
+            _uiState.update {
                 it.copy(
                     currentLocation = defaultLatLng,
                     cameraPosition = defaultLatLng
                 )
             }
-            loadCafes(defaultLocation.latitude, defaultLocation.longitude)
+            loadCafesWithCurrentState()
         }
     }
     
@@ -86,17 +92,17 @@ class CafeMapViewModel @Inject constructor(
             try {
                 val location = locationService.getCurrentLocation()
                     ?: locationService.getDefaultLocation()
-                
+
                 val latLng = LatLng(location.latitude, location.longitude)
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         currentLocation = latLng,
                         cameraPosition = latLng
                     )
                 }
-                
+
                 // 현재 위치 기준으로 카페 목록 로드
-                loadCafes(location.latitude, location.longitude)
+                loadCafesWithCurrentState()
             } catch (e: Exception) {
                 Log.e("CafeMapViewModel", "Failed to get current location", e)
                 _uiState.update { it.copy(error = "위치를 가져올 수 없습니다") }
@@ -105,45 +111,103 @@ class CafeMapViewModel @Inject constructor(
     }
     
     /**
-     * 지도 카메라 위치가 변경되었을 때
+     * 지도 카메라 위치가 변경되었을 때 (디바운스 적용)
      */
-    fun onCameraPositionChanged(position: LatLng) {
-        _uiState.update { it.copy(cameraPosition = position) }
-        // 카메라 위치 기준으로 카페 목록 다시 로드
-        loadCafes(position.latitude, position.longitude)
+    fun onCameraPositionChanged(position: LatLng, zoomLevel: Float) {
+        _uiState.update {
+            it.copy(
+                cameraPosition = position,
+                currentZoomLevel = zoomLevel
+            )
+        }
+
+        // 기존 작업 취소
+        cameraMovementJob?.cancel()
+
+        // 새로운 작업 예약 (디바운스)
+        cameraMovementJob = viewModelScope.launch {
+            delay(CAMERA_MOVEMENT_DEBOUNCE_MS)
+            loadCafesWithCurrentState(showLoading = false)
+        }
+    }
+
+    /**
+     * 줌 레벨에 따라 반경(km) 계산
+     * 줌 레벨이 낮을수록(멀리서 볼수록) 더 넓은 반경
+     */
+    private fun calculateRadiusFromZoom(zoomLevel: Float): Double {
+        return when {
+            zoomLevel >= 17f -> 1.0   // 매우 확대: 1km
+            zoomLevel >= 15f -> 3.0   // 확대: 3km
+            zoomLevel >= 13f -> 5.0   // 중간: 5km
+            zoomLevel >= 11f -> 10.0  // 축소: 10km
+            zoomLevel >= 9f -> 20.0   // 많이 축소: 20km
+            else -> 50.0              // 매우 많이 축소: 50km
+        }
     }
     
     /**
+     * 현재 상태로 카페 목록 로드
+     */
+    private fun loadCafesWithCurrentState(showLoading: Boolean = true) {
+        val state = _uiState.value
+        val cameraPos = state.cameraPosition ?: return
+        val myLocation = state.currentLocation ?: return
+
+        val radiusKm = calculateRadiusFromZoom(state.currentZoomLevel)
+
+        loadCafes(
+            centerLatitude = cameraPos.latitude,
+            centerLongitude = cameraPos.longitude,
+            myLatitude = myLocation.latitude,
+            myLongitude = myLocation.longitude,
+            radiusKm = radiusKm,
+            keyword = state.searchKeyword.takeIf { it.isNotEmpty() },
+            filter = state.filter.takeIf { it.isActive() },
+            showLoading = showLoading
+        )
+    }
+
+    /**
      * 카페 목록 로드
      */
-    fun loadCafes(
-        latitude: Double,
-        longitude: Double,
+    private fun loadCafes(
+        centerLatitude: Double,
+        centerLongitude: Double,
+        myLatitude: Double,
+        myLongitude: Double,
+        radiusKm: Double,
         keyword: String? = null,
-        filter: CafeFilter? = null
+        filter: CafeFilter? = null,
+        showLoading: Boolean = true
     ) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            
+            if (showLoading) {
+                _uiState.update { it.copy(isInitialLoading = true, error = null) }
+            }
+
             cafeRepository.getCafes(
-                keyword = keyword?.takeIf { it.isNotEmpty() },
-                latitude = latitude,
-                longitude = longitude,
-                filter = filter?.takeIf { it.isActive() },
+                keyword = keyword,
+                centerLatitude = centerLatitude,
+                centerLongitude = centerLongitude,
+                myLatitude = myLatitude,
+                myLongitude = myLongitude,
+                radiusKm = radiusKm,
+                filter = filter,
                 page = 0,
                 size = 50
             ).onSuccess { result ->
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         cafes = result.cafes,
-                        isLoading = false
+                        isInitialLoading = false
                     )
                 }
             }.onFailure { e ->
                 Log.e("CafeMapViewModel", "Failed to load cafes", e)
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
-                        isLoading = false,
+                        isInitialLoading = false,
                         error = e.message ?: "카페 목록을 불러올 수 없습니다"
                     )
                 }
@@ -162,15 +226,7 @@ class CafeMapViewModel @Inject constructor(
      * 검색 실행
      */
     fun onSearch() {
-        val state = _uiState.value
-        val position = state.cameraPosition ?: state.currentLocation ?: return
-        
-        loadCafes(
-            latitude = position.latitude,
-            longitude = position.longitude,
-            keyword = state.searchKeyword,
-            filter = state.filter
-        )
+        loadCafesWithCurrentState()
     }
     
     /**
@@ -185,14 +241,7 @@ class CafeMapViewModel @Inject constructor(
      */
     fun applyFilter(filter: CafeFilter) {
         _uiState.update { it.copy(filter = filter, isFilterDialogVisible = false) }
-        
-        val position = _uiState.value.cameraPosition ?: _uiState.value.currentLocation ?: return
-        loadCafes(
-            latitude = position.latitude,
-            longitude = position.longitude,
-            keyword = _uiState.value.searchKeyword,
-            filter = filter
-        )
+        loadCafesWithCurrentState()
     }
     
     /**
@@ -200,14 +249,7 @@ class CafeMapViewModel @Inject constructor(
      */
     fun clearFilter() {
         _uiState.update { it.copy(filter = CafeFilter()) }
-        
-        val position = _uiState.value.cameraPosition ?: _uiState.value.currentLocation ?: return
-        loadCafes(
-            latitude = position.latitude,
-            longitude = position.longitude,
-            keyword = _uiState.value.searchKeyword,
-            filter = null
-        )
+        loadCafesWithCurrentState()
     }
     
     /**

@@ -62,8 +62,11 @@ class CafeRepositoryImpl @Inject constructor(
 
     override suspend fun getCafes(
         keyword: String?,
-        latitude: Double,
-        longitude: Double,
+        centerLatitude: Double,
+        centerLongitude: Double,
+        myLatitude: Double,
+        myLongitude: Double,
+        radiusKm: Double,
         filter: CafeFilter?,
         page: Int,
         size: Int
@@ -71,8 +74,11 @@ class CafeRepositoryImpl @Inject constructor(
         return runCatching {
             val response = cafeApiService.getCafes(
                 keyword = keyword,
-                latitude = latitude,
-                longitude = longitude,
+                centerLatitude = centerLatitude,
+                centerLongitude = centerLongitude,
+                myLatitude = myLatitude,
+                myLongitude = myLongitude,
+                radiusKm = radiusKm,
                 minWidth = filter?.minWidth,
                 maxWidth = filter?.maxWidth,
                 minHeight = filter?.minHeight,

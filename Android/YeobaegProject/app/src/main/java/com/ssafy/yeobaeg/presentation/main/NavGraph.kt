@@ -32,7 +32,6 @@ import com.ssafy.yeobaeg.presentation.chat.ChattingScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.cafe.CafeDetailScreen
 import com.ssafy.yeobaeg.presentation.cafe.CafeMapScreen
-import com.ssafy.yeobaeg.presentation.home.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtworkRegisterScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen

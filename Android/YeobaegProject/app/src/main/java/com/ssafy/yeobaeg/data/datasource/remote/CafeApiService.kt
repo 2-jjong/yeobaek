@@ -15,7 +15,6 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
-import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Path
 import java.io.Serial
@@ -54,8 +53,11 @@ interface CafeApiService {
      * 카페 목록 조회
      *
      * @param keyword 카페명 검색 키워드
-     * @param latitude 위도 (필수)
-     * @param longitude 경도 (필수)
+     * @param centerLatitude 지도 중심 위도 (필수)
+     * @param centerLongitude 지도 중심 경도 (필수)
+     * @param myLatitude 내 위치 위도 (필수)
+     * @param myLongitude 내 위치 경도 (필수)
+     * @param radiusKm 반경 몇 km 이내 (필수)
      * @param minWidth 슬롯 최소 폭 (cm) - 작가만
      * @param maxWidth 슬롯 최대 폭 (cm) - 작가만
      * @param minHeight 슬롯 최소 높이 (cm) - 작가만
@@ -68,8 +70,11 @@ interface CafeApiService {
     @GET("cafes")
     suspend fun getCafes(
         @Query("keyword") keyword: String? = null,
-        @Query("latitude") latitude: Double,
-        @Query("longitude") longitude: Double,
+        @Query("centerLatitude") centerLatitude: Double,
+        @Query("centerLongitude") centerLongitude: Double,
+        @Query("myLatitude") myLatitude: Double,
+        @Query("myLongitude") myLongitude: Double,
+        @Query("radiusKm") radiusKm: Double,
         @Query("minWidth") minWidth: Int? = null,
         @Query("maxWidth") maxWidth: Int? = null,
         @Query("minHeight") minHeight: Int? = null,
