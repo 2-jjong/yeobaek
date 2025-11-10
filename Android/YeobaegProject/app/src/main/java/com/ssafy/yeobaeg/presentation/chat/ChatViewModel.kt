@@ -41,8 +41,7 @@ class ChatViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState
-    private val _messages = MutableStateFlow<List<String>>(emptyList())
-    val messages: StateFlow<List<String>> = _messages
+
 
     /** 채팅방 입장 시점에만 웹소켓 연결 */
     fun connectWebSocket(chatRoomId: Long) {
