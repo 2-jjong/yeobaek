@@ -493,11 +493,8 @@ public class CafeController {
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터
-        List<CafeSummary> cafes = createMockCafes(MOCK_CAFE_COUNT, 1L, null);
-
-        Pagination pagination = new Pagination(page, size, (long) MOCK_CAFE_COUNT, (int) Math.ceil((double) MOCK_CAFE_COUNT / size), false);
-        CafeListData data = new CafeListData(cafes, pagination);
+        Long userId = SecurityUtil.getCurrentUserId();
+        CafeListData data = cafeService.getBookmarkedCafes(userId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
