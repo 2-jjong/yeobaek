@@ -4,7 +4,9 @@ import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.entity.Artwork;
+import com.ssafy.yeobaek.artwork.entity.ArtworkBookmark;
 import com.ssafy.yeobaek.artwork.mapper.ArtworkMapper;
+import com.ssafy.yeobaek.artwork.repository.ArtworkBookmarkRepository;
 import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
 import com.ssafy.yeobaek.artwork.repository.ArtworkSpecification;
 import com.ssafy.yeobaek.common.code.ResponseCode;
@@ -39,6 +41,7 @@ import java.util.stream.Collectors;
 public class ArtworkServiceImpl implements ArtworkService {
 
     private final ArtworkRepository artworkRepository;
+    private final ArtworkBookmarkRepository artworkBookmarkRepository;
     private final ArtworkBookmarkService artworkBookmarkService;
     private final UserService userService;
     private final ArtworkMapper artworkMapper;
@@ -372,5 +375,55 @@ public class ArtworkServiceImpl implements ArtworkService {
                 .collect(Collectors.toList());
 
         return artworkMapper.toArtistHomeResponse(artistDto, artworkSummaries);
+    }
+
+    /**
+     * 북마크한 작품 목록 조회
+     * @param userId 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 북마크한 작품 목록 및 페이징 정보
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ArtworkListResponse getBookmarkedArtworks(Long userId, Integer page, Integer size) {
+        // Pageable 생성
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 북마크한 작품 목록 조회 (페이징)
+        Page<ArtworkBookmark> bookmarkPage = artworkBookmarkRepository.findByUser_IdOrderByCreatedAtDesc(userId, pageable);
+
+        // 북마크한 작품을 ArtworkSummaryDto로 변환
+        List<ArtworkSummaryDto> artworkSummaries = bookmarkPage.getContent().stream()
+                .map(bookmark -> {
+                    Artwork artwork = bookmark.getArtwork();
+                    Artist artist = artwork.getArtist();
+
+                    // 썸네일 URL 변환 (첫 번째 이미지 사용)
+                    String thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+
+                    // 작가 프로필 이미지 URL 변환
+                    String profileImageUrl = s3Service.generatePresignedUrlForDownload(artist.getUser().getProfileImageUrl());
+
+                    // 작가 정보 DTO 생성 (기본 정보만)
+                    ArtistDto artistDto = artworkMapper.toArtist(artist, profileImageUrl);
+
+                    // 전시 중이면 카페명 조회
+                    String cafeName = null;
+                    if (artwork.getIsExhibiting()) {
+                        Optional<Exhibition> exhibition = exhibitionService.getCurrentExhibitionByArtwork(artwork.getId());
+                        cafeName = exhibition.map(e -> e.getCafe().getCafeName()).orElse(null);
+                    }
+
+                    // DTO 변환
+                    return artworkMapper.toArtworkSummaryDtoForBookmark(artwork, thumbnailUrl, cafeName, artistDto);
+                })
+                .collect(Collectors.toList());
+
+        // Pagination DTO 생성
+        Pagination pagination = artworkMapper.toPagination(bookmarkPage);
+
+        // artists는 null로 설정 (북마크 목록이므로)
+        return artworkMapper.toArtworkListData(null, artworkSummaries, pagination);
     }
 }

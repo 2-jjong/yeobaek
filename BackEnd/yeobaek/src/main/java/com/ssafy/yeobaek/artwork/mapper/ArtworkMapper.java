@@ -229,4 +229,26 @@ public class ArtworkMapper {
                 .artworks(artworks)
                 .build();
     }
+
+    /**
+     * Artwork 엔티티를 ArtworkSummaryDto로 변환 (북마크 목록용 - 작가 정보 및 카페명 포함)
+     * @param artwork Artwork 엔티티
+     * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
+     * @param cafeName 전시 장소(카페명)
+     * @param artistDto 작가 정보
+     * @return ArtworkSummaryDto
+     */
+    public ArtworkSummaryDto toArtworkSummaryDtoForBookmark(Artwork artwork, String thumbnailUrl, String cafeName, ArtistDto artistDto) {
+        return ArtworkSummaryDto.builder()
+                .artworkId(artwork.getId())
+                .title(artwork.getTitle())
+                .thumbnailUrl(thumbnailUrl)
+                .price(artwork.getPrice())
+                .category(artwork.getArtCategory().name())
+                .cafeName(cafeName)
+                .isExhibiting(artwork.getIsExhibiting())
+                .bookmarkCount(artwork.getBookmarkCount())
+                .artistDto(artistDto)
+                .build();
+    }
 }
