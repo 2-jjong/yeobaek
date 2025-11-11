@@ -75,6 +75,9 @@ public class ArtworkBookmarkServiceImpl implements ArtworkBookmarkService {
         // ArtworkBookmark 엔티티 변환 및 저장
         ArtworkBookmark artworkBookmark = artworkBookmarkMapper.toArtworkBookmark(user, artwork);
         artworkBookmarkRepository.save(artworkBookmark);
+
+        // 북마크 카운트 증가
+        artwork.incrementBookmarkCount();
     }
 
     /**
@@ -83,7 +86,14 @@ public class ArtworkBookmarkServiceImpl implements ArtworkBookmarkService {
      * @param artworkId 북마크 ID
      */
     private void deleteBookmark(Long userId, Long artworkId){
+        // 작품 조회
+        Artwork artwork = artworkRepository.findById(artworkId)
+                .orElseThrow(() -> new CustomException(ResponseCode.ARTWORK_NOT_FOUND));
+
         // 북마크 삭제
         artworkBookmarkRepository.deleteArtworkBookmarkByUser_IdAndArtwork_Id(userId, artworkId);
+
+        // 북마크 카운트 감소
+        artwork.decrementBookmarkCount();
     }
 }

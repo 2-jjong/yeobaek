@@ -80,4 +80,20 @@ public class Artwork {
     public void incrementViewCount() {
         this.viewCount++;
     }
+
+    /**
+     * 북마크 수 증가
+     */
+    public void incrementBookmarkCount() {
+        this.bookmarkCount++;
+    }
+
+    /**
+     * 북마크 수 감소
+     */
+    public void decrementBookmarkCount() {
+        if (this.bookmarkCount > 0) {
+            this.bookmarkCount--;
+        }
+    }
 }
