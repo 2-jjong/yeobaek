@@ -82,4 +82,16 @@ public interface ArtworkService {
      * @return 인기 작품 목록 (최대 3개)
      */
     ArtistHomeResponse getArtistHome(Long userId);
+
+    /**
+     * 북마크한 작품 목록 조회
+     * - 북마크 생성일 기준 내림차순 정렬
+     * - 각 작품에 작가 정보 포함
+     * - 전시 중인 작품은 카페명 포함
+     * @param userId 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 북마크한 작품 목록 및 페이징 정보
+     */
+    ArtworkListResponse getBookmarkedArtworks(Long userId, Integer page, Integer size);
 }
