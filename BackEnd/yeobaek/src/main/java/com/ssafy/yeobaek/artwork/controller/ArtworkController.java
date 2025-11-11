@@ -23,12 +23,14 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -1089,6 +1091,123 @@ public class ArtworkController {
     public ResponseEntity<ResponseDto<ArtistHomeResponse>> getArtistHome() {
         Long artistId = SecurityUtil.getCurrentUserId();
         ArtistHomeResponse data = artworkService.getArtistHome(artistId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(data));
+    }
+
+    @Operation(
+            summary = "작품의 전시 가능일 조회",
+            description = "특정 작품의 전시 가능한 날짜 목록을 조회합니다.\n\n" +
+                    "**주요 기능:**\n" +
+                    "- 조회 시작일로부터 30일 동안의 전시 가능한 날짜 목록 반환\n" +
+                    "- startDate가 없으면 오늘 날짜 기준으로 조회\n" +
+                    "- 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시와 겹치지 않는 날짜만 반환\n" +
+                    "- 과거 날짜 조회 시 에러 발생 (오늘 날짜 이전은 조회 불가)\n" +
+                    "- 날짜 형식: yyyy-MM-dd\n\n" +
+                    "**권한:**\n" +
+                    "- 카페 사장만 사용 가능\n\n"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "전시 가능일이 있는 경우",
+                                            description = "조회 기간 내에 전시 가능한 날짜가 있는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"dates\": [\"2025-11-14\", \"2025-11-15\", \"2025-11-16\", \"2025-11-20\", \"2025-11-21\", \"2025-11-22\", \"2025-11-23\", \"2025-12-01\", \"2025-12-02\", \"2025-12-03\"]}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "전시 가능일이 없는 경우",
+                                            description = "조회 기간 내에 모든 날짜가 이미 예약된 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"dates\": []}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "과거 날짜 조회",
+                                    description = "오늘 날짜 이전의 날짜로 조회하려는 경우",
+                                    value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "카페 사장 권한 필요",
+                                    description = "카페 사장이 아닌 사용자가 접근한 경우",
+                                    value = "{\"code\": \"AW4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "존재하지 않는 작품",
+                                    value = "{\"code\": \"AW4041\", \"message\": \"존재하지 않는 작품입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/{artworkId}/available-dates")
+    @PreAuthorize("hasRole('CAFE_OWNER')")
+    public ResponseEntity<ResponseDto<ArtworkAvailableDatesResponse>> getArtworkAvailableDates(
+            @Parameter(description = "작품 ID", required = true)
+            @PathVariable Long artworkId,
+            @Parameter(description = "조회 시작일 (yyyy-MM-dd 형식, 기본값: 오늘 날짜)")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+            LocalDate startDate
+    ) {
+        ArtworkAvailableDatesResponse data = artworkService.getArtworkAvailableDates(artworkId, startDate);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
