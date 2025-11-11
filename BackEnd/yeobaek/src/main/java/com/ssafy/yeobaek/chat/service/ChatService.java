@@ -32,9 +32,8 @@ public interface ChatService {
      * 채팅 메시지 전송
      * @param userId 발신자 ID
      * @param chatMessageRequest 채팅 메시지 요청
-     * @return 전송된 채팅 메시지 정보
      */
-    ChatMessage sendMessage(Long userId, ChatMessageRequest chatMessageRequest);
+    void sendMessage(Long userId, ChatMessageRequest chatMessageRequest);
 
     /**
      * 채팅방 목록 조회
@@ -59,7 +58,6 @@ public interface ChatService {
      * @param messageContent 메시지 내용 (프론트엔드에서 사용될 플레이스홀더 또는 실제 내용)
      * @param messageType 메시지 타입 (예: PROPOSAL)
      * @param exhibitionId 관련 전시 ID (nullable)
-     * @return 전송된 채팅 메시지 정보
      */
-    ChatMessage sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId);
+    void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId);
 }

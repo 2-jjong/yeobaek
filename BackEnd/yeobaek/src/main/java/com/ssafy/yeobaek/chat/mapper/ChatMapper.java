@@ -116,17 +116,4 @@ public class ChatMapper {
                 .messageType(request.getMessageType())
                 .build();
     }
-
-    /**
-     * 메시지 전송 요청 정보를 Message 엔티티로 변환
-     * @param chatRoom 채팅방 정보
-     * @param request 메시지 전송 요청 정보
-     * @return Message 엔티티
-     */
-    public Message toMessageEntityForProposal(ChatRoom chatRoom, ChatMessageRequest request) {
-        return Message.builder()
-                .chatRoom(chatRoom)
-                .messageType(MessageType.PROPOSAL)
-                .build();
-    }
 }

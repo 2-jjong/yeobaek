@@ -52,7 +52,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final S3Service s3Service;
-    private final WebSocketMessageSenderService webSocketMessageSenderService;
+    private final WebSocketMessageService webSocketMessageService;
 
     /**
      * 채팅방 생성
@@ -180,11 +180,10 @@ public class ChatServiceImpl implements ChatService {
      * 채팅 메시지 전송
      * @param userId 발신자 ID
      * @param request 채팅 메시지 요청
-     * @return 전송된 채팅 메시지 정보
      */
     @Override
     @Transactional
-    public ChatMessage sendMessage(Long userId, ChatMessageRequest request) {
+    public void sendMessage(Long userId, ChatMessageRequest request) {
         log.info("[ChatService] Start sending message from userId: {} in chatRoomId: {}", userId, request.getChatRoomId());
 
         // 1. 채팅방 유효성 검증
@@ -212,9 +211,7 @@ public class ChatServiceImpl implements ChatService {
         log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
 
         // 6. WebSocket을 통해 메시지 전송
-        webSocketMessageSenderService.sendChatMessage(request.getChatRoomId(), chatMessage);
-
-        return chatMessage;
+        webSocketMessageService.sendChatMessage(request.getChatRoomId(), chatMessage);
     }
 
     /**
@@ -313,11 +310,10 @@ public class ChatServiceImpl implements ChatService {
      * @param messageContent 메시지 내용 (프론트엔드에서 사용될 플레이스홀더 또는 실제 내용)
      * @param messageType 메시지 타입 (예: PROPOSAL)
      * @param exhibitionId 관련 전시 ID (nullable)
-     * @return 전송된 채팅 메시지 정보
      */
     @Override
     @Transactional
-    public ChatMessage sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId) {
+    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId) {
 
         log.info("[ChatService] Start sending system message in chatRoomId: {}", chatRoomId);
 
@@ -329,8 +325,6 @@ public class ChatServiceImpl implements ChatService {
         // 2. 메시지 엔티티 생성 및 저장
         Message message = Message.builder()
                 .chatRoom(chatRoom)
-                .user(null)
-                .content(null)
                 .messageType(messageType)
                 .exhibitionId(exhibitionId)
                 .build();
@@ -342,8 +336,6 @@ public class ChatServiceImpl implements ChatService {
         log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
 
         // 4. WebSocket을 통해 메시지 전송
-        webSocketMessageSenderService.sendChatMessage(chatRoomId, chatMessage);
-
-        return chatMessage;
+        webSocketMessageService.sendChatMessage(chatRoomId, chatMessage);
     }
 }
