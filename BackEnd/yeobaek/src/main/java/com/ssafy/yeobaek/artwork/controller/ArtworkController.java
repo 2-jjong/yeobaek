@@ -820,32 +820,56 @@ public class ArtworkController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "인기 작품 목록 조회", description = "조회수, 북마크 수, 평가를 기반으로 인기 작품을 추천합니다. 최대 20개까지 조회합니다.")
+    @Operation(
+            summary = "인기 작품 목록 조회",
+            description = "전체 작품 중 인기 있는 작품 목록을 조회합니다.\n\n" +
+                    "**주요 기능:**\n" +
+                    "- 인기도 기준: 조회수 × 1 + 북마크수 × 9\n" +
+                    "- 각 작품에 작가 정보 포함 (작가명, 프로필 이미지)\n" +
+                    "- 전시 중인 작품은 카페명 포함\n" +
+                    "- 최대 20개까지 조회 가능\n\n"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "인기 작품이 있는 경우",
+                                            description = "인기 작품 목록 조회 성공",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 101, \"title\": \"숲속의 아침\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork101.jpg\", \"price\": 1200000, \"category\": \"PAINTING\", \"cafeName\": \"갤러리 카페 여백\", \"isExhibiting\": true, \"bookmarkCount\": 150, \"artist\": {\"userId\": 1, \"artistName\": \"김작가\", \"profileImageUrl\": \"https://s3.presigned.url/artist1.jpg\"}}, {\"artworkId\": 102, \"title\": \"도시의 밤\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork102.jpg\", \"price\": 950000, \"category\": \"PHOTOGRAPHY\", \"cafeName\": null, \"isExhibiting\": false, \"bookmarkCount\": 120, \"artist\": {\"userId\": 2, \"artistName\": \"이작가\", \"profileImageUrl\": \"https://s3.presigned.url/artist2.jpg\"}}]}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "작품이 없는 경우",
+                                            description = "등록된 작품이 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": []}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
             ),
             @ApiResponse(
                     responseCode = "500",
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
                     )
             )
     })
     @GetMapping("/popular")
-    public ResponseEntity<ResponseDto<PopularArtworksResponse>> getPopularArtworks(
+    public ResponseEntity<ResponseDto<ArtworkListResponse>> getPopularArtworks(
             @Parameter(description = "조회할 작품 수 (기본값: 10, 최대: 20)")
-            @RequestParam(defaultValue = "10") Integer size
+            @RequestParam(defaultValue = "10")
+            @Min(value = 1, message = "INVALID_INPUT_VALUE")
+            @Max(value = 20, message = "INVALID_INPUT_VALUE")
+            Integer size
     ) {
-        // Mock 데이터 - size에 따라 최대 20개까지 생성
-        int count = Math.min(size, MOCK_ARTWORK_COUNT);
-        List<ArtworkSummaryDto> artworks = createMockArtworks(count, 400L);
-
-        PopularArtworksResponse data = new PopularArtworksResponse(artworks);
+        ArtworkListResponse data = artworkService.getPopularArtworks(size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
