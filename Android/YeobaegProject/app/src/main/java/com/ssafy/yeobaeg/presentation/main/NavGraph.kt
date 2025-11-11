@@ -30,6 +30,8 @@ import com.ssafy.yeobaeg.presentation.artwork.detail.ArtworkDetailScreen
 import com.ssafy.yeobaeg.presentation.chat.ChatListScreen
 import com.ssafy.yeobaeg.presentation.chat.ChattingScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtistHomeScreen
+import com.ssafy.yeobaeg.presentation.cafe.CafeDetailScreen
+import com.ssafy.yeobaeg.presentation.cafe.CafeMapScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtworkRegisterScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
@@ -115,6 +117,10 @@ fun NavGraph(
                         }
                     }
 
+                    is BottomNavScreen.Cafe -> NavEntry(key) {
+                        CafeMapScreen()
+                    }
+
                     is BottomNavScreen.Artwork -> NavEntry(key) {
                         // Artwork Screen Composable
                         ArtExploreScreen()
@@ -157,6 +163,12 @@ fun NavGraph(
 
                     is FullScreen.ArtworkDetail -> NavEntry(key) {
                         ArtworkDetailScreen(artworkId = key.artworkId)
+                    }
+
+                    is FullScreen.CafeDetail -> NavEntry(key) {
+                        CafeDetailScreen(
+                            cafeId = key.cafeId,
+                        )
                     }
 
                     is FullScreen.BookmarkList -> NavEntry(key) {

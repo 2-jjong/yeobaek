@@ -50,6 +50,9 @@ abstract class RepositoryModule {
         recentSearchRepositoryImpl: RecentSearchRepositoryImpl
     ): RecentSearchRepository
 
+
+
+
     @Binds
     @Singleton
     abstract fun bindArtRepository(

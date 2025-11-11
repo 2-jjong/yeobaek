@@ -28,6 +28,9 @@ android {
         }
         buildConfigField("String", "BASE_URL", "\"${props["BASE_URL"]}\"")
         buildConfigField("String", "WS_URL", "\"${props["WS_URL"]}\"")
+
+        // Google Maps API Key는 manifestPlaceholders로 설정
+        manifestPlaceholders["MAPS_API_KEY"] = props.getProperty("MAPS_API_KEY", "")
     }
     buildFeatures {
         buildConfig=true
@@ -61,7 +64,8 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    
+    implementation(libs.androidx.compose.material.icons.extended)
+
     // Navigation 3
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
@@ -104,6 +108,11 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.serialization.converter)
     implementation(libs.kotlinx.serialization.json)
+
+    // Google Maps
+    implementation(libs.play.services.maps)
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
 
     //stomp
     implementation(libs.stomp.android)
