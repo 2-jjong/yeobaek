@@ -42,6 +42,8 @@ import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
 import androidx.core.graphics.createBitmap
+import com.ssafy.yeobaeg.presentation.cafe.components.CafeFilterDialog
+import com.ssafy.yeobaeg.presentation.cafe.components.CafeListBottomSheetContent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,7 +102,7 @@ fun CafeMapScreen(
         sheetPeekHeight = 200.dp,
         sheetSwipeEnabled = true,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        sheetContainerColor = MaterialTheme.colorScheme.surface
+        sheetContainerColor = Color.White
     ) { paddingValues ->
         Box(
             modifier = Modifier

@@ -31,8 +31,8 @@ data class DisplaySlotResponse(
     val wallName: String,
     val width: Float,
     val height: Float,
-    val isDisplayable: Boolean,
-    val isExhibiting: Boolean,
+    val isDisplayable: Boolean = true,
+    val isExhibiting: Boolean = false,
     val start: Point = Point(0.0,0.0),
     val end: Point = Point(0.0,0.0),
     val commissionRate: Float = 0f, // 수수료
