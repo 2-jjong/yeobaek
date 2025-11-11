@@ -68,9 +68,9 @@ class LoginViewModel @Inject constructor(
             }
             
             authRepository.login(email, password)
-                .onSuccess { userRole ->
-                    // AuthSessionManager에 유저 롤 저장
-                    authSessionManager.updateUserRole(userRole)
+                .onSuccess { loginResult ->
+                    // AuthSessionManager에 유저 롤과 ID 저장
+                    authSessionManager.updateUserInfo(loginResult.userRole, loginResult.userId)
 
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
@@ -111,9 +111,9 @@ class LoginViewModel @Inject constructor(
             }
             
             authRepository.login(email, password)
-                .onSuccess { userRole ->
-                    // AuthSessionManager에 유저 롤 저장
-                    authSessionManager.updateUserRole(userRole)
+                .onSuccess { loginResult ->
+                    // AuthSessionManager에 유저 롤과 ID 저장
+                    authSessionManager.updateUserInfo(loginResult.userRole, loginResult.userId)
 
                     _uiState.update {
                         it.copy(isLoading = false, error = null)
