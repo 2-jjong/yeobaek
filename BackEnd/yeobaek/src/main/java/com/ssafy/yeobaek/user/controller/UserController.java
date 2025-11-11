@@ -28,7 +28,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "내 프로필 조회", description = "현재 로그인한 사용자의 프로필 정보를 조회합니다. userType에 따라 반환되는 정보가 다릅니다.\n\n **Cafe와 Artist가 아직 구현 전이므로 UserType이 CAFE_OWNER와 ARTIST인 경우 더미 데이터를 반환합니다.**")
+    @Operation(summary = "내 프로필 조회", description = "현재 로그인한 사용자의 프로필 정보를 조회합니다. userType에 따라 반환되는 정보가 다릅니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -104,7 +104,7 @@ public class UserController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "특정 사용자 프로필 조회", description = "특정 사용자의 공개 프로필 정보를 조회합니다. userType에 따라 반환되는 정보가 다릅니다.\n\n **공개 정보: user 정보 중 userId, nickname, userType, profileImageUrl만 공개됩니다. artist와 cafe 정보는 전부 공개됩니다.**\n\n **Cafe와 Artist가 아직 구현 전이므로 UserType이 CAFE_OWNER와 ARTIST인 경우 더미 데이터를 반환합니다.**")
+    @Operation(summary = "특정 사용자 프로필 조회", description = "특정 사용자의 공개 프로필 정보를 조회합니다. userType에 따라 반환되는 정보가 다릅니다.\n\n **공개 정보: user 정보 중 userId, nickname, userType, profileImageUrl만 공개됩니다. artist와 cafe 정보는 전부 공개됩니다.**")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
