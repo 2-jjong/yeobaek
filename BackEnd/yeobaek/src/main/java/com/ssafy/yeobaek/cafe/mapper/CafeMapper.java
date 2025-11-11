@@ -95,8 +95,7 @@ public class CafeMapper {
 
         // 슬롯 정보
         List<Slot> slots = displayWalls.stream()
-                .filter(w -> !w.getStatus() && w.getSlot() != null)
-                .map(wall -> toSlotDto(wall, exhibitionInfoMap.get(wall.getSlot().getId())))
+                .map(wall -> toSlotDto(wall, wall.getStatus() ? exhibitionInfoMap.get(wall.getSlot().getId()) : null))
                 .collect(Collectors.toList());
 
         // 내 카페 정보
@@ -150,8 +149,7 @@ public class CafeMapper {
 
         // 1. 슬롯 정보
         List<Slot> slots = displayWalls.stream()
-                .filter(w -> !w.getStatus() && w.getSlot() != null)
-                .map(wall -> toSlotDto(wall, exhibitionInfoMap.get(wall.getSlot().getId())))
+                .map(wall -> toSlotDto(wall, wall.getStatus() ? exhibitionInfoMap.get(wall.getSlot().getId()) : null))
                 .toList();
 
         // 2. 카페 사장 정보 DTO 생성
