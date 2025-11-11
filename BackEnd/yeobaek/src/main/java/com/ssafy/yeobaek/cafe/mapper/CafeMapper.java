@@ -145,7 +145,7 @@ public class CafeMapper {
      * @param categories 카페 카테고리 목록
      * @return CafeDetailData DTO
      */
-    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage, Map<Long, ExhibitionInfo> exhibitionInfoMap) {
+    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage, Map<Long, ExhibitionInfo> exhibitionInfoMap, Boolean isBookmarked) {
 
         // 1. 슬롯 정보
         List<Slot> slots = displayWalls.stream()
@@ -169,7 +169,7 @@ public class CafeMapper {
                 cafe.getBusinessEndTime(),
                 cafe.getDailyVisitors(),
                 cafe.getViewCount(),
-                false, // TODO: 실제 북마크 여부 정보 연동 필요
+                isBookmarked,
                 categories,
                 images,
                 slots,

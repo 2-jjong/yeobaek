@@ -38,15 +38,16 @@ import java.util.stream.Collectors;
 public class CafeServiceImpl implements CafeService {
 
     private final CafeRepository cafeRepository;
-    private final UserService userService;
-    private final CafeCategoryService cafeCategoryService;
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
-    private final GeocoderService geocoderService;
-    private final CafeMapper cafeMapper;
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
+    private final UserService userService;
     private final S3Service s3Service;
+    private final GeocoderService geocoderService;
+    private final CafeCategoryService cafeCategoryService;
+    private final CafeBookmarkService cafeBookmarkService;
     private final ExhibitionService exhibitionService;
+    private final CafeMapper cafeMapper;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
@@ -245,12 +246,13 @@ public class CafeServiceImpl implements CafeService {
 
     /**
      * 카페 상세 정보 조회
+     * @param userId 유저 id
      * @param cafeId 카페 id
      * @return 카페 상세 정보
      */
     @Override
     @Transactional
-    public CafeDetailData getCafeDetail(Long cafeId) {
+    public CafeDetailData getCafeDetail(Long userId, Long cafeId) {
 
         // 1. Cafe 엔티티 조회
         Cafe cafe = cafeRepository.findById(cafeId)
@@ -280,10 +282,13 @@ public class CafeServiceImpl implements CafeService {
         List<String> images = s3Service.generatePresignedUrlsForDownload(cafe.getImages());
         String profileImage = s3Service.generatePresignedUrlForDownload(cafe.getCafeOwner().getProfileImageUrl());
 
-        // 6. DTO 변환
-        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images, profileImage, exhibitionInfoMap);
+        // 6. 북마크 여부 확인
+        boolean isBookmarked = cafeBookmarkService.isBookmarked(userId, cafeId);
 
-        // 7. 조회수 1 증가
+        // 7. DTO 변환
+        CafeDetailData cafeDetailData = cafeMapper.toCafeDetailData(cafe, walls, categories, images, profileImage, exhibitionInfoMap, isBookmarked);
+
+        // 8. 조회수 1 증가
         cafe.increaseViewCount();
         cafeRepository.save(cafe);
 
