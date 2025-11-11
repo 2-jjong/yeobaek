@@ -87,49 +87,31 @@ public class UserMapper {
     }
 
     /**
-     * 더미 CafeData 생성
-     * TODO: Cafe 엔티티 및 Repository 구현 후 toCafeData(Cafe cafe) 메서드로 변경
-     * @return 더미 CafeData
+     * Cafe 엔티티를 CafeData DTO로 변환
+     * @param cafe Cafe 엔티티
+     * @param totalReviews 총 리뷰 수
+     * @param averageRating 평균 평점
+     * @return CafeData DTO
      */
-    public CafeData toDummyCafeData() {
+    public CafeData toCafeData(
+            com.ssafy.yeobaek.cafe.entity.Cafe cafe,
+            int totalReviews,
+            double averageRating
+    ) {
         RatingStatsData ratingStats = RatingStatsData.builder()
-                .totalReviews(156)
-                .averageRating(4.7)
+                .totalReviews(totalReviews)
+                .averageRating(averageRating)
                 .build();
 
         return CafeData.builder()
-                .cafeId(1L)
-                .cafeName("아트 갤러리 카페")
-                .address("서울시 강남구 테헤란로 123")
-                .description("작가들의 작품을 전시하고 감상할 수 있는 복합 문화 공간입니다.")
-                .contact("02-1234-5678")
-                .businessHoursStart("09:00")
-                .businessHoursEnd("22:00")
+                .cafeId(cafe.getId())
+                .cafeName(cafe.getCafeName())
+                .address(cafe.getAddress())
+                .description(cafe.getDescription())
+                .contact(cafe.getContact())
+                .businessHoursStart(cafe.getBusinessStartTime())
+                .businessHoursEnd(cafe.getBusinessEndTime())
                 .ratingStats(ratingStats)
                 .build();
     }
-
-    // TODO: Cafe 엔티티 구현 후 아래 메서드 추가
-    // /**
-    //  * Cafe 엔티티를 CafeData DTO로 변환
-    //  * @param cafe Cafe 엔티티
-    //  * @return CafeData DTO
-    //  */
-    // public CafeData toCafeData(Cafe cafe) {
-    //     RatingStatsData ratingStats = RatingStatsData.builder()
-    //             .totalReviews(/* 실제 평가 수 */)
-    //             .averageRating(/* 실제 평균 평점 */)
-    //             .build();
-    //
-    //     return CafeData.builder()
-    //             .cafeId(cafe.getId())
-    //             .cafeName(cafe.getName())
-    //             .address(cafe.getAddress())
-    //             .description(cafe.getDescription())
-    //             .contact(cafe.getContact())
-    //             .businessHoursStart(cafe.getBusinessHoursStart().toString())
-    //             .businessHoursEnd(cafe.getBusinessHoursEnd().toString())
-    //             .ratingStats(ratingStats)
-    //             .build();
-    // }
 }

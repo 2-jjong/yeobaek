@@ -2,6 +2,8 @@ package com.ssafy.yeobaek.user.service;
 
 import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
+import com.ssafy.yeobaek.cafe.entity.Cafe;
+import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
@@ -38,6 +40,7 @@ public class UserServiceImpl implements UserService {
     private final ArtworkRepository artworkRepository;
     private final ExhibitionRepository exhibitionRepository;
     private final ReviewRepository reviewRepository;
+    private final CafeRepository cafeRepository;
     private final UserMapper userMapper;
     private final S3Service s3Service;
 
@@ -94,7 +97,7 @@ public class UserServiceImpl implements UserService {
                 : null;
 
         CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
-                ? userMapper.toDummyCafeData()
+                ? getCafeData(userId)
                 : null;
 
         return UserProfileData.builder()
@@ -127,7 +130,7 @@ public class UserServiceImpl implements UserService {
                 : null;
 
         CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
-                ? userMapper.toDummyCafeData()
+                ? getCafeData(userId)
                 : null;
 
         return UserProfileData.builder()
@@ -264,6 +267,33 @@ public class UserServiceImpl implements UserService {
                 artworkCount,
                 exhibitingCount,
                 totalExhibitedCount != null ? totalExhibitedCount : 0,
+                totalReviews,
+                averageRating
+        );
+    }
+
+    /**
+     * Cafe 정보 조회 (통계 포함)
+     * @param cafeOwnerId 카페 사장 ID (= 사용자 ID)
+     * @return CafeData DTO
+     */
+    private CafeData getCafeData(Long cafeOwnerId) {
+        // Cafe 엔티티 조회
+        Cafe cafe = cafeRepository.findByCafeOwnerId(cafeOwnerId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 리뷰 통계 계산
+        List<Review> reviews = reviewRepository.findAllByRevieweeId(cafeOwnerId);
+        int totalReviews = reviews.size();
+        double averageRating = reviews.isEmpty() ? 0.0 :
+                reviews.stream()
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
+
+        // CafeData DTO 생성
+        return userMapper.toCafeData(
+                cafe,
                 totalReviews,
                 averageRating
         );
