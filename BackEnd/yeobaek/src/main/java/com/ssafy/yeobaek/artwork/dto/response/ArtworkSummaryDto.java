@@ -43,5 +43,5 @@ public class ArtworkSummaryDto {
     private String cafeName;
 
     @Schema(description = "작가 프로필")
-    private ArtistDto artistDto;
+    private ArtistDto artist;
 }
