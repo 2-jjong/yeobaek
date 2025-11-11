@@ -90,4 +90,21 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             @Param("artistId") Long artistId,
             @Param("today") LocalDate today
     );
+
+    /**
+     * 특정 작품의 특정 기간 내 전시 목록 조회 (승인됨 또는 진행 중인 전시만)
+     * @param artworkId 작품 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 해당 기간과 겹치는 전시 목록
+     */
+    @Query("SELECT e FROM Exhibition e " +
+           "WHERE e.artwork.id = :artworkId " +
+           "AND e.state IN ('APPROVED', 'ONGOING') " +
+           "AND ((e.startDate <= :endDate AND e.endDate >= :startDate))")
+    List<Exhibition> findByArtworkIdAndDateRange(
+            @Param("artworkId") Long artworkId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

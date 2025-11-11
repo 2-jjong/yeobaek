@@ -3,11 +3,13 @@ package com.ssafy.yeobaek.artwork.service;
 import com.ssafy.yeobaek.artwork.dto.request.CreateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.ArtistHomeResponse;
+import com.ssafy.yeobaek.artwork.dto.response.ArtworkAvailableDatesResponse;
 import com.ssafy.yeobaek.artwork.dto.response.ArtworkDetailResponse;
 import com.ssafy.yeobaek.artwork.dto.response.ArtworkListResponse;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ArtworkService {
@@ -104,4 +106,14 @@ public interface ArtworkService {
      * @return 인기 작품 목록 (pagination은 null)
      */
     ArtworkListResponse getPopularArtworks(Integer size);
+
+    /**
+     * 작품의 전시 가능일 조회
+     * - 조회 시작일로부터 30일 동안의 가능한 날짜 목록 반환
+     * - 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시와 겹치지 않는 날짜만 반환
+     * @param artworkId 작품 ID
+     * @param startDate 조회 시작일 (null이면 오늘 날짜 사용)
+     * @return 전시 가능한 날짜 목록
+     */
+    ArtworkAvailableDatesResponse getArtworkAvailableDates(Long artworkId, LocalDate startDate);
 }
