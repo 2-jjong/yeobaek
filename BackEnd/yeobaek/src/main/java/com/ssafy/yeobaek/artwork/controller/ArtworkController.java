@@ -926,12 +926,37 @@ public class ArtworkController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "작품 북마크 목록 조회", description = "현재 사용자가 북마크한 작품 목록을 조회합니다. 최신 북마크 순으로 정렬됩니다.")
+    @Operation(
+            summary = "북마크한 작품 목록 조회",
+            description = "현재 사용자가 북마크한 작품 목록을 조회합니다.\n\n" +
+                    "**주요 기능:**\n" +
+                    "- 북마크 생성일 기준 내림차순 정렬 (최신 북마크가 먼저 표시)\n" +
+                    "- 각 작품에 작가 정보 포함 (작가명, 프로필 이미지)\n" +
+                    "- 전시 중인 작품은 카페명 포함\n" +
+                    "- 페이징: 기본 20개씩, 최대 50개까지\n\n" +
+                    "**권한:**\n" +
+                    "- 로그인 필수"
+    )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "북마크한 작품이 있는 경우",
+                                            description = "사용자가 북마크한 작품이 있는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 101, \"title\": \"숲속의 아침\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork101.jpg\", \"price\": 1200000, \"category\": \"PAINTING\", \"cafeName\": \"갤러리 카페 여백\", \"isExhibiting\": true, \"bookmarkCount\": 50, \"artist\": {\"userId\": 1, \"artistName\": \"김작가\", \"profileImageUrl\": \"https://s3.presigned.url/artist1.jpg\"}}, {\"artworkId\": 102, \"title\": \"고요한 호수\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork102.jpg\", \"price\": 950000, \"category\": \"PHOTOGRAPHY\", \"cafeName\": null, \"isExhibiting\": false, \"bookmarkCount\": 45, \"artist\": {\"userId\": 2, \"artistName\": \"이작가\", \"profileImageUrl\": \"https://s3.presigned.url/artist2.jpg\"}}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 2, \"totalPages\": 1, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "북마크한 작품이 없는 경우",
+                                            description = "사용자가 북마크한 작품이 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 0, \"totalPages\": 0, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -939,8 +964,18 @@ public class ArtworkController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
                             }
                     )
             ),
@@ -949,7 +984,9 @@ public class ArtworkController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
                     )
             )
     })
@@ -960,12 +997,8 @@ public class ArtworkController {
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터 - 20개로 증가
-        List<ArtworkSummaryDto> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 500L);
-
-        // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
-        Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
-        ArtworkListResponse data = new ArtworkListResponse(null, artworks, pagination);
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArtworkListResponse data = artworkService.getBookmarkedArtworks(userId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
