@@ -55,10 +55,11 @@ public interface CafeService {
 
     /**
      * 카페 상세 정보 조회
+     * @param userId 유저 id
      * @param cafeId 카페 id
      * @return 카페 상세 정보
      */
-    CafeDetailData getCafeDetail(Long cafeId);
+    CafeDetailData getCafeDetail(Long userId, Long cafeId);
 
     /**
      * 슬롯 정보 수정

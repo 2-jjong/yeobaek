@@ -794,7 +794,8 @@ public class CafeController {
             @Parameter(description = "조회할 카페 ID", required = true)
             @PathVariable Long cafeId
     ) {
-        CafeDetailData data = cafeService.getCafeDetail(cafeId);
+        Long userId = SecurityUtil.getCurrentUserId();
+        CafeDetailData data = cafeService.getCafeDetail(userId, cafeId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
