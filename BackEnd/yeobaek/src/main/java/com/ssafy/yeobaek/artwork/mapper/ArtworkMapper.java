@@ -248,7 +248,7 @@ public class ArtworkMapper {
                 .cafeName(cafeName)
                 .isExhibiting(artwork.getIsExhibiting())
                 .bookmarkCount(artwork.getBookmarkCount())
-                .artistDto(artistDto)
+                .artist(artistDto)
                 .build();
     }
 }

@@ -40,4 +40,15 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long>, JpaSpec
            "WHERE a.artist.id = :artistId " +
            "ORDER BY (a.viewCount * 1 + a.bookmarkCount * 9) DESC")
     List<Artwork> findTopPopularByArtistId(@Param("artistId") Long artistId, Pageable pageable);
+
+    /**
+     * 전체 작품 중 인기 작품 조회 (조회수 1 + 북마크수 9 가중치)
+     * @param pageable 페이징 정보 (상위 N개 조회용)
+     * @return 인기순 작품 목록
+     */
+    @Query("SELECT a FROM Artwork a " +
+           "JOIN FETCH a.artist art " +
+           "JOIN FETCH art.user " +
+           "ORDER BY (a.viewCount * 1 + a.bookmarkCount * 9) DESC")
+    List<Artwork> findTopPopularArtworks(Pageable pageable);
 }

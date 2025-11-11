@@ -94,4 +94,14 @@ public interface ArtworkService {
      * @return 북마크한 작품 목록 및 페이징 정보
      */
     ArtworkListResponse getBookmarkedArtworks(Long userId, Integer page, Integer size);
+
+    /**
+     * 인기 작품 목록 조회
+     * - 인기도 기준: 조회수 × 1 + 북마크수 × 9
+     * - 각 작품에 작가 정보 포함
+     * - 전시 중인 작품은 카페명 포함
+     * @param size 조회할 작품 수 (최대 20개)
+     * @return 인기 작품 목록 (pagination은 null)
+     */
+    ArtworkListResponse getPopularArtworks(Integer size);
 }
