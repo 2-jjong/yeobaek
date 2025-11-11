@@ -7,6 +7,7 @@ import com.ssafy.yeobaeg.data.model.auth.EmailCheckRequest
 import com.ssafy.yeobaeg.data.model.auth.LoginRequest
 import com.ssafy.yeobaeg.data.model.auth.SignUpRequest
 import com.ssafy.yeobaeg.di.StoreJson
+import com.ssafy.yeobaeg.domain.model.LoginResult
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import kotlinx.serialization.json.Json
@@ -68,7 +69,7 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
     
-    override suspend fun login(email: String, password: String): Result<UserRole> {
+    override suspend fun login(email: String, password: String): Result<LoginResult> {
         return try {
             val request = LoginRequest(
                 email = email,
@@ -95,9 +96,13 @@ class AuthRepositoryImpl @Inject constructor(
                         "ARTIST" -> UserRole.ARTIST
                         else -> UserRole.GENERAL
                     }
-                    
-                    // UserRole만 반환
-                    Result.success(role)
+
+                    // LoginResult 반환 (UserRole과 userId 포함)
+                    val loginResult = LoginResult(
+                        userRole = role,
+                        userId = loginResponse.userId
+                    )
+                    Result.success(loginResult)
                 } else {
                     Result.failure(Exception("로그인 응답 데이터가 없습니다"))
                 }
