@@ -13,6 +13,7 @@ import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -224,6 +225,17 @@ public class CafeMapper {
                 .build();
 
         return new SlotData(slot);
+    }
+
+    /**
+     * 전시 가능한 날짜 목록을 SlotAvailableDatesResponse로 변환
+     * @param availableDates 전시 가능한 날짜 목록
+     * @return SlotAvailableDatesResponse
+     */
+    public SlotAvailableDatesResponse toSlotAvailableDatesResponse(List<LocalDate> availableDates) {
+        return SlotAvailableDatesResponse.builder()
+                .dates(availableDates)
+                .build();
     }
 
     /**

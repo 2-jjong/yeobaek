@@ -16,6 +16,7 @@ import com.ssafy.yeobaek.cafe.repository.*;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
+import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
 import com.ssafy.yeobaek.exhibition.service.ExhibitionService;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
@@ -28,6 +29,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,6 +44,7 @@ public class CafeServiceImpl implements CafeService {
     private final CafeBookmarkRepository cafeBookmarkRepository;
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
+    private final ExhibitionRepository exhibitionRepository;
     private final UserService userService;
     private final S3Service s3Service;
     private final GeocoderService geocoderService;
@@ -394,5 +397,61 @@ public class CafeServiceImpl implements CafeService {
         Pagination pagination = cafeMapper.toPagination(cafePage);
 
         return new CafeListData(summaries, pagination);
+    }
+
+    /**
+     * 슬롯의 전시 가능일 조회
+     * - 조회 시작일로부터 30일 동안의 가능한 날짜 목록 반환
+     * - 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시와 겹치지 않는 날짜만 반환
+     * @param slotId 슬롯 ID
+     * @param startDate 조회 시작일 (null이면 오늘 날짜 사용)
+     * @return 전시 가능한 날짜 목록
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public SlotAvailableDatesResponse getSlotAvailableDates(Long slotId, LocalDate startDate) {
+
+        // 1. 슬롯 존재 여부 확인
+        if (!displaySlotRepository.existsById(slotId)) {
+            throw new CustomException(ResponseCode.SLOT_NOT_FOUND);
+        }
+
+        // 2. 시작일 설정 및 검증 (null이면 오늘 날짜 사용, 오늘 이전이면 에러)
+        LocalDate today = LocalDate.now();
+        LocalDate queryStartDate = (startDate != null) ? startDate : today;
+        if (queryStartDate.isBefore(today)) {
+            throw new CustomException(ResponseCode.INVALID_INPUT_VALUE);
+        }
+
+        // 3. 종료일 계산 (시작일 + 30일)
+        LocalDate queryEndDate = queryStartDate.plusDays(30);
+
+        // 4. 해당 기간 내 모든 날짜를 Set에 추가
+        Set<LocalDate> allDates = new HashSet<>();
+        LocalDate currentDate = queryStartDate;
+        while (!currentDate.isAfter(queryEndDate)) {
+            allDates.add(currentDate);
+            currentDate = currentDate.plusDays(1);
+        }
+
+        // 5. 해당 기간과 겹치는 전시 목록 조회 (APPROVED, ONGOING만)
+        List<Exhibition> exhibitions = exhibitionRepository.findBySlotIdAndDateRange(slotId, queryStartDate, queryEndDate);
+
+        // 6. 전시 기간에 포함되는 날짜를 Set에서 제거
+        for (Exhibition exhibition : exhibitions) {
+            LocalDate exhibitionDate = exhibition.getStartDate();
+            while (!exhibitionDate.isAfter(exhibition.getEndDate())) {
+                allDates.remove(exhibitionDate);
+                exhibitionDate = exhibitionDate.plusDays(1);
+            }
+        }
+
+        // 7. 남은 날짜들을 정렬하여 리스트로 변환
+        List<LocalDate> availableDates = allDates.stream()
+                .sorted()
+                .collect(Collectors.toList());
+
+        // 8. DTO 변환 및 반환
+        return cafeMapper.toSlotAvailableDatesResponse(availableDates);
     }
 }
