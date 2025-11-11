@@ -29,6 +29,7 @@ import com.ssafy.yeobaeg.ui.theme.*
 import androidx.compose.material3.TextFieldDefaults
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
+import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
 import kotlinx.coroutines.launch
 
 @Composable
@@ -38,6 +39,7 @@ fun ChattingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    val myUserId = viewModel.myUserId.collectAsState().value
 
     LaunchedEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
@@ -60,9 +62,11 @@ fun ChattingScreen(
         inputText = inputText,
         onInputChange = { inputText = it },
         onSendClick = {
-            viewModel.sendMessage(inputText)
+            viewModel.sendMessage(inputText, myUserId)
             inputText = ""
-        },        onBackClick = viewModel::navigateBack
+        },
+        onBackClick = viewModel::navigateBack,
+        myUserId = myUserId
     )
 }
 
@@ -79,18 +83,11 @@ fun ChattingScreenContent(
     inputText: String = "",
     onInputChange: (String) -> Unit = {},
     onSendClick: (String) -> Unit = {},
-    onBackClick: (() -> Unit)? = null
+    onBackClick: (() -> Unit)? = null,
+    myUserId: Long?
 ) {
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-    //1분마다 강제 recomposition 트리거
-    var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            kotlinx.coroutines.delay(60_000L)
-            currentTime = System.currentTimeMillis()
-        }
-    }
 
     // 새 메시지가 추가될 때마다 가장 마지막으로 스크롤
     LaunchedEffect(messages.size) {
@@ -100,6 +97,7 @@ fun ChattingScreenContent(
             }
         }
     }
+
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
@@ -134,12 +132,13 @@ fun ChattingScreenContent(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(YeobaegWhite)
+                    .clearFocusOnTap()
                     .padding(innerPadding)
                     .padding(horizontal = 10.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(messages, key = { it.messageId }) { msg ->
-                    if (msg.senderType == "ME") MyMessageBubble(msg)
+                items(messages, key = { "${it.messageId}_${it.createdAt}" }) { msg ->
+                    if (msg.senderId == myUserId) MyMessageBubble(msg)
                     else PartnerMessageBubble(msg, profileImg)
                 }
 
@@ -235,7 +234,8 @@ fun ChatInputBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(YeobaegWhite)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+            .padding(horizontal = 10.dp, vertical = 8.dp)
+            .imePadding(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
@@ -286,13 +286,25 @@ fun ChatInputBar(
             )
         }
 
+        val isSendEnabled = value.trim().isNotEmpty()
         Surface(
             modifier = Modifier.size(40.dp),
             shape = CircleShape,
-            color = YeobaegBrown
+            color = if (isSendEnabled) YeobaegBrown else YeobaegLightGray
         ) {
-            IconButton(onClick = { onSendClick(value) }) {
-                Icon(imageVector = Icons.Default.Send, contentDescription = "보내기", tint = Color.White)
+            IconButton(
+                onClick = {
+                    if (isSendEnabled) {
+                        onSendClick(value)
+                    }
+                },
+                enabled = isSendEnabled
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Send,
+                    contentDescription = "보내기",
+                    tint = if (isSendEnabled) Color.White else YeobaegTextGray
+                )
             }
 
         }
@@ -303,12 +315,13 @@ fun ChatInputBar(
 @Composable
 fun ChattingScreenPreview() {
     val dummyMessages = listOf(
-        ChatMessage(1, "PARTNER", "TEXT", "안녕하세요", "", null, false, "2시간 전"),
-        ChatMessage(2, "ME", "TEXT", "안녕하세요", "", null, false, "2시간 전")
+        ChatMessage(1, 1, "TEXT", "안녕하세요", "", null, false, "2시간 전"),
+        ChatMessage(2, 0, "TEXT", "안녕하세요", "", null, false, "2시간 전")
     )
     ChattingScreenContent(
         title = "김아티스트",
         messages = dummyMessages,
-        profileImg = ""
+        profileImg = "",
+        myUserId = 0
     )
 }
