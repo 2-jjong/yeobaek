@@ -164,7 +164,7 @@ public class AuthController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"data\": {\"accessToken\": \"accessToken\", \"refreshToken\": \"refreshToken\", \"userType\": \"GENERAL\"}, \"message\": \"정상 처리\"}"
+                                    value = "{\"code\": \"S0000\", \"data\": {\"accessToken\": \"accessToken\", \"refreshToken\": \"refreshToken\", \"userId\": 12, \"userType\": \"GENERAL\"}, \"message\": \"정상 처리\"}"
                             )
                     )
             ),

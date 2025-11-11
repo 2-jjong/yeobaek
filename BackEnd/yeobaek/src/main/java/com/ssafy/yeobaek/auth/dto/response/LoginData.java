@@ -19,6 +19,9 @@ public class LoginData {
     @Schema(description = "JWT Refresh Token (유효기간: 7일)", example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...")
     private String refreshToken;
 
+    @Schema(description = "회원 ID(PK)", example = "12")
+    private Long userId;
+
     @Schema(description = "회원 유형 (CAFE_OWNER, ARTIST, GENERAL)", example = "GENERAL")
     private UserRole userType;
 }
