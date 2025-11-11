@@ -1,11 +1,13 @@
 package com.ssafy.yeobaeg.data.repository
 
+import android.util.Log
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.model.request.UpdateSlotRequest
 import com.ssafy.yeobaeg.data.model.request.toDto
 import com.ssafy.yeobaeg.data.model.response.toDomain
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
+import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwnerInfo
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import javax.inject.Inject
@@ -35,8 +37,16 @@ class CafeRepositoryImpl @Inject constructor(
 
     override suspend fun getMyCafe() = runCatching {
         val response = cafeApiService.getMyCafe()
-        response.data?.myCafe?.toDomain() ?: throw (Exception(response.message))
+        val code = response.code
+        response.data?.myCafe?.toDomain() ?: run {
+            if (code == "CF4041") {
+                CafeOwnerInfo()
+            } else {
+                throw Exception(code.ifBlank { "Unknown error" })
+            }
+        }
     }
+
 
     override suspend fun updateSlotInfo(
         cafeId: Long,

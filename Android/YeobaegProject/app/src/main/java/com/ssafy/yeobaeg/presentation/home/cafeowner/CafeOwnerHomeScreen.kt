@@ -36,14 +36,24 @@ import com.ssafy.yeobaeg.ui.theme.*
 fun CafeOwnerHomeScreen(
     viewModel: CafeOwnerHomeViewModel = hiltViewModel()
 ) {
-    val state = viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.loadMyCafe()
     }
 
-    val cafeOwnerInfo = state.value.cafeOwnerInfo
-    val selectedTab = state.value.selectedTab
+    if (state.isLoading) {
+        Box(Modifier.fillMaxSize()) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = YeobaegBrown
+            )
+        }
+        return
+    }
+
+    val cafeOwnerInfo = state.cafeOwnerInfo
+    val selectedTab = state.selectedTab
 
     val colors = if (cafeOwnerInfo != null) RegisteredColors else UnregisteredColors
     CompositionLocalProvider(LocalCafeOwnerColors provides colors) {
@@ -296,7 +306,7 @@ fun FloorPlanSection(
         initialWalls = slots,
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp),
+            .height(300.dp),
         readOnly = true
     )
 
@@ -328,7 +338,6 @@ private fun SlotAvailabilityRow(
     val dot = when (slot.status) {
         SlotStatus.AVAILABLE -> green
         SlotStatus.EXHIBITING -> blue
-        SlotStatus.RESERVED -> yellow
         else -> YeobaegLightGray
     }
 
@@ -372,6 +381,16 @@ fun ExhibitionStatusSection(slots: List<DisplaySlot>) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         DisplaySlotList(slots = slots)
+
+        if (slots.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp)
+            ) {
+                Text("전시 슬롯 데이터가 없습니다.", modifier = Modifier.align(Alignment.Center))
+            }
+        }
     }
 }
 
@@ -511,7 +530,7 @@ private fun PreviewSlotAvailabilityList() {
                         wName = "창가 벽면",
                         width = 1.0f,
                         height = 1.0f,
-                        status = SlotStatus.RESERVED,
+                        status = SlotStatus.EXHIBITING,
                         commission = 15f,
                         requirements = "",
                         exhibition = Exhibition(

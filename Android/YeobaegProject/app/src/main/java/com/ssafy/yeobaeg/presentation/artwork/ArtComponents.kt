@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.layout.ContentScale
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
@@ -47,9 +48,7 @@ fun ArtworkGrid(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         contentPadding = contentPadding,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(8.dp)
+        modifier = modifier.fillMaxSize()
     ) {
         item(span = { GridItemSpan(maxLineSpan) }) {
             topContent()
@@ -66,7 +65,8 @@ fun ArtworkGrid(
                     .fillMaxWidth()
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(4.dp))
-                    .clickable { onClickArtwork(artwork.artworkId) }
+                    .clickable { onClickArtwork(artwork.artworkId) },
+                contentScale = ContentScale.Crop
             )
         }
     }

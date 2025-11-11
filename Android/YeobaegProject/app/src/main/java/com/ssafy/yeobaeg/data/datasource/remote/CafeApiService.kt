@@ -35,7 +35,7 @@ interface CafeApiService {
     @POST("cafes/walls")
     suspend fun createCafeWall(
         @Body request: List<CreateDisplayWallRequest>
-    ): BaseResponse<Unit>
+    ): BaseResponse<List<Unit>>
 
     @PATCH("cafes/{cafeId}/slots/{slotId}")
     suspend fun updateSlotInfo(

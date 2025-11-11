@@ -32,6 +32,8 @@ fun YeobaegOutlinedTextField(
     modifier: Modifier = Modifier,
     placeholder: String = "",
     singleLine: Boolean = true,
+    minLine: Int = 1,
+    maxLine: Int = if (singleLine) 1 else Integer.MAX_VALUE,
     fontFamily: FontFamily = jansilFont,
     visualTransformation: VisualTransformation = VisualTransformation.None
 ) {

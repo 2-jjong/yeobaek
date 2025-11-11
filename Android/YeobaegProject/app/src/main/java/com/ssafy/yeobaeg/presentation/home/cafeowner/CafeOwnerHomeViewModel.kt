@@ -30,14 +30,15 @@ class CafeOwnerHomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     fun loadMyCafe() {
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             cafeRepository.getMyCafe().onSuccess { data ->
                 _uiState.update {
-                    it.copy(cafeOwnerInfo = data)
+                    it.copy(cafeOwnerInfo = data, isLoading = false)
                 }
             }.onFailure {
                 Log.d("cafeOwnerHomeViewModel load error", it.message ?: "")
-
+                _uiState.update { it.copy(isLoading = false) }
                 snackBarController.showError(it.message ?: "오류")
             }
         }

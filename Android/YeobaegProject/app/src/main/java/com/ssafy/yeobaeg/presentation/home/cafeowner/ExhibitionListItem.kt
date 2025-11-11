@@ -49,7 +49,6 @@ fun StatusChip(status: SlotStatus) {
     val (bg, fg, label) = when (status) {
         SlotStatus.AVAILABLE -> Triple(YeobaegLightGreen, YeobaegDarkGreen, "전시 가능")
         SlotStatus.EXHIBITING -> Triple(YeobaegLightBlue, YeobaegDarkBlue, "전시 중")
-        SlotStatus.RESERVED -> Triple(YeobaegLightYellow, YeobaegDarkYellow, "예약됨")
         else -> Triple(YeobaegLightGray, YeobaegDarkGray, "전시 불가능")
     }
     Box(
@@ -145,16 +144,6 @@ fun ExhibitionListItem(
                         }
                     }
 
-                    SlotStatus.RESERVED -> {
-                        // 예약됨: 작품명 / 작가 / 종료
-                        displaySlot.exhibition?.let { exhibition ->
-                            Text("🎨 ${exhibition.artTitle}", fontSize = 13.sp, color = YeobaegDarkGray)
-                            Text("👩‍🎨 ${exhibition.artist}", fontSize = 13.sp, color = YeobaegDarkGray)
-                            Spacer(Modifier.height(2.dp))
-                            Text("종료 : ${exhibition.endDate}", fontSize = 12.sp, color = YeobaegGray)
-                        }
-                    }
-
                     else -> {}
                 }
             }
@@ -218,7 +207,7 @@ private fun PreviewExhibitionListItem_Reserved() {
                 wName = "창가 벽면",
                 width = 1.0f,
                 height = 1.0f,
-                status = SlotStatus.RESERVED,
+                status = SlotStatus.EXHIBITING,
                 commission = 12f,
                 requirements = "",
                 exhibition = Exhibition(

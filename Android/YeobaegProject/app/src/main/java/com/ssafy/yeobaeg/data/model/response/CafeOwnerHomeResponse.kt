@@ -31,7 +31,8 @@ data class DisplaySlotResponse(
     val wallName: String,
     val width: Float,
     val height: Float,
-    val status: String,
+    val isDisplayable: Boolean,
+    val isExhibiting: Boolean,
     val start: Point = Point(0.0,0.0),
     val end: Point = Point(0.0,0.0),
     val commissionRate: Float = 0f, // 수수료
@@ -69,7 +70,7 @@ fun DisplaySlotResponse.toDomain(): DisplaySlot =
         height = height.toFloat(),
         start = Vec2(start.x.toFloat(), start.y.toFloat()),
         end = Vec2(end.x.toFloat(), end.y.toFloat()),
-        status = SlotStatus.fromString(status),
+        status = if(isExhibiting) SlotStatus.EXHIBITING else if (!isDisplayable) SlotStatus.UNAVAILABLE else SlotStatus.AVAILABLE,
         commission = commissionRate.toFloat(),
         requirements = requirements,
         exhibition = currentExhibition?.toDomain()

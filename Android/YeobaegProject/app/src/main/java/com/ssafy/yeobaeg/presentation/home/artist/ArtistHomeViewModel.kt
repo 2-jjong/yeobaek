@@ -79,6 +79,6 @@ private val demoArtworks = listOf(
         priceWon = "￦280,000",
         likes = 12,
         placeName = "The Art Spot",
-        status = SlotStatus.RESERVED
+        status = SlotStatus.EXHIBITING
     )
 )

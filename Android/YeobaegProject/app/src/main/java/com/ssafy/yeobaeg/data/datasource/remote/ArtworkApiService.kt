@@ -17,7 +17,7 @@ interface ArtworkApiService {
     @GET("artworks")
     suspend fun getArtworks(
         @Query("keyword") keyword: String? = null,
-        @Query("categories") categories: List<String>? = null,
+        @Query("categories") categories: String? = null,
         @Query("minWidth") minWidth: Int? = null,
         @Query("maxWidth") maxWidth: Int? = null,
         @Query("minHeight") minHeight: Int? = null,

@@ -38,6 +38,8 @@ data class WallEditUiState(
             }
         }
 
+    val goMeasureEnabled get() = walls.any { it.status != SlotStatus.UNAVAILABLE }
+
     fun currentWallOrNull(): DisplaySlot? =
         currentWallId?.let { id -> walls.firstOrNull { it.wid == id } }
 }
@@ -54,7 +56,6 @@ class WallEditViewModel @Inject constructor(
 
     fun setInitialWalls(walls: List<DisplaySlot>) {
         _uiState.update { it.copy(walls = walls) }
-        Log.d("http test", _uiState.value.walls.get(0).width.toString())
     }
 
     fun onWallTapped(wallId: Long) {
@@ -65,7 +66,7 @@ class WallEditViewModel @Inject constructor(
             val w = s.walls[idx]
             val toggled = when (w.status) {
                 SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
-                SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED -> SlotStatus.UNAVAILABLE
+                SlotStatus.AVAILABLE, SlotStatus.EXHIBITING-> SlotStatus.UNAVAILABLE
             }
 
             val nextWalls = s.walls.toMutableList().also { it[idx] = w.copy(status = toggled) }
@@ -180,21 +181,7 @@ class WallEditViewModel @Inject constructor(
             return
         }
         _uiState.update { s ->
-            val idx = s.currentIndex
-            if (idx <= 0) {
-                s.copy(step = WallEditStep.SelectWall, currentWallId = null)
-            } else {
-                var i = idx - 1
-                while (i >= 0) {
-                    val id = s.targetIds[i]
-                    val w = s.walls.firstOrNull { it.wid == id }
-                    if (w?.status != SlotStatus.UNAVAILABLE) {
-                        return@update s.copy(currentWallId = id)
-                    }
-                    i--
-                }
-                s.copy(step = WallEditStep.SelectWall, currentWallId = null)
-            }
+            s.copy(step = WallEditStep.SelectWall, currentWallId = null)
         }
     }
 
@@ -203,13 +190,12 @@ class WallEditViewModel @Inject constructor(
     }
 
     fun registerSlot() {
-        Log.d("http test", _uiState.value.walls.get(0).width.toString())
-
         viewModelScope.launch {
             cafeRepository.registerCafeWall(_uiState.value.walls).onSuccess {
                 snackbarController.showSuccess("등록 성공")
                 navigator.navigateAndClearBackStack(BottomNavScreen.Home)
             }.onFailure {
+                Log.d("http registerSlot", it.message ?: "")
                 snackbarController.showError(it.message ?: "오류")
             }
         }
