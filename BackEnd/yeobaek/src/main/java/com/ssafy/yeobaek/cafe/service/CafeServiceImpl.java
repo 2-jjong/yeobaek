@@ -342,7 +342,7 @@ public class CafeServiceImpl implements CafeService {
         String artworkImageUrl = artwork.getImages().isEmpty() ? null : s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
 
         return new ExhibitionInfo(
-                exhibition.getId(),
+                artwork.getId(),
                 artwork.getTitle(),
                 artworkImageUrl,
                 artwork.getArtist().getUser().getNickname(),
