@@ -24,6 +24,9 @@ AuthSessionManagerImpl @Inject constructor(
     
     private val _currentUserRole = MutableStateFlow<UserRole?>(null)
     override val currentUserRole: StateFlow<UserRole?> = _currentUserRole.asStateFlow()
+
+    private val _currentUserId = MutableStateFlow<String?>(null)
+    override val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
     
     private val _authEvents = MutableSharedFlow<AuthEvent>()
     override val authEvents: SharedFlow<AuthEvent> = _authEvents.asSharedFlow()
@@ -39,18 +42,33 @@ AuthSessionManagerImpl @Inject constructor(
         }
         Log.d("AuthSessionManager", "User role updated to: $role")
     }
+
+    override suspend fun updateUserId(userId: String?) {
+        _currentUserId.update {
+            userId
+        }
+        Log.d("AuthSessionManager", "User ID updated to: $userId")
+    }
+
+    override suspend fun updateUserInfo(role: UserRole?, userId: String?) {
+        _currentUserRole.value = role
+        _currentUserId.value = userId
+        Log.d("AuthSessionManager", "User info updated - role: $role, userId: $userId")
+    }
     
     override suspend fun clearUserState() {
         _currentUserRole.value = null
+        _currentUserId.value = null
     }
     
     override suspend fun logout() {
-        // 유저 롤 초기화
+        // 유저 롤 및 ID 초기화
         _currentUserRole.value = null
+        _currentUserId.value = null
         // 토큰 삭제
         tokenDataSource.clearTokens()
         _authEvents.emit(AuthEvent.LoggedOut)
-        Log.d("AuthSessionManager", "User logged out - role and tokens cleared")
+        Log.d("AuthSessionManager", "User logged out - role, userId and tokens cleared")
     }
     
     override suspend fun emitTokenExpired() {
