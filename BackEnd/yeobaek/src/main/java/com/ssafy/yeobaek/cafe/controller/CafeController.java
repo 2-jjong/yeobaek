@@ -461,7 +461,9 @@ public class CafeController {
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            examples = @ExampleObject(
+                                    value = "{\"code\":\"S0000\",\"message\":\"정상 처리\",\"data\":{\"cafes\":[{\"cafeId\":1,\"cafeName\":\"카페 여백 #1\",\"address\":\"서울시 강남구 테헤란로 123\",\"latitude\":37.5665,\"longitude\":126.978,\"primaryImageUrl\":\"https://example.com/cafe1.jpg\",\"availableSlotCount\":2,\"totalSlotCount\":3,\"distance\":null,\"categories\":[\"모던\",\"미니멀\"]},{\"cafeId\":2,\"cafeName\":\"아트 카페 #2\",\"address\":\"서울시 종로구 인사동길 45\",\"latitude\":37.5796,\"longitude\":126.9769,\"primaryImageUrl\":\"https://example.com/cafe2.jpg\",\"availableSlotCount\":3,\"totalSlotCount\":4,\"distance\":null,\"categories\":[\"빈티지\",\"클래식\"]}],\"pagination\":{\"page\":0,\"size\":20,\"totalElements\":100,\"totalPages\":5,\"hasNext\":false}}}"
+                            )
                     )
             ),
             @ApiResponse(
@@ -470,8 +472,8 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = {
-                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"data\": null, \"message\": \"유효하지 않은 토큰입니다\"}"),
-                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"data\": null, \"message\": \"만료된 토큰입니다\"}")
+                                    @ExampleObject(name = "유효하지 않은 토큰", value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"),
+                                    @ExampleObject(name = "만료된 토큰", value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}")
                             }
                     )
             ),
@@ -481,7 +483,7 @@ public class CafeController {
                     content = @Content(
                             mediaType = "application/json",
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
                             )
                     )
             )
@@ -547,7 +549,7 @@ public class CafeController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\":\"S0000\",\"message\":\"정상 처리\",\"data\":{\"cafes\":[{\"cafeId\":1,\"cafeName\":\"카페 여백 #1\",\"address\":\"서울시 강남구 테헤란로 123\",\"latitude\":37.5665,\"longitude\":126.978,\"primaryImageUrl\":\"https://example.com/cafe1.jpg\",\"availableSlotCount\":2,\"totalSlotCount\":3,\"distance\":0.5,\"categories\":[\"모던\",\"미니멀\"]},{\"cafeId\":2,\"cafeName\":\"아트 카페 #2\",\"address\":\"서울시 종로구 인사동길 45\",\"latitude\":37.5796,\"longitude\":126.9769,\"primaryImageUrl\":\"https://example.com/cafe2.jpg\",\"availableSlotCount\":3,\"totalSlotCount\":4,\"distance\":1.2,\"categories\":[\"빈티지\",\"클래식\"]}],\"pagination\":{\"page\":0,\"size\":20,\"totalElements\":100,\"totalPages\":5,\"last\":false}}}"
+                                    value = "{\"code\":\"S0000\",\"message\":\"정상 처리\",\"data\":{\"cafes\":[{\"cafeId\":1,\"cafeName\":\"카페 여백 #1\",\"address\":\"서울시 강남구 테헤란로 123\",\"latitude\":37.5665,\"longitude\":126.978,\"primaryImageUrl\":\"https://example.com/cafe1.jpg\",\"availableSlotCount\":2,\"totalSlotCount\":3,\"distance\":0.5,\"categories\":[\"모던\",\"미니멀\"]},{\"cafeId\":2,\"cafeName\":\"아트 카페 #2\",\"address\":\"서울시 종로구 인사동길 45\",\"latitude\":37.5796,\"longitude\":126.9769,\"primaryImageUrl\":\"https://example.com/cafe2.jpg\",\"availableSlotCount\":3,\"totalSlotCount\":4,\"distance\":1.2,\"categories\":[\"빈티지\",\"클래식\"]}],\"pagination\":{\"page\":0,\"size\":20,\"totalElements\":100,\"totalPages\":5,\"hasNext\":false}}}"
                             )
                     )
             ),
