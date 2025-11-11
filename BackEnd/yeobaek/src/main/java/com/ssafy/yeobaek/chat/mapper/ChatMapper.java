@@ -78,10 +78,11 @@ public class ChatMapper {
 
         return ChatMessage.builder()
                 .messageId(message.getId())
-                .senderId(message.getUser().getId())
+                .senderId(message.getUser() != null ? message.getUser().getId() : null)
                 .messageType(message.getMessageType())
                 .content(message.getContent())
                 .imageUrl(message.getImageUrl())
+                .exhibitionId(message.getExhibitionId())
                 .exhibition(null) // TODO: 전시 정보 연동 필요
                 .isRead(message.getIsRead())
                 .createdAt(message.getCreatedAt())
