@@ -21,7 +21,7 @@ interface AuthSessionManager {
     /**
      * 현재 로그인한 사용자의 ID StateFlow
      */
-    val currentUserId: StateFlow<String?>
+    val currentUserId: StateFlow<Long?>
     
     /**
      * 인증 관련 이벤트를 구독
@@ -42,12 +42,12 @@ interface AuthSessionManager {
     /**
      * 사용자 ID 업데이트
      */
-    suspend fun updateUserId(userId: String?)
+    suspend fun updateUserId(userId: Long?)
 
     /**
      * 사용자 Role과 ID를 동시에 업데이트
      */
-    suspend fun updateUserInfo(role: UserRole?, userId: String?)
+    suspend fun updateUserInfo(role: UserRole?, userId: Long?)
     
     /**
      * UserRole 상태 초기화
