@@ -7,8 +7,10 @@ import com.ssafy.yeobaek.cafe.dto.response.*;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.cafe.entity.DisplayWall;
+import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import com.ssafy.yeobaek.user.entity.User;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -222,5 +224,20 @@ public class CafeMapper {
                 .build();
 
         return new SlotData(slot);
+    }
+
+    /**
+     * Spring Data Page 객체를 Pagination DTO로 변환
+     * @param page Spring Data Page 객체
+     * @return Pagination DTO
+     */
+    public Pagination toPagination(Page<?> page) {
+        return Pagination.builder()
+                .currentPage(page.getNumber())
+                .pageSize(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .hasNext(page.hasNext())
+                .build();
     }
 }

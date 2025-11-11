@@ -39,6 +39,7 @@ public class CafeServiceImpl implements CafeService {
 
     private final CafeRepository cafeRepository;
     private final CafeCategoryTagRepository cafeCategoryTagRepository;
+    private final CafeBookmarkRepository cafeBookmarkRepository;
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
     private final UserService userService;
@@ -227,7 +228,7 @@ public class CafeServiceImpl implements CafeService {
                 .collect(Collectors.toList());
 
         // 6. 페이지네이션 DTO 생성
-        Pagination pagination = new Pagination(cafePage.getNumber(), cafePage.getSize(), cafePage.getTotalElements(), cafePage.getTotalPages(), cafePage.isLast());
+        Pagination pagination = cafeMapper.toPagination(cafePage);
 
         return new CafeListData(summaries, pagination);
     }
@@ -349,5 +350,49 @@ public class CafeServiceImpl implements CafeService {
                 exhibition.getStartDate().format(DATE_FORMATTER),
                 exhibition.getEndDate().format(DATE_FORMATTER)
         );
+    }
+
+    /**
+     * 북마크한 카페 목록 조회
+     * @param userId 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 북마크한 카페 목록 데이터
+     */
+    @Override
+    public CafeListData getBookmarkedCafes(Long userId, Integer page, Integer size) {
+
+        // 1. Pageable 객체 생성
+        Pageable pageable = PageRequest.of(page, size);
+
+        // 2. 사용자가 북마크한 카페 목록을 페이지네이션하여 조회
+        Page<Cafe> cafePage = cafeBookmarkRepository.findBookmarkedCafesByUserId(userId, pageable);
+
+        // 3. 조회된 카페들의 카테고리 태그를 한 번에 조회하여 맵으로 구성 (N+1 문제 방지)
+        List<Long> cafeIds = cafePage.getContent().stream()
+                .map(Cafe::getId)
+                .collect(Collectors.toList());
+        Map<Long, List<String>> cafeCategoriesMap = cafeCategoryTagRepository.findAllByCafe_IdIn(cafeIds).stream()
+                .collect(Collectors.groupingBy(tag -> tag.getCafe().getId(),
+                        Collectors.mapping(tag -> tag.getCategory().getCategoryName(), Collectors.toList())));
+
+        // 4. DTO 변환
+        List<CafeSummary> summaries = cafePage.getContent().stream()
+                .map(cafe -> {
+                    // 카페 카테고리
+                    List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), Collections.emptyList());
+
+                    // 카페 대표 이미지 URL 변환
+                    String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
+
+                    // 북마크 목록에서는 거리를 계산하지 않으므로 null 전달
+                    return cafeMapper.toCafeSummary(cafe, null, categories, primaryImageUrl);
+                })
+                .collect(Collectors.toList());
+
+        // 5. 페이지네이션 DTO 생성
+        Pagination pagination = cafeMapper.toPagination(cafePage);
+
+        return new CafeListData(summaries, pagination);
     }
 }

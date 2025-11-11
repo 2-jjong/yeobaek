@@ -70,4 +70,14 @@ public interface CafeService {
      * @return 슬롯 정보
      */
     SlotData updateSlot(Long userId, Long cafeId, Long slotId, UpdateSlotRequest request);
+
+    /**
+     * 북마크한 카페 목록 조회
+     * - 북마크 생성일 기준 내림차순 정렬
+     * @param userId 사용자 ID
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 북마크한 작품 목록 및 페이징 정보
+     */
+    CafeListData getBookmarkedCafes(Long userId, Integer page, Integer size);
 }
