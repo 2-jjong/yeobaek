@@ -117,4 +117,21 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
            "WHERE e.artwork.artist.id = :artistId " +
            "AND e.state = 'COMPLETED'")
     Integer countCompletedExhibitionsByArtistId(@Param("artistId") Long artistId);
+    
+    /**
+     * 특정 슬롯의 특정 기간 내 전시 목록 조회 (승인됨 또는 진행 중인 전시만)
+     * @param slotId 슬롯 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 해당 기간과 겹치는 전시 목록
+     */
+    @Query("SELECT e FROM Exhibition e " +
+            "WHERE e.displaySlot.id = :slotId " +
+            "AND e.state IN ('APPROVED', 'ONGOING') " +
+            "AND ((e.startDate <= :endDate AND e.endDate >= :startDate))")
+    List<Exhibition> findBySlotIdAndDateRange(
+            @Param("slotId") Long slotId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }
