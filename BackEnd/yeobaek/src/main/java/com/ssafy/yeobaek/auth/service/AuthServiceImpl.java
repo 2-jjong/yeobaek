@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService{
         refreshTokenService.saveRefreshToken(user.getId(), refreshToken);
 
         // LoginData 반환
-        return new LoginData(accessToken, refreshToken, user.getUserType());
+        return new LoginData(accessToken, refreshToken, user.getId(), user.getUserType());
     }
 
     /**
