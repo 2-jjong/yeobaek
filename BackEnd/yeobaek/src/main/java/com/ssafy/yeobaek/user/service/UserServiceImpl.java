@@ -1,8 +1,10 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.artwork.repository.ArtworkBookmarkRepository;
 import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
+import com.ssafy.yeobaek.cafe.repository.CafeBookmarkRepository;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
@@ -41,6 +43,8 @@ public class UserServiceImpl implements UserService {
     private final ExhibitionRepository exhibitionRepository;
     private final ReviewRepository reviewRepository;
     private final CafeRepository cafeRepository;
+    private final CafeBookmarkRepository cafeBookmarkRepository;
+    private final ArtworkBookmarkRepository artworkBookmarkRepository;
     private final UserMapper userMapper;
     private final S3Service s3Service;
 
@@ -88,8 +92,11 @@ public class UserServiceImpl implements UserService {
         // S3 presigned URL 변환
         String profileImageUrl = s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl());
 
+        // 북마크 수 조회 (카페 북마크 + 작품 북마크)
+        int bookmarkCount = getTotalBookmarkCount(userId);
+
         // 사용자 기본 정보 변환
-        UserData userData = userMapper.toUserData(user, profileImageUrl);
+        UserData userData = userMapper.toUserData(user, profileImageUrl, bookmarkCount);
 
         // UserType에 따라 추가 정보 생성
         ArtistData artistData = user.getUserType() == UserRole.ARTIST
@@ -297,5 +304,16 @@ public class UserServiceImpl implements UserService {
                 totalReviews,
                 averageRating
         );
+    }
+
+    /**
+     * 사용자의 전체 북마크 수 조회
+     * @param userId 사용자 ID
+     * @return 전체 북마크 수 (카페 북마크 + 작품 북마크)
+     */
+    private int getTotalBookmarkCount(Long userId) {
+        long cafeBookmarks = cafeBookmarkRepository.countByUser_Id(userId);
+        long artworkBookmarks = artworkBookmarkRepository.countByUser_Id(userId);
+        return (int) (cafeBookmarks + artworkBookmarks);
     }
 }

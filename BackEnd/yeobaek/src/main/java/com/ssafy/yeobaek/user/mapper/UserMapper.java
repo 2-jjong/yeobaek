@@ -18,9 +18,10 @@ public class UserMapper {
      * User 엔티티를 UserData DTO로 변환
      * @param user User 엔티티
      * @param profileImageUrl 변환된 프로필 이미지 URL (presigned URL)
+     * @param bookmarkCount 북마크 수
      * @return UserData DTO
      */
-    public UserData toUserData(User user, String profileImageUrl) {
+    public UserData toUserData(User user, String profileImageUrl, int bookmarkCount) {
         return UserData.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
@@ -29,7 +30,7 @@ public class UserMapper {
                 .profileImageUrl(profileImageUrl)
                 .birthDate(user.getBirthDate().toString())
                 .gender(user.getGender())
-                .bookmarkCount(37) // TODO: 실제 북마크 수로 변경
+                .bookmarkCount(bookmarkCount)
                 .build();
     }
 
