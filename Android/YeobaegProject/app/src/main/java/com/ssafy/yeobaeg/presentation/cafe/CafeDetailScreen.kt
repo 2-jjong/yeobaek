@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,11 +21,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.SlotStatus as DisplaySlotStatus
 import com.ssafy.yeobaeg.domain.model.cafe.*
@@ -45,6 +48,7 @@ fun CafeDetailScreen(
     }
 
     Scaffold(
+        containerColor = Color.White,
         bottomBar = {
             if (uiState.cafeDetail != null) {
                 CafeDetailBottomBar()
@@ -54,6 +58,7 @@ fun CafeDetailScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(Color.White)
         ) {
             when {
                 uiState.isLoading -> {
@@ -106,7 +111,9 @@ fun CafeDetailContent(
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White),
             contentPadding = PaddingValues(bottom = bottomPadding)
         ) {
             // 이미지 갤러리
@@ -294,18 +301,38 @@ fun CafeDetailTabs(
 ) {
     TabRow(
         selectedTabIndex = selectedTab.ordinal,
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.primary
+        containerColor = Color.White,
+        contentColor = Color(0xFF8D6E63),
+        indicator = { tabPositions ->
+            TabRowDefaults.SecondaryIndicator(
+                modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab.ordinal]),
+                color = Color(0xFF8D6E63)
+            )
+        }
     ) {
         Tab(
             selected = selectedTab == CafeDetailTab.EXHIBITION,
             onClick = { onTabSelected(CafeDetailTab.EXHIBITION) },
-            text = { Text("전시") }
+            text = {
+                Text(
+                    text = "전시",
+                    fontWeight = if (selectedTab == CafeDetailTab.EXHIBITION) FontWeight.Bold else FontWeight.Normal
+                )
+            },
+            selectedContentColor = Color(0xFF8D6E63),
+            unselectedContentColor = Color(0xFFBDBDBD)
         )
         Tab(
             selected = selectedTab == CafeDetailTab.INFO,
             onClick = { onTabSelected(CafeDetailTab.INFO) },
-            text = { Text("정보") }
+            text = {
+                Text(
+                    text = "정보",
+                    fontWeight = if (selectedTab == CafeDetailTab.INFO) FontWeight.Bold else FontWeight.Normal
+                )
+            },
+            selectedContentColor = Color(0xFF8D6E63),
+            unselectedContentColor = Color(0xFFBDBDBD)
         )
     }
 }
@@ -364,7 +391,7 @@ fun FloorPlanSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF5F1ED))
+            .background(Color.White)
             .padding(16.dp)
     ) {
         Row(
@@ -489,7 +516,7 @@ fun DisplaySlotItem(slot: DisplaySlot) {
                             verticalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Image,
+                                painter = painterResource(id = R.drawable.hallway_24px),
                                 contentDescription = null,
                                 tint = Color(0xFFBDBDBD),
                                 modifier = Modifier.size(48.dp)
@@ -503,7 +530,7 @@ fun DisplaySlotItem(slot: DisplaySlot) {
                         color = when (slot.status) {
                             DisplaySlotStatus.AVAILABLE -> Color(0xFF4CAF50)
                             DisplaySlotStatus.EXHIBITING -> Color(0xFFFFC107)
-                            DisplaySlotStatus.RESERVED -> Color(0xFFFF5252)
+                            DisplaySlotStatus.RESERVED -> Color(0xFF2196F3)
                             DisplaySlotStatus.UNAVAILABLE -> Color(0xFF9E9E9E)
                         },
                         modifier = Modifier.align(Alignment.TopStart)
@@ -512,7 +539,7 @@ fun DisplaySlotItem(slot: DisplaySlot) {
                             text = when (slot.status) {
                                 DisplaySlotStatus.AVAILABLE -> "전시가능"
                                 DisplaySlotStatus.EXHIBITING -> "전시중"
-                                DisplaySlotStatus.RESERVED -> "예약됨"
+                                DisplaySlotStatus.RESERVED -> "전시예정"
                                 DisplaySlotStatus.UNAVAILABLE -> "불가능"
                             },
                             style = MaterialTheme.typography.labelSmall,
@@ -689,7 +716,7 @@ fun SlotItem(slot: SlotDetail) {
                             verticalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Image,
+                                painter = painterResource(id = R.drawable.hallway_24px),
                                 contentDescription = null,
                                 tint = Color(0xFFBDBDBD),
                                 modifier = Modifier.size(48.dp)
@@ -703,7 +730,7 @@ fun SlotItem(slot: SlotDetail) {
                         color = when (slot.status) {
                             AVAILABLE -> Color(0xFF4CAF50)
                             EXHIBITING -> Color(0xFFFFC107)
-                            SCHEDULED -> Color(0xFFFF5252)
+                            SCHEDULED -> Color(0xFF2196F3)
                         },
                         modifier = Modifier.align(Alignment.TopStart)
                     ) {
@@ -711,7 +738,7 @@ fun SlotItem(slot: SlotDetail) {
                             text = when (slot.status) {
                                 AVAILABLE -> "전시가능"
                                 EXHIBITING -> "전시중"
-                                SCHEDULED -> "예약됨"
+                                SCHEDULED -> "전시예정"
                             },
                             style = MaterialTheme.typography.labelSmall,
                             color = Color.White,
