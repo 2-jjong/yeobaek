@@ -62,8 +62,8 @@ public class ArtworkDetailDto {
     private List<String> images;
 
     @Schema(description = "작가 정보")
-    private ArtistDto artistDto;
+    private ArtistDto artist;
 
     @Schema(description = "현재 전시 정보 (전시 중일 때만)")
-    private ExhibitionDto currentExhibitionDto;
+    private ExhibitionDto currentExhibition;
 }

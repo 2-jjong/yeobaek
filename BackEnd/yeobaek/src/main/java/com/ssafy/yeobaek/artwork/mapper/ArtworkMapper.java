@@ -44,8 +44,8 @@ public class ArtworkMapper {
                 .bookmarkCount(artwork.getBookmarkCount())
                 .isBookmarked(isBookmarked)
                 .images(artworkImageUrls)
-                .artistDto(artistDto)
-                .currentExhibitionDto(exhibitionDto)
+                .artist(artistDto)
+                .currentExhibition(exhibitionDto)
                 .build();
     }
 
