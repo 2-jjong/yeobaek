@@ -6,6 +6,7 @@ import com.ssafy.yeobaek.cafe.dto.request.CreateDisplayWallRequest;
 import com.ssafy.yeobaek.cafe.dto.request.UpdateSlotRequest;
 import com.ssafy.yeobaek.cafe.dto.response.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface CafeService {
@@ -80,4 +81,14 @@ public interface CafeService {
      * @return 북마크한 작품 목록 및 페이징 정보
      */
     CafeListData getBookmarkedCafes(Long userId, Integer page, Integer size);
+
+    /**
+     * 슬롯의 전시 가능일 조회
+     * - 조회 시작일로부터 30일 동안의 가능한 날짜 목록 반환
+     * - 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시와 겹치지 않는 날짜만 반환
+     * @param slotId 슬롯 ID
+     * @param startDate 조회 시작일 (null이면 오늘 날짜 사용)
+     * @return 전시 가능한 날짜 목록
+     */
+    SlotAvailableDatesResponse getSlotAvailableDates(Long slotId, LocalDate startDate);
 }

@@ -1014,7 +1014,7 @@ public class CafeController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
             LocalDate startDate
     ) {
-        SlotAvailableDatesResponse data = null;
+        SlotAvailableDatesResponse data = cafeService.getSlotAvailableDates(slotId, startDate);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
