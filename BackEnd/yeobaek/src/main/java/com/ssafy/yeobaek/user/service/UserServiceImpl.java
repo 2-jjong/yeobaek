@@ -1,10 +1,14 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
+import com.ssafy.yeobaek.review.entity.Review;
+import com.ssafy.yeobaek.review.repository.ReviewRepository;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
 import com.ssafy.yeobaek.user.dto.response.ArtistData;
@@ -31,6 +35,9 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
+    private final ArtworkRepository artworkRepository;
+    private final ExhibitionRepository exhibitionRepository;
+    private final ReviewRepository reviewRepository;
     private final UserMapper userMapper;
     private final S3Service s3Service;
 
@@ -83,7 +90,7 @@ public class UserServiceImpl implements UserService {
 
         // UserType에 따라 추가 정보 생성
         ArtistData artistData = user.getUserType() == UserRole.ARTIST
-                ? userMapper.toDummyArtistData()
+                ? getArtistData(userId)
                 : null;
 
         CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
@@ -116,7 +123,7 @@ public class UserServiceImpl implements UserService {
 
         // UserType에 따라 추가 정보 생성 (artist와 cafe 정보는 전부 공개)
         ArtistData artistData = user.getUserType() == UserRole.ARTIST
-                ? userMapper.toDummyArtistData()
+                ? getArtistData(userId)
                 : null;
 
         CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
@@ -221,5 +228,44 @@ public class UserServiceImpl implements UserService {
                 .map(user -> artistRepository.findById(user.getId()).orElse(null))
                 .filter(artist -> artist != null)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Artist 정보 조회 (통계 포함)
+     * @param artistId 작가 ID (= 사용자 ID)
+     * @return ArtistData DTO
+     */
+    private ArtistData getArtistData(Long artistId) {
+        // Artist 엔티티 조회
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 작품 수 조회
+        int artworkCount = artworkRepository.countByArtist(artist);
+
+        // 전시 중인 작품 수 조회
+        int exhibitingCount = artworkRepository.countByArtistAndIsExhibiting(artist, true);
+
+        // 총 전시 완료 횟수 조회
+        Integer totalExhibitedCount = exhibitionRepository.countCompletedExhibitionsByArtistId(artistId);
+
+        // 리뷰 통계 계산
+        List<Review> reviews = reviewRepository.findAllByRevieweeId(artistId);
+        int totalReviews = reviews.size();
+        double averageRating = reviews.isEmpty() ? 0.0 :
+                reviews.stream()
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
+
+        // ArtistData DTO 생성
+        return userMapper.toArtistData(
+                artist,
+                artworkCount,
+                exhibitingCount,
+                totalExhibitedCount != null ? totalExhibitedCount : 0,
+                totalReviews,
+                averageRating
+        );
     }
 }

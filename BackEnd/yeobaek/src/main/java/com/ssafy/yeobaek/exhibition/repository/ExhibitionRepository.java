@@ -107,4 +107,14 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    /**
+     * 특정 작가의 총 전시 완료 횟수 조회
+     * @param artistId 작가 ID
+     * @return 완료된 전시 수
+     */
+    @Query("SELECT COUNT(e) FROM Exhibition e " +
+           "WHERE e.artwork.artist.id = :artistId " +
+           "AND e.state = 'COMPLETED'")
+    Integer countCompletedExhibitionsByArtistId(@Param("artistId") Long artistId);
 }

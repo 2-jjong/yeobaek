@@ -1,10 +1,10 @@
 package com.ssafy.yeobaek.user.mapper;
 
-import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.user.dto.response.ArtistData;
 import com.ssafy.yeobaek.user.dto.response.CafeData;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import com.ssafy.yeobaek.user.dto.response.UserData;
+import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -54,22 +54,34 @@ public class UserMapper {
     }
 
     /**
-     * 더미 ArtistData 생성
-     * TODO: Artist 엔티티 및 Repository 구현 후 toArtistData(Artist artist) 메서드로 변경
-     * @return 더미 ArtistData
+     * Artist 엔티티를 ArtistData DTO로 변환
+     * @param artist Artist 엔티티
+     * @param artworkCount 작품 수
+     * @param exhibitingCount 전시 중인 작품 수
+     * @param totalExhibitedCount 총 전시한 작품 수
+     * @param totalReviews 총 리뷰 수
+     * @param averageRating 평균 평점
+     * @return ArtistData DTO
      */
-    public ArtistData toDummyArtistData() {
+    public ArtistData toArtistData(
+            Artist artist,
+            int artworkCount,
+            int exhibitingCount,
+            int totalExhibitedCount,
+            int totalReviews,
+            double averageRating
+    ) {
         RatingStatsData ratingStats = RatingStatsData.builder()
-                .totalReviews(24)
-                .averageRating(4.3)
+                .totalReviews(totalReviews)
+                .averageRating(averageRating)
                 .build();
 
         return ArtistData.builder()
-                .introduction("현대 미술을 전공한 신진 작가입니다. 주로 추상화와 설치미술 작업을 하고 있습니다.")
-                .category(ArtCategory.LANDSCAPE)
-                .artworkCount(12)
-                .exhibitingCount(3)
-                .totalExhibitedCount(8)
+                .introduction(artist.getIntroduction())
+                .category(artist.getCategory())
+                .artworkCount(artworkCount)
+                .exhibitingCount(exhibitingCount)
+                .totalExhibitedCount(totalExhibitedCount)
                 .ratingStats(ratingStats)
                 .build();
     }
@@ -96,28 +108,6 @@ public class UserMapper {
                 .ratingStats(ratingStats)
                 .build();
     }
-
-    // TODO: Artist 엔티티 구현 후 아래 메서드 추가
-    // /**
-    //  * Artist 엔티티를 ArtistData DTO로 변환
-    //  * @param artist Artist 엔티티
-    //  * @return ArtistData DTO
-    //  */
-    // public ArtistData toArtistData(Artist artist) {
-    //     RatingStatsData ratingStats = RatingStatsData.builder()
-    //             .totalReviews(/* 실제 평가 수 */)
-    //             .averageRating(/* 실제 평균 평점 */)
-    //             .build();
-    //
-    //     return ArtistData.builder()
-    //             .introduction(artist.getIntroduction())
-    //             .category(artist.getCategory())
-    //             .artworkCount(/* 실제 작품 수 */)
-    //             .exhibitingCount(/* 실제 전시 중인 작품 수 */)
-    //             .totalExhibitedCount(/* 실제 총 전시한 작품 수 */)
-    //             .ratingStats(ratingStats)
-    //             .build();
-    // }
 
     // TODO: Cafe 엔티티 구현 후 아래 메서드 추가
     // /**
