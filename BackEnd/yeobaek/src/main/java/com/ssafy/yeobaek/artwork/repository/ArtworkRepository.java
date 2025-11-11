@@ -51,4 +51,11 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long>, JpaSpec
            "JOIN FETCH art.user " +
            "ORDER BY (a.viewCount * 1 + a.bookmarkCount * 9) DESC")
     List<Artwork> findTopPopularArtworks(Pageable pageable);
+
+    /**
+     * 작가별 전시 중인 작품 수 조회
+     * @param artist 작가 엔티티
+     * @return 전시 중인 작품 수
+     */
+    int countByArtistAndIsExhibiting(Artist artist, Boolean isExhibiting);
 }

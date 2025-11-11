@@ -39,4 +39,11 @@ public interface ArtworkBookmarkRepository extends JpaRepository<ArtworkBookmark
            "WHERE ab.user.id = :userId " +
            "ORDER BY ab.createdAt DESC")
     Page<ArtworkBookmark> findByUser_IdOrderByCreatedAtDesc(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * 특정 사용자의 작품 북마크 수 조회
+     * @param userId 사용자 ID
+     * @return 북마크 수
+     */
+    long countByUser_Id(Long userId);
 }

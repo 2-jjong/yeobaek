@@ -109,6 +109,16 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     );
 
     /**
+     * 특정 작가의 총 전시 완료 횟수 조회
+     * @param artistId 작가 ID
+     * @return 완료된 전시 수
+     */
+    @Query("SELECT COUNT(e) FROM Exhibition e " +
+           "WHERE e.artwork.artist.id = :artistId " +
+           "AND e.state = 'COMPLETED'")
+    Integer countCompletedExhibitionsByArtistId(@Param("artistId") Long artistId);
+    
+    /**
      * 특정 슬롯의 특정 기간 내 전시 목록 조회 (승인됨 또는 진행 중인 전시만)
      * @param slotId 슬롯 ID
      * @param startDate 조회 시작일

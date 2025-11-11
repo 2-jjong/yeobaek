@@ -38,4 +38,11 @@ public interface CafeBookmarkRepository extends JpaRepository<CafeBookmark, Long
             "WHERE cb.user.id = :userId " +
             "ORDER BY cb.createdAt DESC")
     Page<Cafe> findBookmarkedCafesByUserId(@Param("userId") Long userId, Pageable pageable);
+
+    /**
+     * 특정 사용자의 카페 북마크 수 조회
+     * @param userId 사용자 ID
+     * @return 북마크 수
+     */
+    long countByUser_Id(Long userId);
 }

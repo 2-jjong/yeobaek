@@ -1,10 +1,10 @@
 package com.ssafy.yeobaek.user.mapper;
 
-import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.user.dto.response.ArtistData;
 import com.ssafy.yeobaek.user.dto.response.CafeData;
 import com.ssafy.yeobaek.user.dto.response.RatingStatsData;
 import com.ssafy.yeobaek.user.dto.response.UserData;
+import com.ssafy.yeobaek.user.entity.Artist;
 import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -18,9 +18,10 @@ public class UserMapper {
      * User 엔티티를 UserData DTO로 변환
      * @param user User 엔티티
      * @param profileImageUrl 변환된 프로필 이미지 URL (presigned URL)
+     * @param bookmarkCount 북마크 수
      * @return UserData DTO
      */
-    public UserData toUserData(User user, String profileImageUrl) {
+    public UserData toUserData(User user, String profileImageUrl, int bookmarkCount) {
         return UserData.builder()
                 .userId(user.getId())
                 .email(user.getEmail())
@@ -29,7 +30,7 @@ public class UserMapper {
                 .profileImageUrl(profileImageUrl)
                 .birthDate(user.getBirthDate().toString())
                 .gender(user.getGender())
-                .bookmarkCount(37) // TODO: 실제 북마크 수로 변경
+                .bookmarkCount(bookmarkCount)
                 .build();
     }
 
@@ -54,92 +55,64 @@ public class UserMapper {
     }
 
     /**
-     * 더미 ArtistData 생성
-     * TODO: Artist 엔티티 및 Repository 구현 후 toArtistData(Artist artist) 메서드로 변경
-     * @return 더미 ArtistData
+     * Artist 엔티티를 ArtistData DTO로 변환
+     * @param artist Artist 엔티티
+     * @param artworkCount 작품 수
+     * @param exhibitingCount 전시 중인 작품 수
+     * @param totalExhibitedCount 총 전시한 작품 수
+     * @param totalReviews 총 리뷰 수
+     * @param averageRating 평균 평점
+     * @return ArtistData DTO
      */
-    public ArtistData toDummyArtistData() {
+    public ArtistData toArtistData(
+            Artist artist,
+            int artworkCount,
+            int exhibitingCount,
+            int totalExhibitedCount,
+            int totalReviews,
+            double averageRating
+    ) {
         RatingStatsData ratingStats = RatingStatsData.builder()
-                .totalReviews(24)
-                .averageRating(4.3)
+                .totalReviews(totalReviews)
+                .averageRating(averageRating)
                 .build();
 
         return ArtistData.builder()
-                .introduction("현대 미술을 전공한 신진 작가입니다. 주로 추상화와 설치미술 작업을 하고 있습니다.")
-                .category(ArtCategory.LANDSCAPE)
-                .artworkCount(12)
-                .exhibitingCount(3)
-                .totalExhibitedCount(8)
+                .introduction(artist.getIntroduction())
+                .category(artist.getCategory())
+                .artworkCount(artworkCount)
+                .exhibitingCount(exhibitingCount)
+                .totalExhibitedCount(totalExhibitedCount)
                 .ratingStats(ratingStats)
                 .build();
     }
 
     /**
-     * 더미 CafeData 생성
-     * TODO: Cafe 엔티티 및 Repository 구현 후 toCafeData(Cafe cafe) 메서드로 변경
-     * @return 더미 CafeData
+     * Cafe 엔티티를 CafeData DTO로 변환
+     * @param cafe Cafe 엔티티
+     * @param totalReviews 총 리뷰 수
+     * @param averageRating 평균 평점
+     * @return CafeData DTO
      */
-    public CafeData toDummyCafeData() {
+    public CafeData toCafeData(
+            com.ssafy.yeobaek.cafe.entity.Cafe cafe,
+            int totalReviews,
+            double averageRating
+    ) {
         RatingStatsData ratingStats = RatingStatsData.builder()
-                .totalReviews(156)
-                .averageRating(4.7)
+                .totalReviews(totalReviews)
+                .averageRating(averageRating)
                 .build();
 
         return CafeData.builder()
-                .cafeId(1L)
-                .cafeName("아트 갤러리 카페")
-                .address("서울시 강남구 테헤란로 123")
-                .description("작가들의 작품을 전시하고 감상할 수 있는 복합 문화 공간입니다.")
-                .contact("02-1234-5678")
-                .businessHoursStart("09:00")
-                .businessHoursEnd("22:00")
+                .cafeId(cafe.getId())
+                .cafeName(cafe.getCafeName())
+                .address(cafe.getAddress())
+                .description(cafe.getDescription())
+                .contact(cafe.getContact())
+                .businessHoursStart(cafe.getBusinessStartTime())
+                .businessHoursEnd(cafe.getBusinessEndTime())
                 .ratingStats(ratingStats)
                 .build();
     }
-
-    // TODO: Artist 엔티티 구현 후 아래 메서드 추가
-    // /**
-    //  * Artist 엔티티를 ArtistData DTO로 변환
-    //  * @param artist Artist 엔티티
-    //  * @return ArtistData DTO
-    //  */
-    // public ArtistData toArtistData(Artist artist) {
-    //     RatingStatsData ratingStats = RatingStatsData.builder()
-    //             .totalReviews(/* 실제 평가 수 */)
-    //             .averageRating(/* 실제 평균 평점 */)
-    //             .build();
-    //
-    //     return ArtistData.builder()
-    //             .introduction(artist.getIntroduction())
-    //             .category(artist.getCategory())
-    //             .artworkCount(/* 실제 작품 수 */)
-    //             .exhibitingCount(/* 실제 전시 중인 작품 수 */)
-    //             .totalExhibitedCount(/* 실제 총 전시한 작품 수 */)
-    //             .ratingStats(ratingStats)
-    //             .build();
-    // }
-
-    // TODO: Cafe 엔티티 구현 후 아래 메서드 추가
-    // /**
-    //  * Cafe 엔티티를 CafeData DTO로 변환
-    //  * @param cafe Cafe 엔티티
-    //  * @return CafeData DTO
-    //  */
-    // public CafeData toCafeData(Cafe cafe) {
-    //     RatingStatsData ratingStats = RatingStatsData.builder()
-    //             .totalReviews(/* 실제 평가 수 */)
-    //             .averageRating(/* 실제 평균 평점 */)
-    //             .build();
-    //
-    //     return CafeData.builder()
-    //             .cafeId(cafe.getId())
-    //             .cafeName(cafe.getName())
-    //             .address(cafe.getAddress())
-    //             .description(cafe.getDescription())
-    //             .contact(cafe.getContact())
-    //             .businessHoursStart(cafe.getBusinessHoursStart().toString())
-    //             .businessHoursEnd(cafe.getBusinessHoursEnd().toString())
-    //             .ratingStats(ratingStats)
-    //             .build();
-    // }
 }

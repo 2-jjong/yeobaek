@@ -1,10 +1,18 @@
 package com.ssafy.yeobaek.user.service;
 
+import com.ssafy.yeobaek.artwork.repository.ArtworkBookmarkRepository;
+import com.ssafy.yeobaek.artwork.repository.ArtworkRepository;
 import com.ssafy.yeobaek.auth.dto.request.SignupRequest;
+import com.ssafy.yeobaek.cafe.entity.Cafe;
+import com.ssafy.yeobaek.cafe.repository.CafeBookmarkRepository;
+import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.Gender;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
+import com.ssafy.yeobaek.review.entity.Review;
+import com.ssafy.yeobaek.review.repository.ReviewRepository;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.dto.request.UpdateProfileRequest;
 import com.ssafy.yeobaek.user.dto.response.ArtistData;
@@ -31,6 +39,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
+    private final ArtworkRepository artworkRepository;
+    private final ExhibitionRepository exhibitionRepository;
+    private final ReviewRepository reviewRepository;
+    private final CafeRepository cafeRepository;
+    private final CafeBookmarkRepository cafeBookmarkRepository;
+    private final ArtworkBookmarkRepository artworkBookmarkRepository;
     private final UserMapper userMapper;
     private final S3Service s3Service;
 
@@ -78,16 +92,19 @@ public class UserServiceImpl implements UserService {
         // S3 presigned URL 변환
         String profileImageUrl = s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl());
 
+        // 북마크 수 조회 (카페 북마크 + 작품 북마크)
+        int bookmarkCount = getTotalBookmarkCount(userId);
+
         // 사용자 기본 정보 변환
-        UserData userData = userMapper.toUserData(user, profileImageUrl);
+        UserData userData = userMapper.toUserData(user, profileImageUrl, bookmarkCount);
 
         // UserType에 따라 추가 정보 생성
         ArtistData artistData = user.getUserType() == UserRole.ARTIST
-                ? userMapper.toDummyArtistData()
+                ? getArtistData(userId)
                 : null;
 
         CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
-                ? userMapper.toDummyCafeData()
+                ? getCafeData(userId)
                 : null;
 
         return UserProfileData.builder()
@@ -116,11 +133,11 @@ public class UserServiceImpl implements UserService {
 
         // UserType에 따라 추가 정보 생성 (artist와 cafe 정보는 전부 공개)
         ArtistData artistData = user.getUserType() == UserRole.ARTIST
-                ? userMapper.toDummyArtistData()
+                ? getArtistData(userId)
                 : null;
 
         CafeData cafeData = user.getUserType() == UserRole.CAFE_OWNER
-                ? userMapper.toDummyCafeData()
+                ? getCafeData(userId)
                 : null;
 
         return UserProfileData.builder()
@@ -221,5 +238,82 @@ public class UserServiceImpl implements UserService {
                 .map(user -> artistRepository.findById(user.getId()).orElse(null))
                 .filter(artist -> artist != null)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Artist 정보 조회 (통계 포함)
+     * @param artistId 작가 ID (= 사용자 ID)
+     * @return ArtistData DTO
+     */
+    private ArtistData getArtistData(Long artistId) {
+        // Artist 엔티티 조회
+        Artist artist = artistRepository.findById(artistId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 작품 수 조회
+        int artworkCount = artworkRepository.countByArtist(artist);
+
+        // 전시 중인 작품 수 조회
+        int exhibitingCount = artworkRepository.countByArtistAndIsExhibiting(artist, true);
+
+        // 총 전시 완료 횟수 조회
+        Integer totalExhibitedCount = exhibitionRepository.countCompletedExhibitionsByArtistId(artistId);
+
+        // 리뷰 통계 계산
+        List<Review> reviews = reviewRepository.findAllByRevieweeId(artistId);
+        int totalReviews = reviews.size();
+        double averageRating = reviews.isEmpty() ? 0.0 :
+                reviews.stream()
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
+
+        // ArtistData DTO 생성
+        return userMapper.toArtistData(
+                artist,
+                artworkCount,
+                exhibitingCount,
+                totalExhibitedCount != null ? totalExhibitedCount : 0,
+                totalReviews,
+                averageRating
+        );
+    }
+
+    /**
+     * Cafe 정보 조회 (통계 포함)
+     * @param cafeOwnerId 카페 사장 ID (= 사용자 ID)
+     * @return CafeData DTO
+     */
+    private CafeData getCafeData(Long cafeOwnerId) {
+        // Cafe 엔티티 조회
+        Cafe cafe = cafeRepository.findByCafeOwnerId(cafeOwnerId)
+                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+
+        // 리뷰 통계 계산
+        List<Review> reviews = reviewRepository.findAllByRevieweeId(cafeOwnerId);
+        int totalReviews = reviews.size();
+        double averageRating = reviews.isEmpty() ? 0.0 :
+                reviews.stream()
+                        .mapToInt(Review::getRating)
+                        .average()
+                        .orElse(0.0);
+
+        // CafeData DTO 생성
+        return userMapper.toCafeData(
+                cafe,
+                totalReviews,
+                averageRating
+        );
+    }
+
+    /**
+     * 사용자의 전체 북마크 수 조회
+     * @param userId 사용자 ID
+     * @return 전체 북마크 수 (카페 북마크 + 작품 북마크)
+     */
+    private int getTotalBookmarkCount(Long userId) {
+        long cafeBookmarks = cafeBookmarkRepository.countByUser_Id(userId);
+        long artworkBookmarks = artworkBookmarkRepository.countByUser_Id(userId);
+        return (int) (cafeBookmarks + artworkBookmarks);
     }
 }
