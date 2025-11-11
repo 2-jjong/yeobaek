@@ -6,8 +6,11 @@ import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.cafe.repository.CafeRepository;
 import com.ssafy.yeobaek.cafe.repository.DisplaySlotRepository;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
+import com.ssafy.yeobaek.chat.service.ChatService;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.enums.ExhibitionState;
+import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
@@ -31,6 +34,7 @@ public class ExhibitionServiceImpl implements ExhibitionService {
 
     private final ExhibitionRepository exhibitionRepository;
     private final ExhibitionMapper exhibitionMapper;
+    private final ChatService chatService; // ChatService 주입
 
     // TODO: 순환 참조 문제 해결 후 Service 의존성 변경
     // 다른 도메인의 Repository 의존성
@@ -123,6 +127,14 @@ public class ExhibitionServiceImpl implements ExhibitionService {
 
         // 8. 저장
         exhibitionRepository.save(exhibition);
+
+        // 9. 채팅방 ID 파생 및 시스템 메시지 전송
+        Long cafeOwnerId = cafe.getCafeOwner().getId();
+        Long artistId = artwork.getArtist().getUser().getId();
+        ChatRoomData chatRoomData = chatService.createChatRoom(cafeOwnerId, artistId);
+        Long chatRoomId = chatRoomData.getChatRoom().getChatRoomId();
+
+        chatService.sendSystemMessage(chatRoomId, null, MessageType.PROPOSAL, exhibition.getId());
     }
 
     /**
