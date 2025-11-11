@@ -72,6 +72,9 @@ public class CafeBookmarkServiceImpl implements CafeBookmarkService {
         Cafe cafe = cafeRepository.findById(cafeId)
                 .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
 
+        // 북마크 수 증가
+        cafe.increaseBookmarkCount();
+
         // CafeBookmark 엔티티 변환 및 저장
         CafeBookmark cafeBookmark = cafeBookmarkMapper.toCafeBookmark(user, cafe);
         cafeBookmarkRepository.save(cafeBookmark);
@@ -83,6 +86,13 @@ public class CafeBookmarkServiceImpl implements CafeBookmarkService {
      * @param cafeId 카페 ID
      */
     private void deleteBookmark(Long userId, Long cafeId){
+        // 카페 조회
+        Cafe cafe = cafeRepository.findById(cafeId)
+                .orElseThrow(() -> new CustomException(ResponseCode.CAFE_NOT_FOUND));
+
+        // 북마크 수 감소
+        cafe.decreaseBookmarkCount();
+
         // 북마크 삭제
         cafeBookmarkRepository.deleteCafeBookmarkByUser_IdAndCafe_Id(userId, cafeId);
     }

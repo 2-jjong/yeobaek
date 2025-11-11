@@ -75,7 +75,24 @@ public class Cafe {
     @OneToMany(mappedBy = "cafe")
     private List<DisplayWall> displayWalls = new ArrayList<>();
 
+    /**
+     * 조회수 증가
+     */
     public void increaseViewCount() {
         this.viewCount++;
+    }
+
+    /**
+     * 북마크수 증가
+     */
+    public void increaseBookmarkCount() {
+        this.bookmarkCount++;
+    }
+
+    /**
+     * 북마크수 감소
+     */
+    public void decreaseBookmarkCount() {
+        this.bookmarkCount--;
     }
 }
