@@ -228,7 +228,7 @@ public class CafeServiceImpl implements CafeService {
                 .collect(Collectors.toList());
 
         // 6. 페이지네이션 DTO 생성
-        Pagination pagination = new Pagination(cafePage.getNumber(), cafePage.getSize(), cafePage.getTotalElements(), cafePage.getTotalPages(), cafePage.isLast());
+        Pagination pagination = cafeMapper.toPagination(cafePage);
 
         return new CafeListData(summaries, pagination);
     }
@@ -391,7 +391,7 @@ public class CafeServiceImpl implements CafeService {
                 .collect(Collectors.toList());
 
         // 5. 페이지네이션 DTO 생성
-        Pagination pagination = new Pagination(cafePage.getNumber(), cafePage.getSize(), cafePage.getTotalElements(), cafePage.getTotalPages(), cafePage.isLast());
+        Pagination pagination = cafeMapper.toPagination(cafePage);
 
         return new CafeListData(summaries, pagination);
     }
