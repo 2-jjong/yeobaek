@@ -9,6 +9,7 @@ import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -249,6 +250,17 @@ public class ArtworkMapper {
                 .isExhibiting(artwork.getIsExhibiting())
                 .bookmarkCount(artwork.getBookmarkCount())
                 .artist(artistDto)
+                .build();
+    }
+
+    /**
+     * 전시 가능한 날짜 목록을 ArtworkAvailableDatesResponse로 변환
+     * @param availableDates 전시 가능한 날짜 목록
+     * @return ArtworkAvailableDatesResponse
+     */
+    public ArtworkAvailableDatesResponse toArtworkAvailableDatesResponse(List<LocalDate> availableDates) {
+        return ArtworkAvailableDatesResponse.builder()
+                .dates(availableDates)
                 .build();
     }
 }
