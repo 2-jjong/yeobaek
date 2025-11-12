@@ -3,8 +3,10 @@ package com.ssafy.yeobaek.exhibition.controller;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.util.SecurityUtil;
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
+import com.ssafy.yeobaek.exhibition.dto.response.ExhibitionSummaryResponse;
 import com.ssafy.yeobaek.exhibition.service.ExhibitionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -380,5 +382,76 @@ public class ExhibitionController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success());
+    }
+
+    @Operation(
+            summary = "전시 상세 정보 조회",
+            description = "전시 ID로 전시의 상세 정보를 조회합니다. 카페, 작품, 슬롯의 간략한 정보를 포함합니다."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "전시 상세 정보 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": {\"exhibitionId\": 1, \"cafe\": {\"cafeId\": 1, \"cafeName\": \"여백 갤러리\", \"address\": \"서울특별시 강남구 테헤란로 123\"}, \"artwork\": {\"artworkId\": 1, \"title\": \"여름의 여백\", \"widthCm\": 120.5, \"heightCm\": 80.0, \"weightKg\": 5.2, \"artistName\": \"김작가\"}, \"startDate\": \"2025-11-15\", \"endDate\": \"2025-12-15\", \"commissionRate\": 10.0, \"requirements\": \"작품 조명은 자연광으로 부탁드립니다.\"}, \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "전시를 찾을 수 없음",
+                                    value = "{\"code\": \"EX4041\", \"message\": \"존재하지 않는 전시입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/{exhibitionId}")
+    public ResponseEntity<ResponseDto<ExhibitionSummaryResponse>> getExhibitionDetail(
+            @Parameter(description = "조회할 전시 ID", required = true)
+            @PathVariable Long exhibitionId
+    ) {
+        ExhibitionSummaryResponse data = exhibitionService.getExhibitionDetail(exhibitionId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(data));
     }
 }
