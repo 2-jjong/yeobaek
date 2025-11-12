@@ -1,12 +1,11 @@
 // RegisterCafeScreen.kt
 package com.ssafy.yeobaeg.presentation.home.cafeowner.register
 
-import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,11 +44,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,13 +57,14 @@ import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.storage.PresignedUrl
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegStepBar
-import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.ui.SectionHeader
 import com.ssafy.yeobaeg.presentation.common.util.rememberMultiImagePicker
 import com.ssafy.yeobaeg.presentation.common.util.uriToTempFile
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
-import com.ssafy.yeobaeg.ui.theme.YeobaegLightYellow
 import java.io.File
 
 @Composable
@@ -76,16 +74,11 @@ fun RegisterCafeScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scroll = rememberScrollState()
 
-    LaunchedEffect(Unit) {
-        viewModel.getCafeCategories()
-    }
+    LaunchedEffect(Unit) { viewModel.getCafeCategories() }
 
     Scaffold(
         topBar = {
-            if (state.step != STEP_ADDRESS) YeobaegStepBar(
-                step = state.step,
-                totalStep = TOTAL_STEPS
-            )
+            if (state.step != STEP_ADDRESS) YeobaegStepBar(step = state.step, totalStep = TOTAL_STEPS)
         },
         bottomBar = {
             if (state.step != STEP_ADDRESS) BottomBarScaffold(
@@ -97,53 +90,52 @@ fun RegisterCafeScreen(
         },
         containerColor = Color.White
     ) { inner ->
-        Box(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Box(Modifier.fillMaxSize()) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = 20.dp, start = 20.dp, end = 20.dp)
                     .padding(inner)
-                    .then(if(state.step>0) Modifier.verticalScroll(scroll) else Modifier),
+                    .then(if (state.step > 0) Modifier.verticalScroll(scroll) else Modifier),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 when (state.step) {
                     STEP1 -> Step1BasicInfo(
                         state = state,
-                        onName = { viewModel.update { copy(name = it) } },
-                        onDesc = { viewModel.update { copy(description = it.take(500)) } },
-                        onPhone = { viewModel.update { copy(phone = it) } },
-                        onOpen = { viewModel.update { copy(openTime = it) } },
-                        onClose = { viewModel.update { copy(closeTime = it) } },
+                        onName = viewModel::updateName,
+                        onDesc = viewModel::updateDescription,
+                        onPhone = viewModel::updatePhone,
+                        onOpen = viewModel::updateOpenTime,
+                        onClose = viewModel::updateCloseTime,
                         onAddImage = viewModel::addImage,
                         onRemoveImage = viewModel::removeImage,
-                        showAddressPicker = { viewModel.update { copy(step = STEP_ADDRESS) } }
+                        showAddressPicker = viewModel::openAddressPicker
                     )
 
                     STEP2 -> Step2Attributes(
                         state = state,
-                        onToggleStyle = { viewModel.toggleStyle(it) },
-                        onVisitors = { viewModel.selectVisitorsBand(it) }
+                        onToggleStyle = viewModel::toggleStyle,
+                        onVisitors = viewModel::selectVisitorsBand
                     )
 
-                    STEP_ADDRESS -> PostcodeJibunWebView(
-                        modifier = Modifier.fillMaxSize(),
-                        onClose = {
-                            Log.d("onClose webview", "")
-                            viewModel.update { copy(step = STEP1) }
-                        },
-                        onSelected = { selected ->
-                            Log.d("onSelected webview", selected)
-                            viewModel.update { copy(address = selected, step = STEP1) }
-                        }
-                    )
+                    STEP_ADDRESS -> {
+                        BackHandler { viewModel.closeAddressPicker() }
+                        PostcodeJibunWebView(
+                            modifier = Modifier.fillMaxSize(),
+                            onClose = { viewModel.closeAddressPicker() },
+                            onSelected = { selected ->
+                                viewModel.updateAddress(selected)
+                                viewModel.closeAddressPicker()
+                            }
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(16.dp))
         }
     }
 }
+
 
 @Composable
 private fun BottomBarScaffold(
@@ -195,27 +187,50 @@ private fun Step1BasicInfo(
         subtitle = "매장의 기본 정보를 입력해 주세요."
     )
     Spacer(Modifier.height(20.dp))
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        YeobaegTextField(
+    Column {
+        YeobaegOutlinedTextField(
+            title = "매장명",
+            essential = true,
             value = state.name,
             onValueChange = onName,
-            label = "매장명 *",
-            placeholder = "Gallery Café Muse"
+            placeholder = "Gallery Café Muse",
+            modifier = Modifier.fillMaxWidth(),
         )
-        Spacer(Modifier.height(8.dp))
-        YeobaegTextField(
+        val nameError = state.nameError
+        if (nameError != null) {
+            Text(
+                text = nameError,
+                color = Color.Red,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
+        Spacer(Modifier.height(20.dp))
+
+        // 주소는 클릭 이벤트가 필요하므로 별도 처리
+        YeobaegOutlinedTextField(
+            title = "주소",
             value = state.address,
             onValueChange = { },
-            label = "주소 *",
-            readOnly = true,
+            essential = true,
             placeholder = "서울시 강남구 신사동 123-45",
-            onFocusTextField = showAddressPicker
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { state ->
+                    if (state.isFocused) {
+                        showAddressPicker.invoke()
+                    }
+                },
         )
-        Spacer(Modifier.height(8.dp))
-        YeobaegTextField(
+
+        Spacer(Modifier.height(20.dp))
+
+        // 매장 소개 (multi-line)
+        YeobaegOutlinedTextField(
+            title = "매장 소개",
             value = state.description,
+            essential = false,
             onValueChange = onDesc,
-            label = "매장 소개",
             placeholder = "예술과 커피가 만나는 특별한 공간입니다...",
             modifier = Modifier
                 .fillMaxWidth()
@@ -224,33 +239,43 @@ private fun Step1BasicInfo(
             minLine = 4,
             maxLine = 8
         )
-        Spacer(Modifier.height(8.dp))
-        YeobaegTextField(
+        Spacer(Modifier.height(20.dp))
+
+        YeobaegOutlinedTextField(
+            title = "연락처",
+            essential = true,
             value = state.phone,
             onValueChange = onPhone,
-            label = "연락처 *",
-            placeholder = "02-1234-5678"
+            placeholder = "02-1234-5678",
+            modifier = Modifier.fillMaxWidth()
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(20.dp))
+
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Column(modifier = Modifier.weight(1f)) {
-                YeobaegTextField(
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                YeobaegOutlinedTextField(
+                    title = "오픈 시간",
+                    essential = true,
                     value = state.openTime,
                     onValueChange = onOpen,
-                    label = "오픈 시간 *",
-                    placeholder = "08:00"
+                    placeholder = "08:00",
                 )
             }
-            Column(modifier = Modifier.weight(1f)) {
-                YeobaegTextField(
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                YeobaegOutlinedTextField(
+                    title = "마감 시간",
+                    essential = true,
                     value = state.closeTime,
                     onValueChange = onClose,
-                    label = "마감 시간 *",
-                    placeholder = "22:00"
+                    placeholder = "22:00",
                 )
             }
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(20.dp))
         ImagePickerBox(
             images = state.uploadedImages,
             onAdd = onAddImage,
@@ -276,7 +301,7 @@ private fun ImagePickerBox(
     }
 
     val border = BorderStroke(1.dp, Color(0xFFE0E3E8))
-    Text(text = "매장 이미지 추가", fontSize = 14.sp)
+    Text(text = "매장 이미지 추가")
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -344,7 +369,7 @@ private fun Step2Attributes(
                             .weight(1f)
                             .heightIn(min = 44.dp),
                         colors = FilterChipDefaults.filterChipColors().copy(
-                            selectedContainerColor = YeobaegLightYellow
+                            selectedContainerColor = YeobaegDarkBrown.copy(alpha = 0.1f)
                         ),
                         label = {
                             Box(
@@ -353,7 +378,10 @@ private fun Step2Attributes(
                                     .padding(vertical = 10.dp),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(text = style.categoryName, style = MaterialTheme.typography.bodyLarge)
+                                Text(
+                                    text = style.categoryName,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
                             }
                         }
                     )

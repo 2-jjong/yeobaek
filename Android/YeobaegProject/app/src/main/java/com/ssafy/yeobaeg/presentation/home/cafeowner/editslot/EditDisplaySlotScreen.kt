@@ -65,7 +65,7 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegLightYellow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-// EditDisplaySlotScreen.kt 수정
+
 @Composable
 fun EditDisplaySlotScreen(
     cafeId: Long,

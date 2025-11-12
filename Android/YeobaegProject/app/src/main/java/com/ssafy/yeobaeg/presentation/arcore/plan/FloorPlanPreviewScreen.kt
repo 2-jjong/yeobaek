@@ -3,10 +3,12 @@ package com.ssafy.yeobaeg.presentation.arcore.plan
 import android.annotation.SuppressLint
 import android.graphics.Paint
 import android.graphics.Typeface
-import android.graphics.RectF
+import android.util.Log
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
@@ -17,25 +19,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.SlotStatus
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegLightBrown
+import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.min
 import kotlin.math.sqrt
 
-/* ====== 상수 ====== */
-private const val HIT_THRESHOLD_PX = 30f
-private const val WALL_STROKE_PX   = 20f
-private const val LABEL_MARGIN_PX  = 8f
-private const val OUTLINE_STROKE_PX = 6f
-private const val LABEL_PAD_H = 10f   // 라벨 수평 패딩
-private const val LABEL_PAD_V = 8f    // 라벨 수직 패딩
+private const val HIT_THRESHOLD_PX = 40f
+private const val WALL_HEIGHT_PX = 55f
+private const val OUTLINE_STROKE_PX = 4f
+private const val CORNER_RADIUS = 8f
 
 @SuppressLint("DefaultLocale")
 @Composable
@@ -56,267 +62,327 @@ fun FloorPlanPreview(
         return
     }
 
-    // 벽 세그먼트(화면 좌표 + wallId)
     val mappedSegmentsState = remember {
         mutableStateOf(emptyList<Triple<Offset, Offset, Long>>())
     }
 
-    BoxWithConstraints(modifier) {
-        val density = LocalDensity.current
-        val padOuter = 16.dp
-        val padOuterPx = with(density) { padOuter.toPx() }
+    Column(modifier = modifier) {
+        Legend(modifier = Modifier.padding(16.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // ---- 월드 바운딩 ----
-        val allPoints = walls.flatMap { listOf(it.start, it.end) }
-        val minX = allPoints.minOf { it.x }
-        val maxX = allPoints.maxOf { it.x }
-        val minY = allPoints.minOf { it.y }
-        val maxY = allPoints.maxOf { it.y }
-        val contentW = (maxX - minX).coerceAtLeast(1e-3f)
-        val contentH = (maxY - minY).coerceAtLeast(1e-3f)
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val density = LocalDensity.current
+            val padOuter = 32.dp
+            val padOuterPx = with(density) { padOuter.toPx() }
 
-        // ---- 부모 픽셀 ----
-        val parentWpx = with(density) { maxWidth.toPx() }
-        val parentHpx = with(density) { maxHeight.toPx() }
+            val allPoints = walls.flatMap { listOf(it.start, it.end) }
+            val minX = allPoints.minOf { it.x }
+            val maxX = allPoints.maxOf { it.x }
+            val minY = allPoints.minOf { it.y }
+            val maxY = allPoints.maxOf { it.y }
+            val contentW = (maxX - minX).coerceAtLeast(1e-3f)
+            val contentH = (maxY - minY).coerceAtLeast(1e-3f)
 
-        // ---- 스케일 ----
-        val s = min(
-            (parentWpx - 2 * padOuterPx) / contentW,
-            (parentHpx - 2 * padOuterPx) / contentH
-        ).coerceAtLeast(1f)
+            val parentWpx = with(density) { maxWidth.toPx() }
+            val parentHpx = with(density) { maxHeight.toPx() }
 
-        val canvasWpx = (contentW * s + 2 * padOuterPx).coerceAtMost(parentWpx)
-        val canvasHpx = (contentH * s + 2 * padOuterPx).coerceAtMost(parentHpx)
-        val canvasW = with(density) { canvasWpx.toDp() }
-        val canvasH = with(density) { canvasHpx.toDp() }
+            val s = min(
+                (parentWpx - 2 * padOuterPx) / contentW,
+                (parentHpx - 2 * padOuterPx) / contentH
+            ).coerceAtLeast(1f)
 
-        // 라벨용 페인트(두 줄)
-        val namePaint = remember {
-            Paint().apply {
-                isAntiAlias = true
-                color = "#0F172A".toColorInt() // slate-900
-                textSize = 36f
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                textAlign = Paint.Align.CENTER
+            val canvasWpx = (contentW * s + 2 * padOuterPx).coerceAtMost(parentWpx)
+            val canvasHpx = (contentH * s + 2 * padOuterPx).coerceAtMost(parentHpx)
+            val canvasW = with(density) { canvasWpx.toDp() }
+            val canvasH = with(density) { canvasHpx.toDp() }
+
+            val labelPaint = remember {
+                Paint().apply {
+                    isAntiAlias = true
+                    color = "#FFFFFF".toColorInt()
+                    textSize = 34f
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    textAlign = Paint.Align.CENTER
+                }
             }
-        }
-        val sizePaint = remember {
-            Paint().apply {
-                isAntiAlias = true
-                color = "#334155".toColorInt() // slate-700
-                textSize = 30f
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                textAlign = Paint.Align.CENTER
+            val sizePaint = remember {
+                Paint().apply {
+                    isAntiAlias = true
+                    color = "#1E293B".toColorInt()
+                    textSize = 28f
+                    typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                    textAlign = Paint.Align.CENTER
+                }
             }
-        }
 
-        Box(
-            modifier = Modifier
-                .padding(8.dp)
-                .size(canvasW, canvasH)
-                .align(Alignment.Center)
-        ) {
-            val canvasModifier = Modifier
-                .matchParentSize()
-                .pointerInput(walls, readOnly) {
-                    detectTapGestures(
-                        onTap = { tap ->
-                            val (wallId, dist) = findNearestSegmentById(mappedSegmentsState.value, tap)
-                            if (wallId != null && dist <= HIT_THRESHOLD_PX) {
-                                if (!readOnly) {
-                                    val idx = walls.indexOfFirst { it.wid == wallId }
-                                    if (idx >= 0) toggleWallPossible(wallsState, idx)
+            Box(
+                modifier = Modifier
+                    .size(canvasW, canvasH)
+                    .align(Alignment.Center)
+            ) {
+                val canvasModifier = Modifier
+                    .matchParentSize()
+                    .pointerInput(walls, readOnly) {
+                        detectTapGestures(
+                            onTap = { tap ->
+                                val (wallId, dist) = findNearestSegmentById(
+                                    mappedSegmentsState.value,
+                                    tap
+                                )
+                                if (wallId != null && dist <= HIT_THRESHOLD_PX) {
+                                    if (!readOnly) {
+                                        val idx = walls.indexOfFirst { it.wid == wallId }
+                                        if (idx >= 0) toggleWallPossible(wallsState, idx)
+                                    }
+                                    onWallTapped(wallId)
                                 }
-                                onWallTapped(wallId) // 선택/하이라이트/디테일 시트 갱신은 외부에서
                             }
-                        },
-                        onLongPress = { tap ->
-                            if (readOnly) return@detectTapGestures
-                            val (wallId, dist) = findNearestSegmentById(mappedSegmentsState.value, tap)
-                            if (wallId != null && dist <= HIT_THRESHOLD_PX) {
-                                val idx = walls.indexOfFirst { it.wid == wallId }
-                                if (idx >= 0) toggleWallInUse(wallsState, idx)
-                            }
-                        }
-                    )
-                }
-
-            Canvas(modifier = canvasModifier) {
-                fun map(x: Float, y: Float): Offset {
-                    val mx = (x - minX) * s + padOuterPx
-                    val my = (y - minY) * s + padOuterPx
-                    return Offset(mx, my)
-                }
-
-                // 외곽선
-                val orderedVertices = walls.map { it.start } + listOf(walls.last().end)
-                val mappedVertices = orderedVertices.map { map(it.x, it.y) }
-                if (mappedVertices.size >= 3) {
-                    val outline = Path().apply {
-                        val p0 = mappedVertices.first()
-                        moveTo(p0.x, p0.y)
-                        for (i in 1 until mappedVertices.size) {
-                            val pi = mappedVertices[i]
-                            lineTo(pi.x, pi.y)
-                        }
-                        close()
-                    }
-                    drawPath(
-                        path = outline,
-                        color = Color(0xFFE5E7EB),
-                        style = Stroke(width = OUTLINE_STROKE_PX)
-                    )
-                }
-
-                // 세그먼트 수집(히트 테스트용)
-                val mappedSegments = ArrayList<Triple<Offset, Offset, Long>>(walls.size)
-
-                fun drawGlowLine(a: Offset, b: Offset, neon: Color) {
-                    val w1 = WALL_STROKE_PX * 2.2f
-                    val w2 = WALL_STROKE_PX * 1.7f
-                    val w3 = WALL_STROKE_PX * 1.3f
-                    drawLine(neon.copy(alpha = 0.25f), a, b, strokeWidth = w1)
-                    drawLine(neon.copy(alpha = 0.40f), a, b, strokeWidth = w2)
-                    drawLine(neon.copy(alpha = 0.65f), a, b, strokeWidth = w3)
-                }
-
-                // 이미 배치된 라벨 박스들(겹침 회피용)
-                val placedLabelRects = mutableListOf<RectF>()
-
-                fun drawWall(wall: DisplaySlot, emphasize: Boolean) {
-                    val a = map(wall.start.x, wall.start.y)
-                    val b = map(wall.end.x, wall.end.y)
-
-                    if (emphasize) drawGlowLine(a, b, Color(0xFF22D3EE))
-
-                    val (stroke, color) = wallStyle(wall.status, emphasize)
-                    drawLine(color = color, start = a, end = b, strokeWidth = stroke)
-                    mappedSegments.add(Triple(a, b, wall.wid))
-
-                    // 라벨(두 줄: 이름, 크기)
-                    val dx = wall.end.x - wall.start.x
-                    val dy = wall.end.y - wall.start.y
-                    val len = sqrt(dx * dx + dy * dy).coerceAtLeast(1e-6f)
-
-                    val midX = (wall.start.x + wall.end.x) * 0.5f
-                    val midY = (wall.start.y + wall.end.y) * 0.5f
-                    val mid = map(midX, midY)
-
-                    // 법선(외측 기준)
-                    val ccw = isCCW(mappedVertices)
-                    var nx =  dy / len
-                    var ny = -dx / len
-                    if (!ccw) { nx = -nx; ny = -ny }
-
-                    // 텍스트 구성
-                    val name = wall.wName.ifBlank { "벽 ${wall.wid}" }
-                    val widthText = wall.widthText
-                    val sizeText = if (wall.height <= 0f) {
-                        widthText
-                    } else {
-                        val hText = wall.heightText
-                        "$widthText × $hText"
-                    }
-
-                    // 두 줄 폭/높이 계산
-                    val nameW = namePaint.measureText(name)
-                    val sizeW = sizePaint.measureText(sizeText)
-                    val textW = maxOf(nameW, sizeW)
-
-                    val fmName = namePaint.fontMetrics
-                    val fmSize = sizePaint.fontMetrics
-                    val lineH1 = (fmName.descent - fmName.ascent)
-                    val lineH2 = (fmSize.descent - fmSize.ascent)
-                    val totalH = lineH1 + lineH2 + LABEL_PAD_V * 2f
-                    val totalW = textW + LABEL_PAD_H * 2f
-
-                    // 배치 후보(충돌 회피): 법선 ±, 접선 ±, 배수 증가
-                    val tx = -ny // 접선 x
-                    val ty = nx   // 접선 y
-                    val baseOut = WALL_STROKE_PX * 0.5f + LABEL_MARGIN_PX
-                    val candidates = buildList {
-                        val scales = floatArrayOf(1f, 1.6f, 2.2f, 2.8f, 3.4f)
-                        val dirs = arrayOf(
-                            Pair(nx, ny),
-                            Pair(-nx, -ny),
-                            Pair(tx, ty),
-                            Pair(-tx, -ty),
-                        )
-                        for (sc in scales) {
-                            for ((ux, uy) in dirs) {
-                                add(Offset(
-                                    mid.x + ux * baseOut * sc,
-                                    mid.y + uy * baseOut * sc
-                                ))
-                            }
-                        }
-                    }
-
-                    // 후보 순회하며 겹침/화면 밖 회피
-                    var chosenCenter: Offset? = null
-                    var chosenRect: RectF? = null
-                    for (c in candidates) {
-                        val left = c.x - totalW / 2f
-                        val top  = c.y - totalH / 2f
-                        val right = c.x + totalW / 2f
-                        val bottom = c.y + totalH / 2f
-                        val r = RectF(left, top, right, bottom)
-
-                        val outOfCanvas = left < 0f || top < 0f || right > size.width || bottom > size.height
-                        val overlaps = placedLabelRects.any { it.intersects(r.left, r.top, r.right, r.bottom) }
-                        if (!overlaps && !outOfCanvas) {
-                            chosenCenter = c
-                            chosenRect = r
-                            break
-                        }
-                    }
-                    // 실패 시 기본 위치라도 사용
-                    if (chosenCenter == null) {
-                        chosenCenter = Offset(
-                            mid.x + nx * baseOut,
-                            mid.y + ny * baseOut
-                        )
-                        chosenRect = RectF(
-                            chosenCenter.x - totalW / 2f,
-                            chosenCenter.y - totalH / 2f,
-                            chosenCenter.x + totalW / 2f,
-                            chosenCenter.y + totalH / 2f
                         )
                     }
-                    placedLabelRects += (chosenRect ?: return)
 
-                    // 두 줄 그리기(가운데 정렬)
-                    val cx = chosenCenter.x
-                    val top = chosenRect.top + LABEL_PAD_V
+                Canvas(modifier = canvasModifier) {
+                    fun map(x: Float, y: Float): Offset {
+                        val mx = (x - minX) * s + padOuterPx
+                        val my = (y - minY) * s + padOuterPx
+                        return Offset(mx, my)
+                    }
 
-                    // baseline 계산: top에서 ascent 보정
-                    val baselineName = top - namePaint.fontMetrics.ascent
-                    val baselineSize = baselineName + lineH2 // 바로 아래 줄
+                    val orderedVertices = walls.map { it.start } + listOf(walls.last().end)
+                    val mappedVertices = orderedVertices.map { map(it.x, it.y) }
 
-                    if (wall.status != SlotStatus.UNAVAILABLE) {
+                    if (mappedVertices.size >= 3) {
+                        val outline = Path().apply {
+                            val p0 = mappedVertices.first()
+                            moveTo(p0.x, p0.y)
+                            for (i in 1 until mappedVertices.size) {
+                                val pi = mappedVertices[i]
+                                lineTo(pi.x, pi.y)
+                            }
+                            close()
+                        }
+                        drawPath(
+                            path = outline,
+                            color = YeobaegLightBrown.copy(alpha = 0.1f) // 원하는 색/투명도로 변경
+                            // 기본은 fill 이므로 style 생략
+                        )
+
+                        drawPath(
+                            path = outline,
+                            color = YeobaegGray,
+                            style = Stroke(
+                                width = OUTLINE_STROKE_PX,
+                                pathEffect = PathEffect.dashPathEffect(floatArrayOf(20f, 15f))
+                            )
+                        )
+                    }
+
+                    val mappedSegments = ArrayList<Triple<Offset, Offset, Long>>(walls.size)
+
+                    // drawWall 내부 (기존 로직 유지, 하이라이트 추가)
+                    // drawWall 내부 교체용 — 벽 + 하이라이트 + 텍스트(중앙정렬) 동시 처리
+                    fun drawWall(wall: DisplaySlot, emphasize: Boolean) {
+                        val a = map(wall.start.x, wall.start.y)
+                        val b = map(wall.end.x, wall.end.y)
+
+                        val shrinkFactor = 0.1f
+                        val dx = b.x - a.x
+                        val dy = b.y - a.y
+                        val shrunkA = Offset(
+                            a.x + dx * shrinkFactor,
+                            a.y + dy * shrinkFactor
+                        )
+                        val shrunkB = Offset(
+                            b.x - dx * shrinkFactor,
+                            b.y - dy * shrinkFactor
+                        )
+
+                        val wallLength = hypot(shrunkB.x - shrunkA.x, shrunkB.y - shrunkA.y)
+                        val midX = (shrunkA.x + shrunkB.x) / 2f
+                        val midY = (shrunkA.y + shrunkB.y) / 2f
+
+                        var angle = Math.toDegrees(
+                            atan2(
+                                (shrunkB.y - shrunkA.y).toDouble(),
+                                (shrunkB.x - shrunkA.x).toDouble()
+                            )
+                        ).toFloat()
+
+                        var textAngle = angle
+                        if (angle > 90f || angle < -90f) {
+                            textAngle = angle + 180f
+                        }
+
+                        val baseColor = wallColor(wall.status)
+
+                        // rectPath는 회전 전 좌표(절대 좌표)로 생성해도 괜찮습니다.
+                        val rectPath = Path().apply {
+                            addRoundRect(
+                                androidx.compose.ui.geometry.RoundRect(
+                                    left = midX - wallLength / 2f,
+                                    top = midY - WALL_HEIGHT_PX / 2f,
+                                    right = midX + wallLength / 2f,
+                                    bottom = midY + WALL_HEIGHT_PX / 2f,
+                                    radiusX = CORNER_RADIUS,
+                                    radiusY = CORNER_RADIUS
+                                )
+                            )
+                        }
+
+                        // mappedSegments에 추가 (충돌/탭 처리에 쓰임)
+                        mappedSegments.add(Triple(shrunkA, shrunkB, wall.wid))
+
+                        // --- 모든 시각적 요소를 동일한 회전 블록 안에서 그립니다 ---
+                        rotate(angle, Offset(midX, midY)) {
+                            // 1) 강조 하이라이트: 벽보다 약간 큰 라운드렉트로 투명 채우기
+                            if (emphasize) {
+                                val expand1 = 8f // 픽셀로 확장량(조절 가능)
+                                val highlightRect1 = Path().apply {
+                                    addRoundRect(
+                                        androidx.compose.ui.geometry.RoundRect(
+                                            left = midX - wallLength / 2f - expand1,
+                                            top = midY - WALL_HEIGHT_PX / 2f - expand1,
+                                            right = midX + wallLength / 2f + expand1,
+                                            bottom = midY + WALL_HEIGHT_PX / 2f + expand1,
+                                            radiusX = CORNER_RADIUS + expand1,
+                                            radiusY = CORNER_RADIUS + expand1
+                                        )
+                                    )
+                                }
+                                val expand2 = 10f
+                                val highlightRect2 = Path().apply {
+                                    addRoundRect(
+                                        androidx.compose.ui.geometry.RoundRect(
+                                            left = midX - wallLength / 2f - expand2,
+                                            top = midY - WALL_HEIGHT_PX / 2f - expand2,
+                                            right = midX + wallLength / 2f + expand2,
+                                            bottom = midY + WALL_HEIGHT_PX / 2f + expand2,
+                                            radiusX = CORNER_RADIUS + expand2,
+                                            radiusY = CORNER_RADIUS + expand2
+                                        )
+                                    )
+                                }
+                                drawPath(
+                                    path = highlightRect1,
+                                    color = Color(0xFF22D3EE).copy(alpha = 0.3f)
+                                )
+                                drawPath(
+                                    path = highlightRect2,
+                                    color = Color(0xFF22D3EE).copy(alpha = 0.6f)
+                                )
+                                // optional: soft glow (스트로크를 회전 블록 내부에서 그림)
+                                val glowAlphas = listOf(0.10f, 0.06f)
+                                val glowWidths = listOf(18f, 34f)
+                                for (i in glowAlphas.indices) {
+                                    drawPath(
+                                        path = rectPath,
+                                        color = Color(0xFFFBBF24).copy(alpha = glowAlphas[i]),
+                                        style = Stroke(width = glowWidths[i])
+                                    )
+                                }
+                            }
+
+                            // 2) 실제 벽 채우기 (base color)
+                            drawPath(rectPath, baseColor)
+                        } // rotate 끝
+
+                        // --- 텍스트는 rotate와 별개로 nativeCanvas에서 회전해서 그립니다 ---
+                        val name = wall.wName.ifBlank { "벽 ${wall.wid}" }
+                        drawContext.canvas.nativeCanvas.save()
                         drawContext.canvas.nativeCanvas.apply {
-                            drawText(name, cx, baselineName, namePaint)
-                            drawText(sizeText, cx, baselineSize, sizePaint)
+                            // 텍스트는 같은 중심/각도를 사용해서 회전
+                            rotate(textAngle, midX, midY)
+                            val fm = labelPaint.fontMetrics
+                            val textY = midY - (fm.ascent + fm.descent) / 2f
+                            drawText(name, midX, textY, labelPaint)
                         }
+                        drawContext.canvas.nativeCanvas.restore()
+
+                        // 사이즈 텍스트 (기존 로직)
+                        val dx2 = wall.end.x - wall.start.x
+                        val dy2 = wall.end.y - wall.start.y
+                        val len = sqrt(dx2 * dx2 + dy2 * dy2).coerceAtLeast(1e-6f)
+
+                        val ccw = isCCW(mappedVertices)
+                        var nx = dy2 / len
+                        var ny = -dx2 / len
+                        if (!ccw) {
+                            nx = -nx
+                            ny = -ny
+                        }
+
+                        val sizeOffset = WALL_HEIGHT_PX / 2f + 35f
+                        val sizePosX = midX + nx * sizeOffset
+                        val sizePosY = midY + ny * sizeOffset
+
+                        val widthText = wall.widthText
+                        val sizeText = if (wall.height <= 0f) {
+                            widthText
+                        } else {
+                            "${widthText} × ${wall.heightText}"
+                        }
+
+                        drawContext.canvas.nativeCanvas.save()
+                        drawContext.canvas.nativeCanvas.apply {
+                            rotate(textAngle, sizePosX, sizePosY)
+                            val sfm = sizePaint.fontMetrics
+                            val sizeTextY = sizePosY - (sfm.ascent + sfm.descent) / 2f
+                            drawText(sizeText, sizePosX, sizeTextY, sizePaint)
+                        }
+                        drawContext.canvas.nativeCanvas.restore()
                     }
-                }
 
-                // 비활성 → 활성 순으로 그려 하이라이트가 위로 오게
-                walls.filter { it.wid != activeWallId }.forEach { drawWall(it, emphasize = false) }
-                walls.firstOrNull { it.wid == activeWallId }?.let { drawWall(it, emphasize = true) }
 
-                mappedSegmentsState.value = mappedSegments
+                    walls.filter { it.wid != activeWallId }.forEach { drawWall(it, emphasize = false) }
+                    walls.firstOrNull { it.wid == activeWallId }?.let { drawWall(it, emphasize = true) }
 
-                // 코너 렌더
-                mappedVertices.dropLast(1).forEach { p ->
-                    drawCircle(Color(0xFF1B5E20), radius = 15f, center = p)
+                    mappedSegmentsState.value = mappedSegments
                 }
             }
         }
     }
 }
 
-/* ====== 히트 테스트 ====== */
+@Composable
+private fun Legend(modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        LegendItem(color = Color(0xFF10B981), label = "선택 가능")
+        LegendItem(color = Color(0xFFCBD5E1), label = "전시 불가능")
+//        LegendItem(color = Color(0xFFF59E0B), label = "", isHighlight = true)
+    }
+}
+
+@Composable
+private fun LegendItem(
+    color: Color,
+    label: String,
+    isHighlight: Boolean = false
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = if (isHighlight) {
+            Modifier
+                .background(color.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                .padding(horizontal = 12.dp, vertical = 6.dp)
+        } else Modifier
+    ) {
+        if (isHighlight) {
+            Text("×", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF64748B))
+        } else {
+            Box(Modifier.size(24.dp, 16.dp).background(color, RoundedCornerShape(4.dp)))
+        }
+        Text(
+            text = label,
+            fontSize = 14.sp,
+            fontWeight = if (isHighlight) FontWeight.SemiBold else FontWeight.Normal,
+            color = Color(0xFF1E293B)
+        )
+    }
+}
+
 private fun findNearestSegmentById(
     segments: List<Triple<Offset, Offset, Long>>,
     tap: Offset
@@ -347,46 +413,33 @@ private fun pointToSegmentDistance(p: Offset, a: Offset, b: Offset): Float {
     return hypot(p.x - cx, p.y - cy)
 }
 
-/* ====== 스타일/유틸 ====== */
-private fun wallStyle(status: SlotStatus, emphasize: Boolean): Pair<Float, Color> {
+private fun wallColor(status: SlotStatus): Color {
     val baseColor = when (status) {
         SlotStatus.UNAVAILABLE -> Color(0xFFCBD5E1)
-        SlotStatus.AVAILABLE     -> Color(0xFF10B981)
-        SlotStatus.EXHIBITING       -> Color(0xFFEF4444)
-        SlotStatus.RESERVED     -> Color(0xFFF59E0B)
+        SlotStatus.AVAILABLE -> Color(0xFF10B981)
+        SlotStatus.EXHIBITING -> Color(0xFFEF4444)
+        SlotStatus.RESERVED -> Color(0xFF684352)
     }
-    val stroke = if (emphasize) WALL_STROKE_PX * 1.15f else WALL_STROKE_PX
-    val color  = if (emphasize) baseColor.copy(alpha = 0.95f) else baseColor
-    return stroke to color
+    return  baseColor
 }
 
 private fun isCCW(vertices: List<Offset>): Boolean {
     if (vertices.size < 3) return true
     var area2 = 0f
     for (i in 0 until vertices.size - 1) {
-        val p = vertices[i]; val q = vertices[i + 1]
+        val p = vertices[i]
+        val q = vertices[i + 1]
         area2 += p.x * q.y - q.x * p.y
     }
     return area2 > 0f
 }
 
-/* ====== 내부 토글 로직(편집 모드에서만 사용) ====== */
 private fun toggleWallPossible(walls: MutableList<DisplaySlot>, index: Int) {
     if (index !in walls.indices) return
     val w = walls[index]
     val newStatus = when (w.status) {
         SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
         SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED -> SlotStatus.UNAVAILABLE
-    }
-    walls[index] = w.copy(status = newStatus)
-}
-
-private fun toggleWallInUse(walls: MutableList<DisplaySlot>, index: Int) {
-    if (index !in walls.indices) return
-    val w = walls[index]
-    val newStatus = when (w.status) {
-        SlotStatus.EXHIBITING -> SlotStatus.AVAILABLE
-        else -> SlotStatus.EXHIBITING
     }
     walls[index] = w.copy(status = newStatus)
 }

@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.domain.model
 
 enum class ArtworkCategory(val label: String) {
+    ALL("전체"),
     LANDSCAPE("풍경화"),
     PORTRAIT("인물화"),
     STILL_LIFE("정물화"),

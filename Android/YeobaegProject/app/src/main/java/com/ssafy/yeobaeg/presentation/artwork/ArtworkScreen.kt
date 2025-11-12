@@ -16,15 +16,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,11 +45,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
+import com.ssafy.yeobaeg.domain.model.ArtworkCategory
 import com.ssafy.yeobaeg.domain.model.SlotStatus
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.main.LocalUserRole
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
@@ -67,6 +66,7 @@ fun ArtExploreScreen(
     viewModel: ArtExploreViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val userRole = LocalUserRole.current
     val focus = LocalFocusManager.current
     var showFilter by remember { mutableStateOf(false) }
 
@@ -94,8 +94,11 @@ fun ArtExploreScreen(
                     },
                     showBackButton = state.mode != SearchMode.BROWSE,
                     actionIcon = if (state.mode != SearchMode.RECENT) R.drawable.ic_filter else null,
-                    onActionClick = { showFilter = true }
+                    onActionClick = if (userRole == UserRole.CAFE_OWNER) {
+                        { showFilter = true }
+                    } else null
                 )
+                Spacer(Modifier.height(12.dp))
                 SearchBar(
                     value = state.query,
                     onValueChange = viewModel::setQuery,
@@ -109,7 +112,7 @@ fun ArtExploreScreen(
         when (state.mode) {
             SearchMode.BROWSE -> BrowseContent(
                 modifier = Modifier
-                    .padding(inner)
+                    .padding(top = inner.calculateTopPadding())
                     .fillMaxSize(),
                 categories = state.categories,
                 selected = state.selectedCategory,
@@ -184,11 +187,12 @@ private fun SearchBar(
         }
     )
 }
+
 @Composable
 private fun BrowseContent(
     modifier: Modifier,
     categories: List<ArtworkCategory>,
-    selected: ArtworkCategory,
+    selected: ArtworkCategory?,
     onCategory: (ArtworkCategory) -> Unit,
     onClickArtwork: (Long) -> Unit = {},
     artworks: List<ArtworkSummary>,
@@ -215,16 +219,16 @@ private fun BrowseContent(
     }
 
     Column(modifier = modifier) {
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         CategoryChips(
             modifier = Modifier.padding(horizontal = 20.dp),
             categories = categories.map { it.label },
-            selected = selected.label,
+            selected = selected?.label ?: "",
             onClick = { label ->
                 categories.firstOrNull { it.label == label }?.let(onCategory)
             }
         )
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         ArtworkGrid(
             items = artworks,
             onClickArtwork = onClickArtwork,

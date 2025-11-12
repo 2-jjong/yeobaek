@@ -1,8 +1,8 @@
 package com.ssafy.yeobaeg.presentation.common.component
 
-import android.R.attr.contentDescription
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,6 +62,7 @@ fun YeobaegTopAppBar(
                             painter = painterResource(actionIcon),
                             contentDescription = "아이콘",
                             tint = iconTint,
+                            modifier = Modifier.size(28.dp),
                         )
                     }
                 }

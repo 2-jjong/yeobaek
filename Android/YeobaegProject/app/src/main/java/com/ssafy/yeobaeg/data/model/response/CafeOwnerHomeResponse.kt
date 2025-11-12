@@ -31,10 +31,10 @@ data class DisplaySlotResponse(
     val wallName: String,
     val width: Float,
     val height: Float,
-    val isDisplayable: Boolean = true,
+    val isDisplayable: Boolean,
     val isExhibiting: Boolean = false,
-    val start: Point = Point(0.0,0.0),
-    val end: Point = Point(0.0,0.0),
+    val start: Point = Point(0.0, 0.0),
+    val end: Point = Point(0.0, 0.0),
     val commissionRate: Float = 0f, // 수수료
     val requirements: String = "", // 기타 요구 사항
     val currentExhibition: ExhibitionResponse? = null
@@ -42,7 +42,7 @@ data class DisplaySlotResponse(
 
 @Serializable
 data class ExhibitionResponse(
-    val artworkId:Long,
+    val artworkId: Long,
     val artworkTitle: String,
     val artworkImageUrl: String,
     val artistName: String,
@@ -59,33 +59,21 @@ fun CafeHomeSummaryResponse.toDomain(): CafeOwnerInfo =
         numExhibitionSpaces = totalSlots,
         numExhibitedWorks = exhibitingSlots,
         numArtistsWorkedWith = collaboratingArtists,
-        displaySlots = displaySlots
-            ?.filter { it.isDisplayable } // 전시 불가능한 벽 제외
-            ?.map { it.toDomain() }
-            ?: emptyList()
+        displaySlots = displaySlots?.map { it.toDomain() } ?: emptyList()
     )
 
-fun DisplaySlotResponse.toDomain(): DisplaySlot {
-    val status = when {
-        !isDisplayable -> SlotStatus.UNAVAILABLE  // 전시 불가능
-        isExhibiting -> SlotStatus.EXHIBITING     // 전시중
-        currentExhibition != null -> SlotStatus.RESERVED  // 전시 예정
-        else -> SlotStatus.AVAILABLE              // 전시 가능
-    }
-
-    return DisplaySlot(
-        wid = wallId,
-        wName = wallName,
-        width = width.toFloat(),
-        height = height.toFloat(),
-        start = Vec2(start.x.toFloat(), start.y.toFloat()),
-        end = Vec2(end.x.toFloat(), end.y.toFloat()),
-        status = status,
-        commission = commissionRate.toFloat(),
-        requirements = requirements,
-        exhibition = currentExhibition?.toDomain()
-    )
-}
+fun DisplaySlotResponse.toDomain() = DisplaySlot(
+    wid = wallId,
+    wName = wallName,
+    width = width,
+    height = height,
+    start = Vec2(start.x.toFloat(), start.y.toFloat()),
+    end = Vec2(end.x.toFloat(), end.y.toFloat()),
+    status = if (isExhibiting) SlotStatus.EXHIBITING else if (!isDisplayable) SlotStatus.UNAVAILABLE else SlotStatus.AVAILABLE,
+    commission = commissionRate,
+    requirements = requirements,
+    exhibition = currentExhibition?.toDomain()
+)
 
 fun ExhibitionResponse.toDomain(): Exhibition =
     Exhibition(

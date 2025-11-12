@@ -39,7 +39,7 @@ fun LoginScreen(
         onLoginClick = viewModel::login,
         onLoginTestUser1 = { viewModel.loginWithTestUser("user1@example.com", "Password123!") },
         onLoginTestUser2 = { viewModel.loginWithTestUser("user2@example.com", "Password123!") },
-        onLoginTestUser3 = { viewModel.loginWithTestUser("user3@example.com", "Password123!") },
+        onLoginTestUser3 = { viewModel.loginWithTestUser("z@z.z", "qpqp1010Q!") },
         onNavigateSignUp = viewModel::navigateSignUp,
         onClearError = viewModel::clearError
     )

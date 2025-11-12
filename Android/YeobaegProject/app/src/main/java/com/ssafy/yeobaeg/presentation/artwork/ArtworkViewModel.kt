@@ -4,6 +4,7 @@ package com.ssafy.yeobaeg.presentation.artwork
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.domain.model.ArtworkCategory
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.domain.repository.RecentSearchRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
@@ -37,19 +38,16 @@ class ArtExploreViewModel @Inject constructor(
         }
     }
 
-    private fun loadArtworks(
-        category: ArtworkCategory = _uiState.value.selectedCategory,
-    ) {
+    private fun loadArtworks() {
+        val category = _uiState.value.selectedCategory
+
         viewModelScope.launch {
             update { copy(isSearchLoading = true) }
 
             artRepository.getArtworks(
-                category = listOf(
-                    when (category) {
-                        ArtworkCategory.ALL -> ""
-                        else -> category.label
-                    }
-                ),
+                category = if(category== ArtworkCategory.ALL) null else listOf(category.name),
+                maxWidth = _uiState.value.maxWidthCm,
+                maxHeight = _uiState.value.maxHeightCm,
                 page = (_uiState.value.paginationInfo?.currentPage?.plus(1)) ?: 0,
                 size = _uiState.value.paginationInfo?.pageSize ?: 20,
             )
@@ -107,6 +105,9 @@ class ArtExploreViewModel @Inject constructor(
         if (_uiState.value.mode == SearchMode.RESULT) {
             search() // 필터 변경 시 첫 페이지부터 다시 검색
         }
+        else if(_uiState.value.mode == SearchMode.BROWSE) {
+            loadArtworks()
+        }
     }
 
     fun selectCategory(cat: ArtworkCategory) {
@@ -116,7 +117,7 @@ class ArtExploreViewModel @Inject constructor(
                 paginationInfo = null // 카테고리 변경 시 페이지네이션 초기화
             )
         }
-        loadArtworks(category = cat)
+        loadArtworks()
     }
 
     fun search() = viewModelScope.launch {

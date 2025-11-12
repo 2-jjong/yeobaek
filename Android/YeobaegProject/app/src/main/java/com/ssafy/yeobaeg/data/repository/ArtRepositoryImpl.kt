@@ -11,15 +11,31 @@ class ArtRepositoryImpl @Inject constructor(
     private val artworkApiService: ArtworkApiService
 ) : ArtRepository {
 
-    override suspend fun getArtworks(category: List<String>, page: Int, size: Int) =
+    override suspend fun getArtworks(
+        category: List<String>?,
+        minWidth: Int?,
+        maxWidth: Int?,
+        minHeight: Int?,
+        maxHeight: Int?,
+        page: Int,
+        size: Int
+    ) =
         runCatching {
-            val response = artworkApiService.getArtworks(categories = category, page = page, size = size)
+            val response = artworkApiService.getArtworks(
+                categories = category?.joinToString(),
+                minWidth = minWidth,
+                maxWidth = maxWidth,
+                minHeight = minHeight,
+                maxHeight = maxHeight,
+                page = page,
+                size = size
+            )
             response.data?.toDomain() ?: throw Exception(response.message)
         }
 
     override suspend fun searchArt(
         keyword: String,
-        categories: List<String>,
+        categories: List<String>?,
         minWidth: Int?,
         maxWidth: Int?,
         minHeight: Int?,
@@ -30,7 +46,7 @@ class ArtRepositoryImpl @Inject constructor(
     ) = runCatching {
         val response = artworkApiService.getArtworks(
             keyword = keyword,
-            categories = categories,
+            categories = categories?.joinToString(),
             minWidth = minWidth,
             maxWidth = maxWidth,
             minHeight = minHeight,

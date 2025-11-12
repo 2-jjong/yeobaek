@@ -38,9 +38,26 @@ class RegisterCafeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RegisterCafeState())
     val uiState: StateFlow<RegisterCafeState> = _uiState.asStateFlow()
 
-    fun update(block: RegisterCafeState.() -> RegisterCafeState) {
+    private fun update(block: RegisterCafeState.() -> RegisterCafeState) {
         _uiState.value = _uiState.value.block()
     }
+    
+    fun updateName(value: String) {
+        if (value.isNotEmpty() && value.length < 2) update { copy(nameError = "매장명은 2~20자 이내여야 합니다.")}
+        else update { copy(nameError = null)}
+        update { copy(name = value) }
+    }
+    fun updateDescription(value: String) = update { copy(description = value.take(500)) }
+    fun updatePhone(value: String) = update { copy(phone = value) }
+    fun updateOpenTime(value: String) = update { copy(openTime = value) }
+    fun updateCloseTime(value: String) = update { copy(closeTime = value) }
+
+    fun updateAddress(value: String) = update { copy(address = value) }
+
+    fun openAddressPicker() = update { copy(step = STEP_ADDRESS) }
+    fun closeAddressPicker() = update { copy(step = STEP1) }
+
+
 
     fun next() {
         if (_uiState.value.step == TOTAL_STEPS) {
@@ -158,7 +175,8 @@ data class RegisterCafeState(
     val uploadedImages: List<PresignedUrl> = emptyList(),
     val selectedStyles: Set<CafeCategory> = emptySet(),
     val cafeCategories: List<CafeCategory> = emptyList(),
-    val visitorsBand: VisitorsBand? = null
+    val visitorsBand: VisitorsBand? = null,
+    val nameError: String? = null
 ) {
     val isStep1Valid
         get() =

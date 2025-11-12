@@ -14,7 +14,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.presentation.arcore.plan.FloorPlanPreview
-import com.ssafy.yeobaeg.presentation.arcore.vertical.VerticalMeasureCamera
+import com.ssafy.yeobaeg.presentation.arcore.measure.VerticalMeasureCamera
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 
@@ -25,10 +25,10 @@ fun WallEditScreen(
     onClose: () -> Unit = {},
     viewModel: WallEditViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(Unit) { viewModel.setInitialWalls(initialWalls) }
-
     val state by viewModel.uiState.collectAsState()
     var showCamera by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) { viewModel.setInitialWalls(initialWalls) }
 
     BackHandler {
         if (showCamera) {
@@ -47,9 +47,7 @@ fun WallEditScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(
-                onClick =
-                    if (state.step == WallEditStep.SelectWall) viewModel::prevOrBackToSelect
-                    else viewModel::prevOrBackToSelect
+                onClick = viewModel::prevOrBackToSelect
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -90,6 +88,7 @@ fun WallEditScreen(
                     YeobaegButton(
                         text = "다음",
                         onClick = viewModel::proceedToMeasure,
+                        enabled = state.goMeasureEnabled
                     )
                 }
 
@@ -133,7 +132,8 @@ fun WallEditScreen(
                                 } else {
                                     viewModel.goNext()
                                 }
-                            }
+                            },
+                            allMeasured = state.allMeasured
                         )
                     }
                 }
