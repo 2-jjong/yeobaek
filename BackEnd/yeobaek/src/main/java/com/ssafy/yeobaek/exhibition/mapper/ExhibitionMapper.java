@@ -67,6 +67,23 @@ public class ExhibitionMapper {
     }
 
     /**
+     * Exhibition 엔티티를 슬롯별 전시 조회용 ExhibitionSummaryResponse DTO로 변환
+     * @param exhibition Exhibition 엔티티
+     * @return ExhibitionSummaryResponse DTO
+     */
+    public ExhibitionSummaryResponse toSlotExhibitionSummaryResponse(Exhibition exhibition) {
+        ArtworkDto artworkDto = toSlotArtworkDto(exhibition.getArtwork());
+
+        return ExhibitionSummaryResponse.builder()
+                .exhibitionId(exhibition.getId())
+                .artwork(artworkDto)
+                .startDate(exhibition.getStartDate())
+                .endDate(exhibition.getEndDate())
+                .exhibitionState(exhibition.getState())
+                .build();
+    }
+
+    /**
      * Cafe 엔티티를 CafeDto로 변환
      * @param cafe Cafe 엔티티
      * @return CafeDto
@@ -92,6 +109,21 @@ public class ExhibitionMapper {
                 .heightCm(artwork.getHeightCm().intValue())
                 .weightKg(artwork.getWeightKg())
                 .artistName(artwork.getArtist().getUser().getNickname())
+                .build();
+    }
+
+    /**
+     * Artwork 엔티티를 슬롯별 전시 조회용 ArtworkDto로 변환
+     * (artworkId, title, description, artCategory만 포함)
+     * @param artwork Artwork 엔티티
+     * @return ArtworkDto
+     */
+    public ArtworkDto toSlotArtworkDto(Artwork artwork) {
+        return ArtworkDto.builder()
+                .artworkId(artwork.getId())
+                .title(artwork.getTitle())
+                .description(artwork.getDescription())
+                .artCategory(artwork.getArtCategory())
                 .build();
     }
 }

@@ -1,5 +1,7 @@
 package com.ssafy.yeobaek.exhibition.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.ssafy.yeobaek.common.enums.ExhibitionState;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
@@ -11,6 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExhibitionSummaryResponse {
     @Schema(description = "전시 ID", example = "1")
     private Long exhibitionId;
@@ -26,6 +29,9 @@ public class ExhibitionSummaryResponse {
 
     @Schema(description = "전시 종료일", example = "2025-12-15")
     private LocalDate endDate;
+
+    @Schema(description = "전시 상태", example = "ONGOING")
+    private ExhibitionState exhibitionState;
 
     @Schema(description = "수수료율 (%)", example = "10.0")
     private Double commissionRate;
