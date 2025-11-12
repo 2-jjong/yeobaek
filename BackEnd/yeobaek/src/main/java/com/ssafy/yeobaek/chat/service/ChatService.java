@@ -57,5 +57,5 @@ public interface ChatService {
      * @param messageType 메시지 타입 (예: PROPOSAL)
      * @param exhibition 관련 전시
      */
-    void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Exhibition exhibition);
+    void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Exhibition exhibition, Long senderId);
 }

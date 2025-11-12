@@ -1,10 +1,7 @@
 package com.ssafy.yeobaek.chat.service;
 
 import com.ssafy.yeobaek.chat.dto.request.ChatMessageRequest;
-import com.ssafy.yeobaek.chat.dto.response.ChatMessage;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomDetailData;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
+import com.ssafy.yeobaek.chat.dto.response.*;
 import com.ssafy.yeobaek.chat.entity.ChatRoom;
 import com.ssafy.yeobaek.chat.entity.ChatRoomMember;
 import com.ssafy.yeobaek.chat.entity.Message;
@@ -14,6 +11,7 @@ import com.ssafy.yeobaek.chat.repository.ChatRoomRepository;
 import com.ssafy.yeobaek.chat.repository.MessageRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.Pagination;
+import com.ssafy.yeobaek.common.enums.EventType;
 import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
@@ -38,8 +36,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageImpl;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomListData;
 import com.ssafy.yeobaek.common.enums.ChatSortBy;
 
 @Slf4j
@@ -89,6 +85,8 @@ public class ChatServiceImpl implements ChatService {
                 .filter(senderChatRooms::contains)
                 .findFirst();
 
+        ChatRoomData chatRoomData;
+
         // 4. 기존 채팅방이 있으면 해당 채팅방 정보 반환
         if (existingRoomOpt.isPresent()) {
             ChatRoom existingChatRoom = existingRoomOpt.get();
@@ -103,32 +101,41 @@ public class ChatServiceImpl implements ChatService {
                     });
 
             String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
-            return chatMapper.toChatRoomData(existingChatRoom, partner, partnerImageUrl);
+            chatRoomData = chatMapper.toChatRoomData(existingChatRoom, partner, partnerImageUrl);
+        } else {
+            // 5. 새로운 채팅방 생성
+            ChatRoom newChatRoom = ChatRoom.builder().build();
+            chatRoomRepository.save(newChatRoom);
+
+            // 6. 채팅방 멤버 생성
+            ChatRoomMember senderMember = ChatRoomMember.builder()
+                    .chatRoom(newChatRoom)
+                    .user(user)
+                    .build();
+
+            ChatRoomMember recipientMember = ChatRoomMember.builder()
+                    .chatRoom(newChatRoom)
+                    .user(partner)
+                    .build();
+
+            chatRoomMemberRepository.saveAll(List.of(senderMember, recipientMember));
+
+            newChatRoom.setMembers(List.of(senderMember, recipientMember));
+
+            // 7. 프로필 이미지 Url 발급
+            String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
+
+            chatRoomData = chatMapper.toChatRoomData(newChatRoom, partner, partnerImageUrl);
+
+            // 8. 새로운 채팅방이 생성된 경우에만 상대방에게 채팅방 생성 이벤트 전송
+            EventDto eventDto = EventDto.builder()
+                    .type(EventType.CHAT_ROOM_CREATED)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            webSocketMessageService.sendEventToUser(partner.getEmail(), eventDto);
         }
 
-        // 5. 새로운 채팅방 생성
-        ChatRoom newChatRoom = ChatRoom.builder().build();
-        chatRoomRepository.save(newChatRoom);
-
-        // 6. 채팅방 멤버 생성
-        ChatRoomMember senderMember = ChatRoomMember.builder()
-                .chatRoom(newChatRoom)
-                .user(user)
-                .build();
-
-        ChatRoomMember recipientMember = ChatRoomMember.builder()
-                .chatRoom(newChatRoom)
-                .user(partner)
-                .build();
-
-        chatRoomMemberRepository.saveAll(List.of(senderMember, recipientMember));
-
-        newChatRoom.setMembers(List.of(senderMember, recipientMember));
-
-        // 7. 프로필 이미지 Url 발급
-        String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
-
-        return chatMapper.toChatRoomData(newChatRoom, partner, partnerImageUrl);
+        return chatRoomData;
     }
 
     /**
@@ -215,6 +222,19 @@ public class ChatServiceImpl implements ChatService {
 
         // 6. WebSocket을 통해 메시지 전송
         webSocketMessageService.sendChatMessage(request.getChatRoomId(), chatMessage);
+
+        // 7. 상대방에게 새 메시지 도착 이벤트 전송
+        User recipient = chatRoom.getMembers().stream()
+                .map(ChatRoomMember::getUser)
+                .filter(user -> !user.getId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND)); // 채팅방에 상대방이 없는 경우
+
+        EventDto eventDto = EventDto.builder()
+                .type(EventType.NEW_MESSAGE_RECEIVED)
+                .timestamp(LocalDateTime.now())
+                .build();
+        webSocketMessageService.sendEventToUser(recipient.getEmail(), eventDto);
     }
 
     /**
@@ -316,7 +336,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     @Transactional
-    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Exhibition exhibition) {
+    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Exhibition exhibition, Long senderId) {
 
         log.info("[ChatService] Start sending system message in chatRoomId: {}", chatRoomId);
 
@@ -341,5 +361,19 @@ public class ChatServiceImpl implements ChatService {
 
         // 4. WebSocket을 통해 메시지 전송
         webSocketMessageService.sendChatMessage(chatRoomId, chatMessage);
+
+        // 5. 상대방에게 시스템 이벤트 알림 전송 (개인 알림 채널)
+        User recipient = chatRoom.getMembers().stream()
+                .map(ChatRoomMember::getUser)
+                .filter(user -> !user.getId().equals(senderId))
+                .findFirst()
+                .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
+
+        EventDto eventDto = EventDto.builder()
+                .type(EventType.NEW_MESSAGE_RECEIVED)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        webSocketMessageService.sendEventToUser(recipient.getEmail(), eventDto);
     }
 }

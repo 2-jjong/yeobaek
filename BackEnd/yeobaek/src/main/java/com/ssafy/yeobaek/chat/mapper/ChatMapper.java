@@ -139,7 +139,7 @@ public class ChatMapper {
      * @param exhibition Exhibition 엔티티
      * @return ExhibitionInfo DTO
      */
-    private ExhibitionInfo toExhibitionInfo(Exhibition exhibition) {
+    public ExhibitionInfo toExhibitionInfo(Exhibition exhibition) {
         return new ExhibitionInfo(
                 exhibition.getId(),
                 exhibition.getCafe().getCafeName(),
