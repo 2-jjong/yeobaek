@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.chat
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
@@ -57,10 +58,8 @@ class ChatViewModel @Inject constructor(
 
     /**채팅방 구독 해제 (퇴장 시) */
     fun unsubscribeFromChatRoom(chatRoomId: Long) {
-        viewModelScope.launch {
-            chatWebSocketRepository.unsubscribeFromRoom(chatRoomId)
-            stopReceivingMessages()
-        }
+        chatWebSocketRepository.unsubscribeFromRoom(chatRoomId)
+        stopReceivingMessages()
     }
 
     /** 서버로부터 새 메시지 수신 */

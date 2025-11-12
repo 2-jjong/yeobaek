@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.chat
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -35,6 +36,7 @@ import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
 import com.ssafy.yeobaeg.ui.theme.*
 import kotlinx.coroutines.delay
 
+private const val TAG = "ChattingScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChattingScreen(
@@ -44,14 +46,13 @@ fun ChattingScreen(
     val uiState by viewModel.uiState.collectAsState()
     val myUserId = viewModel.myUserId.collectAsState().value
 
-    LaunchedEffect(chatRoomId) {
+    DisposableEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
         viewModel.subscribeToChatRoom(chatRoomId)
-    }
 
-    //  화면 나갈 때 해제
-    DisposableEffect(Unit) {
-        onDispose { viewModel.unsubscribeFromChatRoom(chatRoomId) }
+        onDispose {
+            viewModel.unsubscribeFromChatRoom(chatRoomId)
+        }
     }
 
     var inputText by remember { mutableStateOf("") }
