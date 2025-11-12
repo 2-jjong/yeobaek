@@ -308,4 +308,29 @@ public class ExhibitionServiceImpl implements ExhibitionService {
         // 2. DTO 변환 및 반환
         return exhibitionMapper.toExhibitionSummaryResponse(exhibition);
     }
+
+    /**
+     * 슬롯별 전시 일정 목록 조회
+     * - 특정 날짜 이후의 전시 일정 목록을 반환
+     * - COMPLETED 또는 ONGOING 상태인 전시만 조회
+     * - 시작일 기준 오름차순 정렬
+     *
+     * @param slotId 슬롯 ID
+     * @param from 조회 기준 날짜
+     * @return 전시 일정 목록
+     */
+    @Override
+    public List<ExhibitionSummaryResponse> getExhibitionsBySlot(Long slotId, LocalDate from) {
+        // 1. 슬롯 존재 여부 확인
+        DisplaySlot displaySlot = displaySlotRepository.findById(slotId)
+                .orElseThrow(() -> new CustomException(ResponseCode.SLOT_NOT_FOUND));
+
+        // 2. 전시 목록 조회
+        List<Exhibition> exhibitions = exhibitionRepository.findBySlotIdAndFromDate(slotId, from);
+
+        // 3. DTO 변환 및 반환
+        return exhibitions.stream()
+                .map(exhibitionMapper::toSlotExhibitionSummaryResponse)
+                .toList();
+    }
 }

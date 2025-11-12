@@ -5,6 +5,8 @@ import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
 import com.ssafy.yeobaek.exhibition.dto.response.ExhibitionSummaryResponse;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface ExhibitionService {
@@ -85,4 +87,16 @@ public interface ExhibitionService {
      * @return 전시 요약 정보
      */
     ExhibitionSummaryResponse getExhibitionSummary(Long exhibitionId);
+
+    /**
+     * 슬롯별 전시 일정 목록 조회
+     * - 특정 날짜 이후의 전시 일정 목록을 반환
+     * - COMPLETED 또는 ONGOING 상태인 전시만 조회
+     * - 시작일 기준 오름차순 정렬
+     *
+     * @param slotId 슬롯 ID
+     * @param from 조회 기준 날짜
+     * @return 전시 일정 목록
+     */
+    List<ExhibitionSummaryResponse> getExhibitionsBySlot(Long slotId, LocalDate from);
 }
