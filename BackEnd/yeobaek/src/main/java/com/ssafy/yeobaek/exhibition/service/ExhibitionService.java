@@ -77,12 +77,12 @@ public interface ExhibitionService {
     Integer getCurrentExhibitionCountByArtist(Long artistId);
 
     /**
-     * 전시 ID로 전시 상세 정보 조회
+     * 전시 ID로 전시 요약 정보 조회
      * - 전시의 기본 정보를 반환
      * - 카페, 작품, 슬롯의 간략한 정보 포함
      *
      * @param exhibitionId 전시 ID
-     * @return 전시 상세 정보
+     * @return 전시 요약 정보
      */
-    ExhibitionSummaryResponse getExhibitionDetail(Long exhibitionId);
+    ExhibitionSummaryResponse getExhibitionSummary(Long exhibitionId);
 }

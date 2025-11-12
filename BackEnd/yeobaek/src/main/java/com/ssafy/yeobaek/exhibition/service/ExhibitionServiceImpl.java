@@ -288,7 +288,7 @@ public class ExhibitionServiceImpl implements ExhibitionService {
      * @return 전시 상세 정보
      */
     @Override
-    public ExhibitionSummaryResponse getExhibitionDetail(Long exhibitionId) {
+    public ExhibitionSummaryResponse getExhibitionSummary(Long exhibitionId) {
         // 1. 전시 조회
         Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
                 .orElseThrow(() -> new CustomException(ResponseCode.EXHIBITION_NOT_FOUND));

@@ -448,7 +448,7 @@ public class ExhibitionController {
             @Parameter(description = "조회할 전시 ID", required = true)
             @PathVariable Long exhibitionId
     ) {
-        ExhibitionSummaryResponse data = exhibitionService.getExhibitionDetail(exhibitionId);
+        ExhibitionSummaryResponse data = exhibitionService.getExhibitionSummary(exhibitionId);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
