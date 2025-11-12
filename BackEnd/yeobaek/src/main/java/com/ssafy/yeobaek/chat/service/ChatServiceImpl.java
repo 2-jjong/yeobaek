@@ -312,11 +312,11 @@ public class ChatServiceImpl implements ChatService {
      * @param chatRoomId 채팅방 ID
      * @param messageContent 메시지 내용 (프론트엔드에서 사용될 플레이스홀더 또는 실제 내용)
      * @param messageType 메시지 타입 (예: PROPOSAL)
-     * @param exhibitionId 관련 전시 ID (nullable)
+     * @param exhibition 관련 전시
      */
     @Override
     @Transactional
-    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId) {
+    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Exhibition exhibition) {
 
         log.info("[ChatService] Start sending system message in chatRoomId: {}", chatRoomId);
 
@@ -325,11 +325,7 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_NOT_FOUND));
         log.info("[ChatService] ChatRoom found: {}", chatRoom.getId());
 
-        // 2. Exhibition 엔티티 조회
-        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
-                .orElseThrow(() -> new CustomException(ResponseCode.EXHIBITION_NOT_FOUND));
-
-        // 3. 메시지 엔티티 생성 및 저장
+        // 2. 메시지 엔티티 생성 및 저장
         Message message = Message.builder()
                 .chatRoom(chatRoom)
                 .messageType(messageType)
@@ -339,11 +335,11 @@ public class ChatServiceImpl implements ChatService {
         messageRepository.save(message);
         log.info("[ChatService] System message saved to DB with id: {}", message.getId());
 
-        // 4. ChatMessage 생성 후 반환
+        // 3. ChatMessage 생성 후 반환
         ChatMessage chatMessage = chatMapper.toChatMessage(message, exhibition);
         log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
 
-        // 5. WebSocket을 통해 메시지 전송
+        // 4. WebSocket을 통해 메시지 전송
         webSocketMessageService.sendChatMessage(chatRoomId, chatMessage);
     }
 }
