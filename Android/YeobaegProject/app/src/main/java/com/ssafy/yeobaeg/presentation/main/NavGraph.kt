@@ -1,6 +1,9 @@
 package com.ssafy.yeobaeg.presentation.main
 
+import android.app.Activity
 import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,8 +11,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
@@ -47,6 +57,7 @@ import com.ssafy.yeobaeg.presentation.review.ReviewManagementScreen
 import com.ssafy.yeobaeg.presentation.profile.general.GeneralProfileScreen
 import com.ssafy.yeobaeg.presentation.signup.SignUpScreen
 import com.ssafy.yeobaeg.presentation.splash.SplashScreen
+import kotlinx.coroutines.launch
 
 val LocalUserRole = compositionLocalOf<UserRole?> { null }
 
@@ -56,6 +67,44 @@ fun NavGraph(
     snackbarHostState: SnackbarHostState,
     onTabSelected: (MainTab) -> Unit = {},
 ) {
+    var lastBackPressedTime by remember { mutableLongStateOf(0L) }
+    val context = LocalContext.current
+
+    BackHandler {
+        val now = System.currentTimeMillis()
+        val current = navBackStack.lastOrNull()
+        Log.d("nav graph", "BackHandler invoked. current = $current, stackSize = ${navBackStack.size}")
+
+        when (current) {
+            is BottomNavScreen.Home -> {
+                if (now - lastBackPressedTime <= 2000L) {
+                    (context as? Activity)?.finish()
+                } else {
+                    lastBackPressedTime = now
+                    // Toast 또는 Snackbar 중 선호하는 걸 사용
+                    Toast.makeText(context, "'뒤로' 버튼을 한번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            is BottomNavScreen -> {
+                Log.d("nav graph", "Bottom tab (not home) - navigate to Home")
+                // 현재 탭 제거 후 Home 추가
+                navBackStack.removeLastOrNull()
+                navBackStack.add(BottomNavScreen.Home)
+            }
+
+            else -> {
+                Log.d("nav graph", "FullScreen or other - pop or finish, stackSize=${navBackStack.size}")
+                if (navBackStack.size > 1) {
+                    navBackStack.removeLastOrNull()
+                } else {
+                    (context as? Activity)?.finish()
+                }
+            }
+        }
+    }
+
+
     Scaffold(
         bottomBar = {
             if (navBackStack.last() is BottomNavScreen)
@@ -189,6 +238,10 @@ fun NavGraph(
                     }
                     is FullScreen.ChattingScreen-> NavEntry(key){
                         ChattingScreen(key.chatRoomId)
+                    }
+
+                    is FullScreen.ArtistProfile -> NavEntry(key) {
+                        ArtistProfileScreen(key.artistId)
                     }
                     else -> throw IllegalArgumentException("Unknown route: $key")
                 }

@@ -342,11 +342,14 @@ fun SearchResultContent(
         }
             .distinctUntilChanged()
             .collect { shouldLoadMore ->
-                Log.d("more http", "$shouldLoadMore / $hasNext / $isLoading")
                 if (shouldLoadMore && hasNext && !isLoading) {
                     onLoadNextPage()
                 }
             }
+    }
+
+    if(artists.isEmpty() && artworks.isEmpty()) {
+        Text("검색 결과가 없습니다.", fontSize = 14.sp, color = YeobaegTextGray)
     }
 
     ArtworkGrid(
@@ -358,8 +361,8 @@ fun SearchResultContent(
             .fillMaxSize(),
         topContent = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                ArtistResultSection(artists = artists)
-                Text(text = "작품", modifier = Modifier.padding(8.dp), color = YeobaegTextGray)
+                if(artists.isNotEmpty()) ArtistResultSection(artists = artists)
+                if(artworks.isNotEmpty()) Text(text = "작품", modifier = Modifier.padding(8.dp), color = YeobaegTextGray)
             }
         }
     )
