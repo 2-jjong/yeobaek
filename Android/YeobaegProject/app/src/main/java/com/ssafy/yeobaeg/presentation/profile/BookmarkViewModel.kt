@@ -2,7 +2,7 @@ package com.ssafy.yeobaeg.presentation.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtwork
+import com.ssafy.yeobaeg.domain.model.profile.Artwork
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafe
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -17,7 +17,7 @@ import javax.inject.Inject
 
 data class BookmarkItemUiState(
     val isLoading: Boolean = false,
-    val bookmarkArtwork: BookmarkArtwork? = null,
+    val artwork: Artwork? = null,
     val bookmarkCafe: BookmarkCafe? = null,
     val totalBookmarkCnt: Int = 0,
     val errorMessage: String? = null
@@ -48,8 +48,8 @@ class BookmarkViewModel @Inject constructor(
                 .onSuccess { result ->
                     _uiState.update { current ->
                         val updatedList =
-                            if (append && current.bookmarkArtwork != null)
-                                current.bookmarkArtwork.bookmarkArtworks + result.bookmarkArtworks
+                            if (append && current.artwork != null)
+                                current.artwork.bookmarkArtworks + result.bookmarkArtworks
                             else
                                 result.bookmarkArtworks
 
@@ -57,7 +57,7 @@ class BookmarkViewModel @Inject constructor(
 
                         current.copy(
                             isLoading = false,
-                            bookmarkArtwork = result.copy(bookmarkArtworks = updatedList),
+                            artwork = result.copy(bookmarkArtworks = updatedList),
                             errorMessage = null
                         )
                     }
@@ -75,7 +75,7 @@ class BookmarkViewModel @Inject constructor(
 
     fun loadNextArtworkPage() {
         val nextPage = currentArtworkPage + 1
-        val hasNext = _uiState.value.bookmarkArtwork?.pagination?.hasNext ?: false
+        val hasNext = _uiState.value.artwork?.pagination?.hasNext ?: false
         if (hasNext && !_uiState.value.isLoading) {
             loadBookmarkArtworks(page = nextPage, append = true)
         }

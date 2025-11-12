@@ -2,25 +2,25 @@ package com.ssafy.yeobaeg.data.model.profile
 
 import com.ssafy.yeobaeg.data.model.PaginationResponse
 import com.ssafy.yeobaeg.data.model.toDomain
-import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtworkSummary
-import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtwork
+import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.Artwork
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BookmarkArtworksResponse(
-    val artworks: List<BookmarkArtworkSummaryResponse>,
+data class ArtworksResponse(
+    val artworks: List<ArtworkSummaryResponse>,
     val pagination: PaginationResponse
 )
 
-fun BookmarkArtworksResponse.toDomain(): BookmarkArtwork {
-    return BookmarkArtwork(
+fun ArtworksResponse.toDomain(): Artwork {
+    return Artwork(
         bookmarkArtworks = artworks.map { it.toDomain() },
         pagination = pagination.toDomain()
     )
 }
 
-fun BookmarkArtworkSummaryResponse.toDomain(): BookmarkArtworkSummary {
-    return BookmarkArtworkSummary(
+fun ArtworkSummaryResponse.toDomain(): ArtworkSummary {
+    return ArtworkSummary(
         artworkId = artworkId,
         title = title,
         thumbnailUrl = thumbnailUrl,

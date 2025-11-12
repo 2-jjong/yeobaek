@@ -1,9 +1,6 @@
-package com.ssafy.yeobaeg.data.model.profile
+package com.ssafy.yeobaeg.domain.model.profile
 
-import kotlinx.serialization.Serializable
-
-@Serializable
-data class BookmarkArtworkSummaryResponse(
+data class ArtworkSummary(
     val artworkId: Long,
     val title: String,
     val thumbnailUrl: String,
