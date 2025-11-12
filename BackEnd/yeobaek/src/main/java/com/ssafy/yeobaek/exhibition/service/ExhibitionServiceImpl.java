@@ -135,7 +135,7 @@ public class ExhibitionServiceImpl implements ExhibitionService {
         ChatRoomData chatRoomData = chatService.createChatRoom(cafeOwnerId, artistId);
         Long chatRoomId = chatRoomData.getChatRoom().getChatRoomId();
 
-        chatService.sendSystemMessage(chatRoomId, null, MessageType.PROPOSAL, exhibition.getId());
+        chatService.sendSystemMessage(chatRoomId, null, MessageType.PROPOSAL, exhibition);
     }
 
     /**
@@ -190,6 +190,16 @@ public class ExhibitionServiceImpl implements ExhibitionService {
         } else {
             // 카페 사장도 작가도 아닌 경우
             throw new CustomException(ResponseCode.EXHIBITION_FORBIDDEN);
+        }
+
+        // 4. 양측 모두 동의하여 전시가 확정된 경우 시스템 메시지 전송
+        if (exhibition.getState() == ExhibitionState.APPROVED) {
+            Long cafeOwnerId = exhibition.getCafe().getCafeOwner().getId();
+            Long artistId = exhibition.getArtwork().getArtist().getUser().getId();
+            ChatRoomData chatRoomData = chatService.createChatRoom(cafeOwnerId, artistId);
+            Long chatRoomId = chatRoomData.getChatRoom().getChatRoomId();
+
+            chatService.sendSystemMessage(chatRoomId, null, MessageType.AGREED, exhibition);
         }
     }
 

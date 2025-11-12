@@ -16,6 +16,8 @@ import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
+import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
@@ -50,6 +52,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final MessageRepository messageRepository;
+    private final ExhibitionRepository exhibitionRepository;
     private final UserService userService;
     private final S3Service s3Service;
     private final WebSocketMessageService webSocketMessageService;
@@ -162,7 +165,7 @@ public class ChatServiceImpl implements ChatService {
         // 5. 메시지 목록 조회 (페이지네이션 적용)
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
         Page<Message> messagePage = messageRepository.findByChatRoom(chatRoom, pageable);
-        List<ChatMessage> chatMessages = chatMapper.toChatMessageList(messagePage.getContent(), userId);
+        List<ChatMessage> chatMessages = chatMapper.toChatMessageList(messagePage.getContent());
 
         // 6. 페이징 정보 생성
         Pagination pagination = new Pagination(
@@ -309,11 +312,11 @@ public class ChatServiceImpl implements ChatService {
      * @param chatRoomId 채팅방 ID
      * @param messageContent 메시지 내용 (프론트엔드에서 사용될 플레이스홀더 또는 실제 내용)
      * @param messageType 메시지 타입 (예: PROPOSAL)
-     * @param exhibitionId 관련 전시 ID (nullable)
+     * @param exhibition 관련 전시
      */
     @Override
     @Transactional
-    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId) {
+    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Exhibition exhibition) {
 
         log.info("[ChatService] Start sending system message in chatRoomId: {}", chatRoomId);
 
@@ -326,13 +329,14 @@ public class ChatServiceImpl implements ChatService {
         Message message = Message.builder()
                 .chatRoom(chatRoom)
                 .messageType(messageType)
-                .exhibitionId(exhibitionId)
+                .exhibition(exhibition)
+                .content(messageContent)
                 .build();
         messageRepository.save(message);
         log.info("[ChatService] System message saved to DB with id: {}", message.getId());
 
         // 3. ChatMessage 생성 후 반환
-        ChatMessage chatMessage = chatMapper.toChatMessage(message);
+        ChatMessage chatMessage = chatMapper.toChatMessage(message, exhibition);
         log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
 
         // 4. WebSocket을 통해 메시지 전송

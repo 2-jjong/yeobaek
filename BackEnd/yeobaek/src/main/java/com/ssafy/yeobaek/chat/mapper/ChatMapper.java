@@ -3,17 +3,18 @@ package com.ssafy.yeobaek.chat.mapper;
 import com.ssafy.yeobaek.chat.dto.request.ChatMessageRequest;
 import com.ssafy.yeobaek.chat.dto.response.ChatMessage;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
-import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
+import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
+import com.ssafy.yeobaek.chat.dto.response.ExhibitionInfo;
 import com.ssafy.yeobaek.chat.entity.ChatRoom;
 import com.ssafy.yeobaek.chat.entity.Message;
 import com.ssafy.yeobaek.common.enums.MessageType;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.user.entity.User;
-import org.springframework.stereotype.Component;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ChatMapper {
@@ -70,11 +71,16 @@ public class ChatMapper {
     }
 
     /**
-     * Message 엔티티를 ChatMessage DTO로 변환
+     * Message 엔티티를 ChatMessage DTO로 변환 (Exhibition 정보 포함)
      * @param message Message 엔티티
+     * @param exhibition Exhibition 엔티티 (null 가능)
      * @return ChatMessage DTO
      */
-    public ChatMessage toChatMessage(Message message) {
+    public ChatMessage toChatMessage(Message message, Exhibition exhibition) {
+        ExhibitionInfo exhibitionInfo = null;
+        if (exhibition != null && (message.getMessageType() == MessageType.AGREED || message.getMessageType() == MessageType.STARTED || message.getMessageType() == MessageType.ENDED)) {
+            exhibitionInfo = toExhibitionInfo(exhibition);
+        }
 
         return ChatMessage.builder()
                 .messageId(message.getId())
@@ -82,20 +88,30 @@ public class ChatMapper {
                 .messageType(message.getMessageType())
                 .content(message.getContent())
                 .imageUrl(message.getImageUrl())
-                .exhibitionId(message.getExhibitionId())
-                .exhibition(null) // TODO: 전시 정보 연동 필요
+                .exhibitionId(exhibition != null ? exhibition.getId() : null)
+                .exhibition(exhibitionInfo)
                 .isRead(message.getIsRead())
                 .createdAt(message.getCreatedAt())
                 .build();
     }
 
     /**
+     * Message 엔티티를 ChatMessage DTO로 변환 (위임 메서드)
+     * @param message Message 엔티티
+     * @return ChatMessage DTO
+     */
+    public ChatMessage toChatMessage(Message message) {
+        // LAZY 로딩된 Exhibition 객체를 그대로 전달
+        return toChatMessage(message, message.getExhibition());
+    }
+
+
+    /**
      * Message 엔티티 목록을 ChatMessage DTO 목록으로 변환
      * @param messages Message 엔티티 목록
-     * @param currentUserId 현재 사용자 ID
      * @return ChatMessage DTO 목록
      */
-    public List<ChatMessage> toChatMessageList(List<Message> messages, Long currentUserId) {
+    public List<ChatMessage> toChatMessageList(List<Message> messages) {
         return messages.stream()
                 .map(this::toChatMessage)
                 .collect(Collectors.toList());
@@ -116,5 +132,23 @@ public class ChatMapper {
                 .imageUrl(request.getImageUrl())
                 .messageType(request.getMessageType())
                 .build();
+    }
+
+    /**
+     * Exhibition 엔티티를 ExhibitionInfo DTO로 변환
+     * @param exhibition Exhibition 엔티티
+     * @return ExhibitionInfo DTO
+     */
+    private ExhibitionInfo toExhibitionInfo(Exhibition exhibition) {
+        return new ExhibitionInfo(
+                exhibition.getId(),
+                exhibition.getCafe().getCafeName(),
+                exhibition.getDisplaySlot().getWall().getWallName(),
+                exhibition.getArtwork().getTitle(),
+                exhibition.getStartDate().toString(),
+                exhibition.getEndDate().toString(),
+                exhibition.getCommissionRate(),
+                exhibition.getRequirements()
+        );
     }
 }
