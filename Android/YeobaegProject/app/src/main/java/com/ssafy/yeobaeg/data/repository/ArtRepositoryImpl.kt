@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.data.repository
 import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
 import com.ssafy.yeobaeg.data.model.art.request.toDto
 import com.ssafy.yeobaeg.data.model.response.toDomain
+import com.ssafy.yeobaeg.domain.model.artist.ArtHome
 import com.ssafy.yeobaeg.domain.model.artist.ArtworkRegister
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import javax.inject.Inject
@@ -78,5 +79,12 @@ class ArtRepositoryImpl @Inject constructor(
 
     override suspend fun registerArtwork(request: ArtworkRegister) {
         runCatching { artworkApiService.registerArtwork(request.toDto()) }
+    }
+
+    override suspend fun getArtHome(): Result<ArtHome> {
+        val response = artworkApiService.getMyArtHome()
+        return runCatching {
+            response.data?.toDomain() ?: throw Exception(response.message)
+        }
     }
 }

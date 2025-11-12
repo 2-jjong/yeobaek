@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
+import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -72,5 +73,10 @@ class ArtworkDetailViewModel @Inject constructor(
                 snackBarController.showError(it.message ?: "오류")
             }
         }
+    }
+
+    fun navigateToArtist() = viewModelScope.launch {
+        val artistId = _uiState.value.artwork?.artist?.artistId ?: return@launch
+        navigator.navigate(FullScreen.ArtistProfile(artistId))
     }
 }
