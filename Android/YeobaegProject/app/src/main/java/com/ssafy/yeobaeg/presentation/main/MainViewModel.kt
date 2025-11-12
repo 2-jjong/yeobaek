@@ -1,9 +1,12 @@
 package com.ssafy.yeobaeg.presentation.main
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.AuthEvent
 import com.ssafy.yeobaeg.domain.model.UserRole
+import com.ssafy.yeobaeg.domain.repository.ChatRepository
+import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import com.ssafy.yeobaeg.navigation.BottomNavScreen
@@ -22,6 +25,7 @@ internal class MainViewModel @Inject constructor(
     private val navigator: Navigator,
     private val authSessionManager: AuthSessionManager,
     private val snackbarController: SnackBarController,
+    private val chatWebSocketRepository: ChatWebSocketRepository
 ) : ViewModel() {
 
     val userRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
@@ -45,6 +49,24 @@ internal class MainViewModel @Inject constructor(
                         // 토큰이 만료되거나 로그아웃하면 로그인 화면으로 이동
                         navigator.navigateAndClearBackStack(FullScreen.Login)
                     }
+                }
+            }
+        }
+
+        viewModelScope.launch {
+            authSessionManager.currentUserId.collect { userId ->
+                if (userId != null) {
+                    // 로그인 성공 시 웹소켓 연결
+                    try {
+                        chatWebSocketRepository.connect()
+                        Log.d("MainViewModel", "🌐 WebSocket connected for user $userId")
+                    } catch (e: Exception) {
+                        Log.e("MainViewModel", "❌ WebSocket connection failed: ${e.message}")
+                    }
+                } else {
+                    // 로그아웃 시 연결 해제
+                    chatWebSocketRepository.disconnectWebSocket()
+                    Log.d("YeobaegApplication", "🔌 WebSocket disconnected after logout")
                 }
             }
         }

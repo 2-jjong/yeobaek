@@ -5,6 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChatRoomResponse(
+    val chatRoom: ChatRoomData
+)
+
+@Serializable
+data class ChatRoomData(
     val chatRoomId: Long,
     val partnerId: Long,
     val partnerName: String,
@@ -12,12 +17,12 @@ data class ChatRoomResponse(
     val partnerRole: String
 )
 
-fun ChatRoomResponse.toDomain(): ChatRoom {
+fun ChatRoomData.toDomain(): ChatRoom {
     return ChatRoom(
         chatRoomId = chatRoomId,
         partnerId = partnerId,
         partnerName = partnerName,
         partnerImageUrl = partnerImageUrl,
-        partnerRole = partnerRole,
+        partnerRole = partnerRole
     )
 }

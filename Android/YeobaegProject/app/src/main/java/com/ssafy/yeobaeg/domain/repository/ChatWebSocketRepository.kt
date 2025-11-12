@@ -5,9 +5,10 @@ import com.ssafy.yeobaeg.domain.model.ws.SendMessage
 import kotlinx.coroutines.flow.Flow
 
 interface ChatWebSocketRepository {
-    suspend fun connectAndSubscribe(chatRoomId: Long)
+    suspend fun connect()
     fun subscribeToRoom(chatRoomId: Long)
     fun sendMessage(request: SendMessage)
     fun disconnectWebSocket()
+    fun unsubscribeFromRoom(chatRoomId:Long)
     fun receiveMessages(): Flow<String>
 }

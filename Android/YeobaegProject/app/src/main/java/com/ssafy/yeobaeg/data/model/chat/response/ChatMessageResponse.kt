@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChatMessageResponse(
     val messageId: Long,
-    val senderType: String,
+    val senderId: Long,
     val messageType: String,
     val content: String,
     val imageUrl: String?=null,
@@ -18,7 +18,7 @@ data class ChatMessageResponse(
 fun ChatMessageResponse.toDomain(): ChatMessage {
     return ChatMessage(
         messageId = messageId,
-        senderType = senderType,
+        senderId = senderId,
         messageType = messageType,
         content = content,
         imageUrl = imageUrl,

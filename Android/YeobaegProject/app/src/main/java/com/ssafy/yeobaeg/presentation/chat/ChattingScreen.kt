@@ -1,15 +1,19 @@
 package com.ssafy.yeobaeg.presentation.chat
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -18,35 +22,37 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
-import com.ssafy.yeobaeg.ui.theme.*
-import androidx.compose.material3.TextFieldDefaults
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
-import kotlinx.coroutines.launch
+import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
+import com.ssafy.yeobaeg.ui.theme.*
+import kotlinx.coroutines.delay
 
+private const val TAG = "ChattingScreen"
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChattingScreen(
     chatRoomId: Long,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val myUserId = viewModel.myUserId.collectAsState().value
 
-    LaunchedEffect(chatRoomId) {
+    DisposableEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
-        viewModel.connectWebSocket(chatRoomId)
-    }
+        viewModel.subscribeToChatRoom(chatRoomId)
 
-    //  화면 나갈 때 해제
-    DisposableEffect(Unit) {
-        onDispose { viewModel.disconnectWebSocket() }
+        onDispose {
+            viewModel.unsubscribeFromChatRoom(chatRoomId)
+        }
     }
 
     var inputText by remember { mutableStateOf("") }
@@ -59,16 +65,21 @@ fun ChattingScreen(
         errorMessage = uiState.errorMessage,
         inputText = inputText,
         onInputChange = { inputText = it },
-        onSendClick = {
-            viewModel.sendMessage(inputText)
-            inputText = ""
-        },        onBackClick = viewModel::navigateBack
+        onSendClick = { message ->
+            if (message.isNotBlank()) {
+                viewModel.sendMessage(message, myUserId)
+                inputText = ""
+            }
+        },
+        onBackClick = viewModel::navigateBack,
+        myUserId = myUserId
     )
 }
 
 /**
  * 실제 UI를 구성하는 함수
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChattingScreenContent(
     title: String,
@@ -79,28 +90,24 @@ fun ChattingScreenContent(
     inputText: String = "",
     onInputChange: (String) -> Unit = {},
     onSendClick: (String) -> Unit = {},
-    onBackClick: (() -> Unit)? = null
+    onBackClick: (() -> Unit)? = null,
+    myUserId: Long?
 ) {
     val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-    //1분마다 강제 recomposition 트리거
-    var currentTime by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            kotlinx.coroutines.delay(60_000L)
-            currentTime = System.currentTimeMillis()
+
+    // 키보드가 올라올 때와 새 메시지가 추가될 때 자동 스크롤
+    LaunchedEffect(messages.size) {
+        if (messages.isNotEmpty()) {
+            // reverseLayout이므로 0번 인덱스가 최신 메시지
+            delay(100) // 키보드 애니메이션 대기
+            listState.animateScrollToItem(0)
         }
     }
 
-    // 새 메시지가 추가될 때마다 가장 마지막으로 스크롤
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
-            coroutineScope.launch {
-                listState.animateScrollToItem(messages.lastIndex)
-            }
-        }
-    }
     Scaffold(
+        modifier = Modifier
+            .fillMaxSize(),
+//            .imePadding(), // 전체 Scaffold에 IME padding 적용
         topBar = {
             YeobaegTopAppBar(
                 title = title,
@@ -110,39 +117,64 @@ fun ChattingScreenContent(
         },
         bottomBar = {
             ChatInputBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(YeobaegWhite)
+                    .imePadding()
+                    .padding(horizontal = 10.dp, vertical = 8.dp),
                 value = inputText,
                 onValueChange = onInputChange,
                 onSendClick = onSendClick
             )
         },
-        contentWindowInsets = WindowInsets(0)
-    ) { innerPadding ->
-        when {
-            isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
 
-            errorMessage != null -> Box(
-                Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = errorMessage, color = Color.Red)
-            }
-
-            else -> LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(YeobaegWhite)
-                    .padding(innerPadding)
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(messages, key = { it.messageId }) { msg ->
-                    if (msg.senderType == "ME") MyMessageBubble(msg)
-                    else PartnerMessageBubble(msg, profileImg)
+        ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(YeobaegBackground)
+                .padding(innerPadding)
+        ) {
+            when {
+                isLoading -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
                 }
 
+                errorMessage != null -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = errorMessage, color = Color.Red)
+                }
+
+                else -> LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clearFocusOnTap()
+                        .background(YeobaegWhite)
+                        .padding(horizontal = 12.dp),
+                    reverseLayout = true, // 최신 메시지가 아래에 표시되도록
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(vertical = 16.dp)
+                ) {
+                    // reverseLayout이므로 역순으로 표시
+                    items(
+                        items = messages.asReversed(),
+                        key = { "${it.messageId}_${it.createdAt}" }
+                    ) { msg ->
+                        val isMyMessage = myUserId != null && msg.senderId == myUserId
+                        if (isMyMessage) {
+                            MyMessageBubble(msg)
+                        } else {
+                            PartnerMessageBubble(msg, profileImg)
+                        }
+                    }
+                }
             }
         }
     }
@@ -152,39 +184,48 @@ fun ChattingScreenContent(
 fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.Start
     ) {
         AsyncImage(
             model = profileImg,
             contentDescription = null,
             modifier = Modifier
-                .size(50.dp)
+                .size(40.dp)
                 .border(0.5.dp, YeobaegLightGray, CircleShape)
                 .clip(CircleShape)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Column {
+        Column(
+            horizontalAlignment = Alignment.Start
+        ) {
             Surface(
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(
+                    topStart = 4.dp,
+                    topEnd = 12.dp,
+                    bottomStart = 12.dp,
+                    bottomEnd = 12.dp
+                ),
                 color = YeobaegWhite,
-                border = BorderStroke(color = YeobaegLightGray, width = 0.5.dp),
+                shadowElevation = 1.dp,
                 modifier = Modifier
-                    .widthIn(min = 40.dp, max = 300.dp)
+                    .widthIn(min = 40.dp, max = 260.dp)
                     .wrapContentWidth()
             ) {
                 Text(
                     text = message.content,
                     fontFamily = jansilFont,
                     color = YeobaegBlack,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(10.dp)
+                    fontSize = 15.sp,
+                    lineHeight = 20.sp,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
                 )
             }
             Text(
                 text = DateFormatter.toTimeAgo(message.createdAt),
                 color = YeobaegTextGray,
                 fontSize = 11.sp,
-                modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
             )
         }
     }
@@ -197,20 +238,28 @@ fun MyMessageBubble(message: ChatMessage) {
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.Bottom
     ) {
-        Column(horizontalAlignment = Alignment.End) {
+        Column(
+            horizontalAlignment = Alignment.End
+        ) {
             Surface(
-                shape = RoundedCornerShape(10.dp),
+                shape = RoundedCornerShape(
+                    topStart = 12.dp,
+                    topEnd = 12.dp,
+                    bottomStart = 12.dp,
+                    bottomEnd = 4.dp
+                ),
                 color = YeobaegBrown,
                 modifier = Modifier
-                    .widthIn(min = 40.dp, max = 300.dp)
+                    .widthIn(min = 40.dp, max = 260.dp)
                     .wrapContentWidth()
             ) {
                 Text(
                     text = message.content,
                     fontFamily = jansilFont,
                     color = YeobaegWhite,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(10.dp)
+                    fontSize = 15.sp,
+                    lineHeight = 20.sp,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
                 )
             }
             Text(
@@ -218,7 +267,7 @@ fun MyMessageBubble(message: ChatMessage) {
                 color = YeobaegTextGray,
                 fontSize = 11.sp,
                 textAlign = TextAlign.End,
-                modifier = Modifier.padding(top = 2.dp)
+                modifier = Modifier.padding(top = 4.dp, end = 4.dp)
             )
         }
     }
@@ -229,72 +278,113 @@ fun ChatInputBar(
     value: String,
     onValueChange: (String) -> Unit,
     onSendClick: (String) -> Unit,
-    onAddClick: () -> Unit = {}
+    onAddClick: () -> Unit = {},
+    modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(YeobaegWhite)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    val trimmedValue = value.trim()
+    val isSendEnabled = trimmedValue.isNotEmpty()
+
+    Column(
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier.background(Color.White)
     ) {
-        Surface(
-            modifier = Modifier.size(40.dp),
-            shape = CircleShape,
-            color = YeobaegLightGray.copy(alpha = 0.15f)
-        ) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onAddClick() }
-            ) {
-                Text("+", color = YeobaegTextGray, fontSize = 22.sp)
-            }
-        }
-
-        Surface(
+        Row(
             modifier = Modifier
-                .weight(1f)
-                .background(YeobaegWhite),
-            shape = RoundedCornerShape(20.dp),
-            border = BorderStroke(1.dp, YeobaegLightGray),
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically ,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            TextField(
-                value = value,
-                onValueChange = onValueChange,
-                placeholder = {
+            // + 버튼
+            Surface(
+                modifier = Modifier.size(42.dp),
+                shape = CircleShape,
+                color = YeobaegLightGray.copy(alpha = 0.2f)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .clickable { onAddClick() }
+                ) {
                     Text(
-                        text = "메시지를 입력하세요...",
+                        text = "+",
                         color = YeobaegTextGray,
-                        fontSize = 13.sp,
+                        fontSize = 24.sp
                     )
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                textStyle = LocalTextStyle.current.copy(lineHeight = 16.sp),
-                singleLine = true,
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.White
-                )
-            )
-        }
-
-        Surface(
-            modifier = Modifier.size(40.dp),
-            shape = CircleShape,
-            color = YeobaegBrown
-        ) {
-            IconButton(onClick = { onSendClick(value) }) {
-                Icon(imageVector = Icons.Default.Send, contentDescription = "보내기", tint = Color.White)
+                }
             }
 
+            // 입력 필드
+            Surface(
+                modifier = Modifier.weight(1f),
+                shape = RoundedCornerShape(22.dp),
+                border = BorderStroke(1.dp, YeobaegLightGray.copy(alpha = 0.5f)),
+                color = YeobaegWhite
+            ) {
+                TextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    placeholder = {
+                        Text(
+                            text = "메시지를 입력하세요",
+                            color = YeobaegTextGray,
+                            fontSize = 14.sp
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 42.dp, max = 120.dp),
+                    textStyle = LocalTextStyle.current.copy(
+                        fontSize = 15.sp,
+                        lineHeight = 20.sp
+                    ),
+                    maxLines = 5,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Send
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSend = {
+                            if (isSendEnabled) {
+                                onSendClick(trimmedValue)
+                            }
+                        }
+                    ),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = YeobaegBrown
+                    )
+                )
+            }
+
+            // 전송 버튼
+            Surface(
+                modifier = Modifier.size(42.dp),
+                shape = CircleShape,
+                color = if (isSendEnabled) YeobaegBrown else YeobaegLightGray.copy(alpha = 0.3f)
+            ) {
+                IconButton(
+                    onClick = {
+                        if (isSendEnabled) {
+                            onSendClick(trimmedValue)
+                        }
+                    },
+                    enabled = isSendEnabled,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Send,
+                        contentDescription = "보내기",
+                        tint = if (isSendEnabled) Color.White else YeobaegTextGray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -303,12 +393,15 @@ fun ChatInputBar(
 @Composable
 fun ChattingScreenPreview() {
     val dummyMessages = listOf(
-        ChatMessage(1, "PARTNER", "TEXT", "안녕하세요", "", null, false, "2시간 전"),
-        ChatMessage(2, "ME", "TEXT", "안녕하세요", "", null, false, "2시간 전")
+        ChatMessage(1, 1, "TEXT", "안녕하세요! 작품이 정말 마음에 들어요.", "", null, false, "2시간 전"),
+        ChatMessage(2, 0, "TEXT", "감사합니다 😊", "", null, false, "2시간 전"),
+        ChatMessage(3, 1, "TEXT", "전시 일정이 어떻게 되나요?", "", null, false, "1시간 전"),
+        ChatMessage(4, 0, "TEXT", "다음 주 월요일부터 가능합니다", "", null, false, "1시간 전")
     )
     ChattingScreenContent(
         title = "김아티스트",
         messages = dummyMessages,
-        profileImg = ""
+        profileImg = "",
+        myUserId = 0
     )
 }

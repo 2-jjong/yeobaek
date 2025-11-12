@@ -6,14 +6,18 @@ import com.ssafy.yeobaeg.domain.model.ws.SendMessage
 import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class ChatWebSocketRepositoryImpl @Inject constructor(
     private val chatWebSocketService: ChatWebSocketService
-): ChatWebSocketRepository {
-    override suspend fun connectAndSubscribe(chatRoomId: Long) {
-        chatWebSocketService.connect {
-            chatWebSocketService.subscribeToRoom(chatRoomId)
-        }
+) : ChatWebSocketRepository {
+    override suspend fun connect() {
+        chatWebSocketService.connect()
+    }
+
+    override fun subscribeToRoom(chatRoomId: Long) {
+        chatWebSocketService.subscribeToRoom(chatRoomId)
     }
 
     override fun sendMessage(message: SendMessage) {
@@ -30,12 +34,10 @@ class ChatWebSocketRepositoryImpl @Inject constructor(
         chatWebSocketService.disconnect()
     }
 
-    override fun receiveMessages(): Flow<String> {
-        return chatWebSocketService.messageFlow
+    override fun unsubscribeFromRoom(chatRoomId: Long) {
+        chatWebSocketService.unsubscribeFromRoom(chatRoomId)
     }
 
-
-    override fun subscribeToRoom(chatRoomId: Long) {
-        chatWebSocketService.subscribeToRoom(chatRoomId)
-    }
+    override fun receiveMessages(): Flow<String> =
+        chatWebSocketService.messageFlow
 }
