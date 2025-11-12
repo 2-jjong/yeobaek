@@ -5,115 +5,153 @@ import android.util.Log
 import com.ssafy.yeobaeg.BuildConfig
 import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import com.ssafy.yeobaeg.data.model.ws.resquest.SendMessageRequest
-import kotlinx.coroutines.GlobalScope
+import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import ua.naiksoftware.stomp.Stomp
+import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompHeader
 import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val TAG = "ChatWebSocketService"
 
+@Singleton
 class ChatWebSocketService @Inject constructor(
     private val tokenDataSource: TokenDataSource,
     private val wsUrl: String = BuildConfig.WS_URL
 ) {
-    private val stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, wsUrl)
+    private var stompClient: StompClient? = null
+    private val subscriptions = mutableMapOf<Long, Disposable>()
     private val _messageChannel = Channel<String>(Channel.BUFFERED)
     val messageFlow = _messageChannel.receiveAsFlow()
 
-    private var currentChatRoomId: Long? = null
-    private var shouldReconnect = true
+    private var isConnected = false
 
-    init {
-        // Heartbeat 설정: 10초마다 핑 전송
-        stompClient.withClientHeartbeat(10000).withServerHeartbeat(10000)
+    fun initClient() {
+        if (stompClient == null) {
+            stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, wsUrl)
+            Log.d("ChatWebSocketService", "🧩 stompClient initialized")
+        }
     }
+
     @SuppressLint("CheckResult")
-    suspend fun connectAndSubscribe(chatRoomId: Long) {
-        val accessToken = tokenDataSource.getAccessToken() ?: ""
+    suspend fun connect() {
+
+        if (isConnected) {
+            return
+        }
+        val accessToken = tokenDataSource.getAccessToken()
         val headers = listOf(StompHeader("Authorization", "Bearer $accessToken"))
 
-        Log.d(TAG, "🚀 Starting connectAndSubscribe for room: $chatRoomId")
-
-        stompClient.lifecycle().subscribe { lifecycleEvent ->
-            Log.d(TAG, "🔄 Lifecycle event received: ${lifecycleEvent.type}")
-
-            when (lifecycleEvent.type) {
+        stompClient?.lifecycle()?.subscribe { event ->
+            when (event.type) {
                 LifecycleEvent.Type.OPENED -> {
-                    Log.d(TAG, "✅ WebSocket OPENED → Subscribing immediately")
-                    subscribeToRoom(chatRoomId)
+                    Log.d("ChatWebSocketService", "✅ WebSocket connected")
+                    isConnected = true
+                    Log.d(TAG, "connect: 전역 구독 호출")
+                    //전역 구독 호출
+                    runCatching { subscribeGlobal() }
                 }
 
                 LifecycleEvent.Type.CLOSED -> {
-                    Log.d(TAG, "❌ WebSocket CLOSED")
-
-                    // 자동 재연결 시도
-                    if (shouldReconnect && currentChatRoomId != null) {
-                        Log.d(TAG, "🔄 Attempting to reconnect...")
-                        GlobalScope.launch {
-                            kotlinx.coroutines.delay(2000) // 2초 후 재연결
-                            if (shouldReconnect) {
-                                stompClient.connect(headers)
-                            }
-                        }
-                    }
+                    Log.w("ChatWebSocketService", "❌ WebSocket closed")
+                    isConnected = false
                 }
 
                 LifecycleEvent.Type.ERROR -> {
-                    Log.e(TAG, "⚠️ WebSocket ERROR: ${lifecycleEvent.message}")
-                    Log.e(TAG, "⚠️ Exception: ${lifecycleEvent.exception}")
+                    Log.e("ChatWebSocketService", "⚠️ WebSocket error: ${event.message}")
+                    isConnected = false
                 }
 
-                else -> {
-                    Log.d(TAG, "ℹ️ Other lifecycle event: ${lifecycleEvent.type}")
-                }
+                else -> {}
             }
         }
 
-        // 연결 시작
-        Log.d(TAG, "🔌 Calling stompClient.connect()")
-        stompClient.connect(headers)
+        stompClient?.connect(headers)
     }
 
+    //전역 구독
     @SuppressLint("CheckResult")
-     fun subscribeToRoom(chatRoomId: Long) {
-        val destination = "/sub/chat/room/$chatRoomId"
-        Log.d(TAG, "📡 Subscribing to: $destination")
+    private fun subscribeGlobal() {
+        val destination = "/sub/notifications"
+        Log.d(TAG, "📡 Attempting to subscribe global topic: $destination")
 
-        stompClient.topic(destination).subscribe({ topicMessage ->
-            Log.d(TAG, "📨 Received message: ${topicMessage.payload}")
-            _messageChannel.trySend(topicMessage.payload)
-        }, { error ->
-            Log.e(TAG, "❌ Subscription error: ${error.message}", error)
-        })
-
-        Log.d(TAG, "✅ Subscription request sent for: $destination")
+        try {
+            stompClient?.topic(destination)?.subscribe({ msg ->
+                Log.d(TAG, "📢 Global notification: ${msg.payload}")
+            }, { e ->
+                Log.w(
+                    TAG,
+                    "⚠️ Global subscription failed (expected if server not ready): ${e.message}"
+                )
+            })
+        } catch (e: Exception) {
+            Log.w(TAG, "⚠️ Global subscription not available: ${e.message}")
+        }
     }
 
-    @SuppressLint("CheckResult")
-    fun sendMessage(request: SendMessageRequest) {
-        if (!stompClient.isConnected) {
-            Log.w(TAG, "⚠️ Cannot send message: WebSocket not connected")
+    //채팅방 구독
+    fun subscribeToRoom(chatRoomId: Long) {
+        Log.d(
+            TAG,
+            "🪄 subscribeToRoom called for chatRoomId=$chatRoomId (isConnected=$isConnected, stompClient=${stompClient != null})"
+        )
+
+        if (!isConnected || stompClient == null) {
+            Log.w(TAG, "⚠️ Cannot subscribe - WebSocket not connected yet")
             return
         }
-        val jsonBody = Json.encodeToString(request)
-        Log.d(TAG, "📤 Sending message: $jsonBody")
 
-        stompClient.send("/pub/messages", jsonBody)
-            .subscribe({
-                Log.d(TAG, "✅ Message sent successfully")
-            }, { error ->
-                Log.e(TAG, "❌ Send failed: ${error.message}", error)
-            })
+        if (subscriptions.containsKey(chatRoomId)) {
+            Log.d(TAG, "⚠️ Already subscribed to room $chatRoomId, skipping")
+            return
+        }
+        val destination = "/sub/chat/room/$chatRoomId"
+        val disposable = stompClient?.topic(destination)?.subscribe({ msg ->
+            _messageChannel.trySend(msg.payload)
+        }, { e ->
+            Log.e("ChatWebSocketService", "❌ Chat room subscription error: ${e.message}", e)
+        })
+
+        if (disposable != null) {
+            subscriptions[chatRoomId] = disposable
+            Log.d("ChatWebSocketService", "✅ Subscribed to room $chatRoomId")
+        }
     }
 
+    // 채팅방 구독 끊기
+    fun unsubscribeFromRoom(chatRoomId: Long) {
+        subscriptions[chatRoomId]?.dispose()
+        subscriptions.remove(chatRoomId)
+        Log.d("ChatWebSocketService", "🚪 Unsubscribed from room $chatRoomId")
+    }
+
+    // 메시지 송신
+    @SuppressLint("CheckResult")
+    fun sendMessage(request: SendMessageRequest) {
+        if (!isConnected) {
+            Log.w("ChatWebSocketService", "⚠️ sendMessage called before connection established")
+            return
+        }
+
+        val jsonBody = Json.encodeToString(request)
+        stompClient?.send("/pub/messages", jsonBody)?.subscribe({
+            Log.d("ChatWebSocketService", "📤 Message sent successfully")
+        }, { e ->
+            Log.e("ChatWebSocketService", "❌ Send failed: ${e.message}", e)
+        })
+    }
+
+    //연결 끊기
     fun disconnect() {
-        Log.d(TAG, "🔌 Disconnecting WebSocket")
-        stompClient.disconnect()
+        subscriptions.values.forEach { it.dispose() }
+        subscriptions.clear()
+        stompClient?.disconnect()
+        isConnected = false
+        Log.d("ChatWebSocketService", "🔌 Disconnected WebSocket")
     }
 }

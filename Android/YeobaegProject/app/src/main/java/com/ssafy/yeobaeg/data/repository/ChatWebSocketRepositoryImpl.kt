@@ -12,9 +12,8 @@ import javax.inject.Singleton
 class ChatWebSocketRepositoryImpl @Inject constructor(
     private val chatWebSocketService: ChatWebSocketService
 ) : ChatWebSocketRepository {
-
-    override suspend fun connectAndSubscribe(chatRoomId: Long) {
-        chatWebSocketService.connectAndSubscribe(chatRoomId)
+    override suspend fun connect() {
+        chatWebSocketService.connect()
     }
 
     override fun subscribeToRoom(chatRoomId: Long) {
@@ -33,6 +32,10 @@ class ChatWebSocketRepositoryImpl @Inject constructor(
 
     override fun disconnectWebSocket() {
         chatWebSocketService.disconnect()
+    }
+
+    override fun unsubscribeFromRoom(chatRoomId: Long) {
+        chatWebSocketService.unsubscribeFromRoom(chatRoomId)
     }
 
     override fun receiveMessages(): Flow<String> =

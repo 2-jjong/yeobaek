@@ -46,12 +46,12 @@ fun ChattingScreen(
 
     LaunchedEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
-        viewModel.connectWebSocket(chatRoomId)
+        viewModel.subscribeToChatRoom(chatRoomId)
     }
 
     //  화면 나갈 때 해제
     DisposableEffect(Unit) {
-        onDispose { viewModel.disconnectWebSocket() }
+        onDispose { viewModel.unsubscribeFromChatRoom(chatRoomId) }
     }
 
     var inputText by remember { mutableStateOf("") }

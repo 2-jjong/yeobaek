@@ -13,6 +13,7 @@ import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -44,13 +45,25 @@ class ChatViewModel @Inject constructor(
     private var receiveJob: Job? = null
     val myUserId: StateFlow<Long?> = authSessionManager.currentUserId
 
-    fun connectWebSocket(chatRoomId: Long) {
+    /** 채팅방 구독 시작 (입장 시) */
+    fun subscribeToChatRoom(chatRoomId: Long) {
         viewModelScope.launch {
-            chatWebSocketRepository.connectAndSubscribe(chatRoomId)
+            delay(500)
+            chatWebSocketRepository.subscribeToRoom(chatRoomId)
             startReceivingMessages()
         }
     }
 
+
+    /**채팅방 구독 해제 (퇴장 시) */
+    fun unsubscribeFromChatRoom(chatRoomId: Long) {
+        viewModelScope.launch {
+            chatWebSocketRepository.unsubscribeFromRoom(chatRoomId)
+            stopReceivingMessages()
+        }
+    }
+
+    /** 서버로부터 새 메시지 수신 */
     private fun startReceivingMessages() {
         if (receiveJob?.isActive == true) return
         receiveJob = viewModelScope.launch {
@@ -69,9 +82,12 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    fun disconnectWebSocket() {
-        chatWebSocketRepository.disconnectWebSocket()
+    private fun stopReceivingMessages() {
+        receiveJob?.cancel()
+        receiveJob = null
     }
+
+    /** 메시지 JSON 파싱 */
 
     private fun parseChatMessage(json: String): ChatMessage {
         return try {
@@ -81,6 +97,7 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    /** 메시지 전송 */
     fun sendMessage(text: String, myUserId: Long?) {
         val chatRoomId = _uiState.value.chatRoomMessages.chatRoom.chatRoomId
         val message = SendMessage(chatRoomId, "TEXT", text)
@@ -105,6 +122,7 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    /** 채팅방 목록 불러오기 */
     fun loadChatRooms() = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
         chatRepository.getChatList()
@@ -120,6 +138,7 @@ class ChatViewModel @Inject constructor(
             }
     }
 
+    /** 채팅방 메시지 불러오기 */
     fun loadChatMessages(chatRoomId: Long) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
         chatRepository.getChatRoomMessages(chatRoomId)
