@@ -4,7 +4,6 @@ import com.ssafy.yeobaek.artwork.entity.Artwork;
 import com.ssafy.yeobaek.cafe.entity.Cafe;
 import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.common.enums.ExhibitionState;
-import com.ssafy.yeobaek.common.enums.ExhibitionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
