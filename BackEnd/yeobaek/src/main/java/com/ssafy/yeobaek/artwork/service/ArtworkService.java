@@ -116,4 +116,15 @@ public interface ArtworkService {
      * @return 전시 가능한 날짜 목록
      */
     ArtworkAvailableDatesResponse getArtworkAvailableDates(Long artworkId, LocalDate startDate);
+
+    /**
+     * 전시 가능한 작품 목록 조회
+     * - 특정 작가의 특정 기간에 전시 가능한 작품 목록 반환
+     * - 요청된 기간에 전시가 없는 작품만 반환 (APPROVED 또는 ONGOING 상태의 전시와 겹치지 않음)
+     * @param artistId 작가 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 전시 가능한 작품 목록
+     */
+    ArtworkListResponse getAvailableArtworks(Long artistId, LocalDate startDate, LocalDate endDate);
 }

@@ -263,4 +263,21 @@ public class ArtworkMapper {
                 .dates(availableDates)
                 .build();
     }
+
+    /**
+     * Artwork 엔티티를 ArtworkSummaryDto로 변환 (전시 가능한 작품 목록용 - API 명세에 맞춘 필드만 포함)
+     * @param artwork Artwork 엔티티
+     * @param thumbnailUrl 썸네일 이미지 URL (presigned URL)
+     * @return ArtworkSummaryDto (artworkId, title, thumbnailUrl, widthCm, heightCm, weightKg만 포함)
+     */
+    public ArtworkSummaryDto toArtworkSummaryForAvailableArtworks(Artwork artwork, String thumbnailUrl) {
+        return ArtworkSummaryDto.builder()
+                .artworkId(artwork.getId())
+                .title(artwork.getTitle())
+                .thumbnailUrl(thumbnailUrl)
+                .widthCm(artwork.getWidthCm().intValue())
+                .heightCm(artwork.getHeightCm().intValue())
+                .weightKg(artwork.getWeightKg())
+                .build();
+    }
 }

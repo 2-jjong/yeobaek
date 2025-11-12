@@ -1098,6 +1098,116 @@ public class ArtworkController {
     }
 
     @Operation(
+            summary = "전시 가능한 작품 목록 조회",
+            description = "특정 작가의 특정 기간에 전시 가능한 작품 목록을 조회합니다.\n\n" +
+                    "**주요 기능:**\n" +
+                    "- 요청된 기간에 전시 가능한 작품만 반환\n" +
+                    "- 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시와 겹치지 않는 작품만 반환\n"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "정상 처리",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "전시 가능한 작품이 있는 경우",
+                                            description = "조회 기간에 전시 가능한 작품이 있는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 1, \"title\": \"여름의 여백\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork1.jpg\", \"widthCm\": 100, \"heightCm\": 150, \"weightKg\": 5.5}, {\"artworkId\": 2, \"title\": \"가을의 정적\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork2.jpg\", \"widthCm\": 80, \"heightCm\": 120, \"weightKg\": 3.2}]}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "전시 가능한 작품이 없는 경우",
+                                            description = "조회 기간에 전시 가능한 작품이 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": []}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "유효하지 않은 입력값",
+                                    description = "필수 파라미터 누락 또는 날짜 형식 오류",
+                                    value = "{\"code\": \"S4002\", \"message\": \"입력값이 유효하지 않습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "인증 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = {
+                                    @ExampleObject(
+                                            name = "토큰 누락",
+                                            value = "{\"code\": \"S4012\", \"message\": \"토큰이 누락되었습니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "유효하지 않은 토큰",
+                                            value = "{\"code\": \"AU4012\", \"message\": \"유효하지 않은 토큰입니다\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "만료된 토큰",
+                                            value = "{\"code\": \"AU4013\", \"message\": \"만료된 토큰입니다\"}"
+                                    )
+                            }
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "403",
+                    description = "권한 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S4031\", \"message\": \"해당 요청에 대한 권한이 없습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "존재하지 않는 작가",
+                                    value = "{\"code\": \"AR4041\", \"message\": \"존재하지 않는 회원입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/available-artworks")
+    @PreAuthorize("hasAnyRole('CAFE_OWNER', 'ARTIST')")
+    public ResponseEntity<ResponseDto<ArtworkListResponse>> getAvailableArtworks(
+            @Parameter(description = "전시 가능한 작품을 조회할 작가 ID", required = true)
+            @RequestParam Long artistId,
+            @Parameter(description = "조회 시작일 (yyyy-MM-dd 형식)", required = true)
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @Parameter(description = "조회 종료일 (yyyy-MM-dd 형식)", required = true)
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
+    ) {
+        ArtworkListResponse data = artworkService.getAvailableArtworks(artistId, startDate, endDate);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(data));
+    }
+
+    @Operation(
             summary = "작품의 전시 가능일 조회",
             description = "특정 작품의 전시 가능한 날짜 목록을 조회합니다.\n\n" +
                     "**주요 기능:**\n" +

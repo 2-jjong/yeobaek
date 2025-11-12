@@ -74,4 +74,11 @@ public interface UserService {
      * @return 작가명에 키워드가 포함된 작가 목록
      */
     List<Artist> searchArtistsByKeyword(String keyword);
+
+    /**
+     * 작가 존재 여부 확인
+     * @param artistId 작가 ID
+     * @return 작가가 존재하면 true, 아니면 false
+     */
+    boolean existsArtistById(Long artistId);
 }

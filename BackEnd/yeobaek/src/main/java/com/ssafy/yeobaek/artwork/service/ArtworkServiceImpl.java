@@ -530,4 +530,42 @@ public class ArtworkServiceImpl implements ArtworkService {
         // 8. DTO 변환 및 반환
         return artworkMapper.toArtworkAvailableDatesResponse(availableDates);
     }
+
+    /**
+     * 전시 가능한 작품 목록 조회
+     * - 특정 작가의 특정 기간에 전시 가능한 작품 목록 반환
+     * - 요청된 기간에 전시가 없는 작품만 반환 (APPROVED 또는 ONGOING 상태의 전시와 겹치지 않음)
+     * @param artistId 작가 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 전시 가능한 작품 목록
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public ArtworkListResponse getAvailableArtworks(Long artistId, LocalDate startDate, LocalDate endDate) {
+        // 1. 작가 존재 여부 확인
+        if (!userService.existsArtistById(artistId)) {
+            throw new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND);
+        }
+
+        // 2. 작가의 모든 작품 조회
+        List<Artwork> allArtworks = artworkRepository.findAllByArtistId(artistId);
+
+        // 3. 전시가 없는 작품만 필터링
+        List<Artwork> availableArtworks = allArtworks.stream()
+                .filter(artwork -> !exhibitionRepository.existsConflictingArtwork(artwork.getId(), startDate, endDate))
+                .collect(Collectors.toList());
+
+        // 4. 작품을 ArtworkSummaryDto로 변환 (기본 정보만 포함)
+        List<ArtworkSummaryDto> artworkSummaries = availableArtworks.stream()
+                .map(artwork -> {
+                    // 썸네일 URL 변환 (첫 번째 이미지 사용)
+                    String thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                    return artworkMapper.toArtworkSummaryForAvailableArtworks(artwork, thumbnailUrl);
+                })
+                .collect(Collectors.toList());
+
+        // 5. artists와 pagination은 null로 설정 (전시 가능한 작품 목록이므로)
+        return artworkMapper.toArtworkListData(null, artworkSummaries, null);
+    }
 }
