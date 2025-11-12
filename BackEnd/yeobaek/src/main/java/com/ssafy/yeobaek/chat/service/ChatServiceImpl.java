@@ -129,7 +129,7 @@ public class ChatServiceImpl implements ChatService {
 
             // 8. 새로운 채팅방이 생성된 경우에만 상대방에게 채팅방 생성 이벤트 전송
             EventDto eventDto = EventDto.builder()
-                    .type(EventType.CHAT_ROOM_CREATED)
+                    .eventType(EventType.CHAT_ROOM_CREATED)
                     .timestamp(LocalDateTime.now())
                     .build();
             webSocketMessageService.sendEventToUser(partner.getEmail(), eventDto);
@@ -231,7 +231,7 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND)); // 채팅방에 상대방이 없는 경우
 
         EventDto eventDto = EventDto.builder()
-                .type(EventType.NEW_MESSAGE_RECEIVED)
+                .eventType(EventType.NEW_MESSAGE_RECEIVED)
                 .timestamp(LocalDateTime.now())
                 .build();
         webSocketMessageService.sendEventToUser(recipient.getEmail(), eventDto);
@@ -370,7 +370,7 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
 
         EventDto eventDto = EventDto.builder()
-                .type(EventType.NEW_MESSAGE_RECEIVED)
+                .eventType(EventType.NEW_MESSAGE_RECEIVED)
                 .timestamp(LocalDateTime.now())
                 .build();
 

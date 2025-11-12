@@ -22,7 +22,7 @@ public class WebSocketMessageService {
     }
 
     public void sendEventToUser(String username, EventDto eventDto) {
-        log.info("[WebSocketMessageSenderService] Sending event to user: {} with type: {}", username, eventDto.getType());
+        log.info("[WebSocketMessageSenderService] Sending event to user: {} with type: {}", username, eventDto.getEventType());
         String destination = "/queue/notifications";
         messagingTemplate.convertAndSendToUser(username, destination, eventDto);
         log.info("[WebSocketMessageSenderService] Event sent to user: {} on destination: {}", username, destination);

@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class EventDto {
 
     @Schema(description = "이벤트 유형", example = "NEW_MESSAGE_RECEIVED")
-    private EventType type;
+    private EventType eventType;
 
     @Schema(description = "생성일시", example = "2025-11-08T10:56:52")
     private LocalDateTime timestamp;
