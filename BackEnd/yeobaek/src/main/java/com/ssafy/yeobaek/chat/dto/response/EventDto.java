@@ -8,8 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -19,7 +17,4 @@ public class EventDto {
 
     @Schema(description = "이벤트 유형", example = "NEW_MESSAGE_RECEIVED")
     private EventType eventType;
-
-    @Schema(description = "생성일시", example = "2025-11-08T10:56:52")
-    private LocalDateTime timestamp;
 }

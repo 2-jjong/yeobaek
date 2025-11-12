@@ -86,6 +86,7 @@ public class ChatServiceImpl implements ChatService {
                 .findFirst();
 
         ChatRoomData chatRoomData;
+        boolean isNewRoom = false;
 
         // 4. 기존 채팅방이 있으면 해당 채팅방 정보 반환
         if (existingRoomOpt.isPresent()) {
@@ -104,6 +105,7 @@ public class ChatServiceImpl implements ChatService {
             chatRoomData = chatMapper.toChatRoomData(existingChatRoom, partner, partnerImageUrl);
         } else {
             // 5. 새로운 채팅방 생성
+            isNewRoom = true;
             ChatRoom newChatRoom = ChatRoom.builder().build();
             chatRoomRepository.save(newChatRoom);
 
@@ -130,7 +132,6 @@ public class ChatServiceImpl implements ChatService {
             // 8. 새로운 채팅방이 생성된 경우에만 상대방에게 채팅방 생성 이벤트 전송
             EventDto eventDto = EventDto.builder()
                     .eventType(EventType.CHAT_ROOM_CREATED)
-                    .timestamp(LocalDateTime.now())
                     .build();
             webSocketMessageService.sendEventToUser(partner.getEmail(), eventDto);
         }
@@ -232,7 +233,6 @@ public class ChatServiceImpl implements ChatService {
 
         EventDto eventDto = EventDto.builder()
                 .eventType(EventType.NEW_MESSAGE_RECEIVED)
-                .timestamp(LocalDateTime.now())
                 .build();
         webSocketMessageService.sendEventToUser(recipient.getEmail(), eventDto);
     }
@@ -371,7 +371,6 @@ public class ChatServiceImpl implements ChatService {
 
         EventDto eventDto = EventDto.builder()
                 .eventType(EventType.NEW_MESSAGE_RECEIVED)
-                .timestamp(LocalDateTime.now())
                 .build();
 
         webSocketMessageService.sendEventToUser(recipient.getEmail(), eventDto);
