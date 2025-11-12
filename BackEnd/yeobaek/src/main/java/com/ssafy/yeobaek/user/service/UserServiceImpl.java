@@ -241,6 +241,16 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
+     * 작가 존재 여부 확인
+     * @param artistId 작가 ID
+     * @return 작가가 존재하면 true, 아니면 false
+     */
+    @Override
+    public boolean existsArtistById(Long artistId) {
+        return artistRepository.existsById(artistId);
+    }
+
+    /**
      * Artist 정보 조회 (통계 포함)
      * @param artistId 작가 ID (= 사용자 ID)
      * @return ArtistData DTO
