@@ -2,9 +2,13 @@ package com.ssafy.yeobaeg.data.repository
 
 import android.util.Log
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
+import com.ssafy.yeobaeg.data.model.cafe.toDomain
 import com.ssafy.yeobaeg.data.model.request.UpdateSlotRequest
 import com.ssafy.yeobaeg.data.model.request.toDto
 import com.ssafy.yeobaeg.data.model.response.toDomain
+import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
+import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
+import com.ssafy.yeobaeg.domain.model.cafe.CafeListResult
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
 import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwnerInfo
@@ -64,5 +68,48 @@ class CafeRepositoryImpl @Inject constructor(
     override suspend fun getCafeCategories() = runCatching {
         val response = cafeApiService.getCafeCategories()
         response.data?.categories?.map { it.toDomain() } ?: throw Exception(response.message)
+    }
+
+    override suspend fun getCafes(
+        keyword: String?,
+        centerLatitude: Double,
+        centerLongitude: Double,
+        myLatitude: Double,
+        myLongitude: Double,
+        radiusKm: Double,
+        filter: CafeFilter?,
+        page: Int,
+        size: Int
+    ): Result<CafeListResult> {
+        return runCatching {
+            val response = cafeApiService.getCafes(
+                keyword = keyword,
+                centerLatitude = centerLatitude,
+                centerLongitude = centerLongitude,
+                myLatitude = myLatitude,
+                myLongitude = myLongitude,
+                radiusKm = radiusKm,
+                minWidth = filter?.minWidth,
+                maxWidth = filter?.maxWidth,
+                minHeight = filter?.minHeight,
+                maxHeight = filter?.maxHeight,
+                minCommission = filter?.minCommission,
+                maxCommission = filter?.maxCommission,
+                page = page,
+                size = size
+            )
+
+            response.data?.toDomain()
+                ?: throw Exception("카페 목록을 불러올 수 없습니다")
+        }
+    }
+
+    override suspend fun getCafeDetail(cafeId: Long): Result<CafeDetail> {
+        return runCatching {
+            val response = cafeApiService.getCafeDetail(cafeId)
+
+            response.data?.cafeDetail?.toDomain()
+                ?: throw Exception("카페 정보를 불러올 수 없습니다")
+        }
     }
 }
