@@ -26,6 +26,8 @@ class ChatWebSocketService @Inject constructor(
     private val wsUrl: String = BuildConfig.WS_URL
 ) {
     private var stompClient: StompClient? = null
+    private var lifecycleDisposable: Disposable? = null
+    private var globalSubscriptionDisposable: Disposable? = null
     private val subscriptions = mutableMapOf<Long, Disposable>()
     private val _messageChannel = Channel<String>(Channel.BUFFERED)
     val messageFlow = _messageChannel.receiveAsFlow()
@@ -42,7 +44,6 @@ class ChatWebSocketService @Inject constructor(
         }
     }
 
-    @SuppressLint("CheckResult")
     suspend fun connect() {
 
         if (isConnected) {
@@ -51,7 +52,7 @@ class ChatWebSocketService @Inject constructor(
         val accessToken = tokenDataSource.getAccessToken()
         val headers = listOf(StompHeader("Authorization", "Bearer $accessToken"))
 
-        stompClient?.lifecycle()?.subscribe { event ->
+        lifecycleDisposable=stompClient?.lifecycle()?.subscribe { event ->
             when (event.type) {
                 LifecycleEvent.Type.OPENED -> {
                     Log.d("ChatWebSocketService", "✅ WebSocket connected")
@@ -79,13 +80,12 @@ class ChatWebSocketService @Inject constructor(
     }
 
     //전역 구독
-    @SuppressLint("CheckResult")
     private fun subscribeGlobal() {
         val destination = "/sub/notifications"
         Log.d(TAG, "📡 Attempting to subscribe global topic: $destination")
 
         try {
-            stompClient?.topic(destination)?.subscribe({ msg ->
+            globalSubscriptionDisposable=stompClient?.topic(destination)?.subscribe({ msg ->
                 Log.d(TAG, "📢 Global notification: ${msg.payload}")
             }, { e ->
                 Log.w(
@@ -135,7 +135,6 @@ class ChatWebSocketService @Inject constructor(
     }
 
     // 메시지 송신
-    @SuppressLint("CheckResult")
     fun sendMessage(request: SendMessageRequest) {
         if (!isConnected) {
             Log.w("ChatWebSocketService", "⚠️ sendMessage called before connection established")
@@ -147,11 +146,13 @@ class ChatWebSocketService @Inject constructor(
             Log.d("ChatWebSocketService", "📤 Message sent successfully")
         }, { e ->
             Log.e("ChatWebSocketService", "❌ Send failed: ${e.message}", e)
-        })
+        })?.let{disposable -> }
     }
 
     //연결 끊기
     fun disconnect() {
+        lifecycleDisposable?.dispose()
+        lifecycleDisposable = null
         subscriptions.values.forEach { it.dispose() }
         subscriptions.clear()
         stompClient?.disconnect()
