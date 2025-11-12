@@ -126,6 +126,8 @@ public class ArtworkMapper {
                 .category(artwork.getArtCategory().name())
                 .widthCm(artwork.getWidthCm().intValue())
                 .heightCm(artwork.getHeightCm().intValue())
+                .weightKg(artwork.getWeightKg())
+                .productionYear(artwork.getProductionYear())
                 .isExhibiting(artwork.getIsExhibiting())
                 .bookmarkCount(artwork.getBookmarkCount())
                 .build();
