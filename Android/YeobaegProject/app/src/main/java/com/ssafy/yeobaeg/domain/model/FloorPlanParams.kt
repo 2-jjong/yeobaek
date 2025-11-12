@@ -11,9 +11,9 @@ enum class SlotStatus {
             return when (value.uppercase()) {
                 "AVAILABLE" -> AVAILABLE
                 "UNAVAILABLE" -> UNAVAILABLE
-                "RESERVED" -> RESERVED
                 "EXHIBITING" -> EXHIBITING
-                else -> RESERVED // 기본값
+
+                else -> AVAILABLE // 기본값
             }
         }
     }

@@ -9,6 +9,7 @@ enum class CafeOwnerTab(val label: String) {
 }
 
 data class CafeOwnerHomeUiState(
+    val isLoading: Boolean = false,
     val cafeOwnerInfo: CafeOwnerInfo? = null,
     val selectedTab: CafeOwnerTab = CafeOwnerTab.PLAN
 )

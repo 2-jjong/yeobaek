@@ -23,7 +23,7 @@ data class ArtworkDetailData(
     val isBookmarked: Boolean,
     val price: Int,
     val productionYear: Int,
-    val status: String,
+    val isExhibiting: Boolean,
     val title: String,
     val viewCount: Int,
     val weightKg: Double,

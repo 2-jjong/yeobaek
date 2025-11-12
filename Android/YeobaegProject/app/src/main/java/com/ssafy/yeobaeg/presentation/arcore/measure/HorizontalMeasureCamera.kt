@@ -14,19 +14,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,16 +36,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.ar.core.Config
 import com.google.ar.core.Frame
 import com.google.ar.core.Plane
 import com.google.ar.core.Session
+import com.google.ar.core.TrackingFailureReason
 import com.google.ar.core.TrackingState
+import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.presentation.arcore.common.detachAnchorSafe
 import com.ssafy.yeobaeg.presentation.arcore.common.distance
 import com.ssafy.yeobaeg.presentation.arcore.common.fmt
@@ -52,6 +59,9 @@ import com.ssafy.yeobaeg.presentation.arcore.common.posePosition
 import com.ssafy.yeobaeg.presentation.arcore.common.removeNodeSafe
 import com.ssafy.yeobaeg.presentation.arcore.common.updateCylinderBetweenGround
 import com.ssafy.yeobaeg.presentation.arcore.measure.Seg
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegLightBrown
 import io.github.sceneview.ar.ARScene
 import io.github.sceneview.ar.node.AnchorNode
 import io.github.sceneview.ar.rememberARCameraStream
@@ -92,6 +102,8 @@ fun HorizontalMeasureCamera(
     val scope = rememberCoroutineScope()
 
     val state by viewModel.uiState.collectAsState()
+
+    var trackingFailureReason by remember { mutableStateOf<TrackingFailureReason?>(null) }
 
     LaunchedEffect(viewSize) {
         ready = if (viewSize.width > 0 && viewSize.height > 0) {
@@ -175,10 +187,13 @@ fun HorizontalMeasureCamera(
                             frame = updated
                             val cam = updated.camera
                             if (cam.trackingState != TrackingState.TRACKING) {
+                                trackingFailureReason = cam.trackingFailureReason
                                 centerHasPlane = false
                                 liveLine?.isVisible = false
                                 liveDot?.isVisible = false
                                 return@ARScene
+                            } else {
+                                trackingFailureReason = null
                             }
                             val cx = viewSize.width * 0.5f
                             val cy = viewSize.height * 0.5f
@@ -237,98 +252,92 @@ fun HorizontalMeasureCamera(
 
             if (ready && centerHasPlane) {
                 CenterReticle(Modifier.align(Alignment.Center), isVertical = false)
-                Box(Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 12.dp)) {
-                    Surface(color = Color(0x334CAF50), shape = MaterialTheme.shapes.small) {
-                        Text(
-                            "바닥 감지됨",
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = Color(0xFF2E7D32),
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
-                }
             }
 
-            // 포인트 추가
-            Button(
-                onClick = {
-                    val f = frame ?: return@Button
-                    if (f.camera.trackingState != TrackingState.TRACKING) return@Button
-
-                    val cx = viewSize.width * 0.5f
-                    val cy = viewSize.height * 0.5f
-                    if (cx <= 0f || cy <= 0f) return@Button
-
-                    val planeHit = runCatching {
-                        f.hitTest(cx, cy).firstOrNull { hr ->
-                            val pl = hr.trackable as? Plane ?: return@firstOrNull false
-                            pl.type == Plane.Type.HORIZONTAL_UPWARD_FACING &&
-                                    pl.isPoseInPolygon(hr.hitPose)
-                        }
-                    }.getOrNull() ?: return@Button
-
-                    val world = planeHit.posePosition()
-
-                    // 최소 간격
-                    if (lastPoint != null && distance(
-                            lastPoint!!,
-                            world
-                        ) < MIN_POINT_GAP_M
-                    ) return@Button
-
-                    viewModel.addCorner(world, planeHit.trackable as? Plane)
-
-                    val anchor = planeHit.createAnchor() ?: return@Button
-                    val anchorNode = AnchorNode(engine, anchor = anchor)
-                    val marker =
-                        SphereNode(engine = engine, radius = 0.01f).apply { isShadowCaster = false }
-                    anchorNode.addChildNode(marker)
-                    nodes += anchorNode
-
-                    lastPoint?.let { prev ->
-                        val len = distance(prev, world)
-                        val line = CylinderNode(
-                            engine = engine,
-                            radius = 0.003f,
-                            height = BASE_LINE_HEIGHT
-                        )
-                            .apply { isShadowCaster = false }
-                        updateCylinderBetweenGround(line, prev, world)
-                        nodes += line
-                        segments += Seg(anchorNode, marker, line, len, world)
-                    } ?: run {
-                        segments += Seg(anchorNode, marker, null, 0f, world)
-                    }
-                    lastPoint = world
-                },
-                enabled = ready && centerHasPlane,
+            Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 24.dp)
-            ) { Text("중앙에 포인트 추가") }
+                    .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
+            ) {
+                YeobaegButton(
+                    text = if (state.isBuilding) "계산 중…" else "도면 생성",
+                    onClick = {
+                        scope.launch {
+                            disposeWithSceneAlive()
+                            awaitFrame()
+                            viewModel.buildAndNavigate()
+                        }
+                    },
+                    enabled = ready && !state.isBuilding && state.cornersWorld.size >= 3,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.width(24.dp))
+                // 포인트 추가
+                YeobaegButton(
+                    text = "중앙에 포인트 추가",
+                    onClick = {
+                        val f = frame ?: return@YeobaegButton
+                        if (f.camera.trackingState != TrackingState.TRACKING) return@YeobaegButton
 
-            // 도면 생성
-            Button(
-                onClick = {
-                    scope.launch {
-                        disposeWithSceneAlive()
-                        awaitFrame()
-                        viewModel.buildAndNavigate()
-                    }
-                },
-                enabled = ready && !state.isBuilding && state.cornersWorld.size >= 3,
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(start = 16.dp, bottom = 24.dp)
-            ) { Text(if (state.isBuilding) "계산 중…" else "도면 생성") }
+                        val cx = viewSize.width * 0.5f
+                        val cy = viewSize.height * 0.5f
+                        if (cx <= 0f || cy <= 0f) return@YeobaegButton
+
+                        val planeHit = runCatching {
+                            f.hitTest(cx, cy).firstOrNull { hr ->
+                                val pl = hr.trackable as? Plane ?: return@firstOrNull false
+                                pl.type == Plane.Type.HORIZONTAL_UPWARD_FACING &&
+                                        pl.isPoseInPolygon(hr.hitPose)
+                            }
+                        }.getOrNull() ?: return@YeobaegButton
+
+                        val world = planeHit.posePosition()
+
+                        // 최소 간격
+                        if (lastPoint != null && distance(
+                                lastPoint!!,
+                                world
+                            ) < MIN_POINT_GAP_M
+                        ) return@YeobaegButton
+
+                        viewModel.addCorner(world, planeHit.trackable as? Plane)
+
+                        val anchor = planeHit.createAnchor() ?: return@YeobaegButton
+                        val anchorNode = AnchorNode(engine, anchor = anchor)
+                        val marker =
+                            SphereNode(engine = engine, radius = 0.01f).apply {
+                                isShadowCaster = false
+                            }
+                        anchorNode.addChildNode(marker)
+                        nodes += anchorNode
+
+                        lastPoint?.let { prev ->
+                            val len = distance(prev, world)
+                            val line = CylinderNode(
+                                engine = engine,
+                                radius = 0.003f,
+                                height = BASE_LINE_HEIGHT
+                            )
+                                .apply { isShadowCaster = false }
+                            updateCylinderBetweenGround(line, prev, world)
+                            nodes += line
+                            segments += Seg(anchorNode, marker, line, len, world)
+                        } ?: run {
+                            segments += Seg(anchorNode, marker, null, 0f, world)
+                        }
+                        lastPoint = world
+                    },
+                    enabled = ready && centerHasPlane,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            val reasonMessage = failReasonToString(trackingFailureReason)
 
             // HUD
             DistanceHUD(
-                isVertical = false,
+                message = reasonMessage,
                 liveMeters = liveDistance,
-                lastSegmentMeters = segments.lastOrNull()?.lengthM?.takeIf { it > 0f },
                 onUndo = {
                     if (segments.isNotEmpty()) {
                         val last = segments.removeAt(segments.lastIndex)
@@ -351,35 +360,75 @@ fun HorizontalMeasureCamera(
     }
 }
 
-/* ===== 공통 UI (라벨만 분기) ===== */
-
 @Composable
 fun DistanceHUD(
-    isVertical: Boolean,
+    message: String?, // nullable String으로 변경
     liveMeters: Float?,
-    lastSegmentMeters: Float?,
     onUndo: () -> Unit,
     onClear: () -> Unit
 ) {
-    val pad = 10.dp
-    Row(Modifier
-        .fillMaxWidth()
-        .padding(pad), horizontalArrangement = Arrangement.SpaceBetween) {
-        TextButton(onClick = onUndo) { Text("되돌리기") }
-        Surface(tonalElevation = 4.dp, shape = MaterialTheme.shapes.medium) {
-            Column(Modifier.padding(12.dp)) {
-                val label = if (isVertical) "높이" else "실시간"
-                Text(
-                    "$label: ${liveMeters?.let{fmt(it*100)} ?: "-"}",
-                    style = MaterialTheme.typography.titleMedium
+    Box(
+        Modifier
+            .fillMaxWidth()
+            .padding(20.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top // 버튼과 중앙 컨텐츠의 상단을 맞춤
+        ) {
+            // Undo 버튼 (기존 코드와 동일)
+            IconButton(
+                onClick = onUndo,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(YeobaegLightBrown)
+            ) {
+                Icon(
+                    painterResource(R.drawable.ic_undo),
+                    contentDescription = "Undo Button",
+                    tint = Color.White
                 )
-                lastSegmentMeters?.let {
-                    Text("${if (isVertical) "벽 높이" else "마지막 구간"}: ${fmt(it*100)}")
-                }
+            }
+
+            Spacer(Modifier.weight(1f))
+
+            // Clear(초기화) 버튼 (기존 코드와 동일)
+            IconButton(
+                onClick = onClear,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .background(YeobaegLightBrown)
+            ) {
+                Icon(
+                    // painterResource(R.drawable.ic_replay),
+                    // 예시 아이콘. 실제 프로젝트의 리소스로 교체하세요.
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "Clear Button",
+                    tint = Color.White
+                )
             }
         }
-        TextButton(onClick = onClear) { Text("초기화") }
+
+        // message가 있을 때만 상태 메시지 표시
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 80.dp, start = 32.dp, end = 32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = liveMeters?.let { fmt(it * 100) } ?: "-",
+                fontSize = 32.sp,
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                message ?: "측정할 지점에 앵커를 생성해 주세요.", color = YeobaegGray,
+                textAlign = TextAlign.Center
+            )
+        }
     }
+
 }
 
 @Composable
@@ -391,4 +440,30 @@ fun CenterReticle(modifier: Modifier, isVertical: Boolean) {
             .background(color.copy(alpha = 0.2f), CircleShape)
             .border(2.dp, color, CircleShape)
     )
+}
+
+
+@Composable
+fun failReasonToString(trackingFailureReason: TrackingFailureReason?): String? {
+    val reasonMessage = when (trackingFailureReason) {
+        TrackingFailureReason.BAD_STATE ->
+            "트래킹 상태가 불안정합니다. 앱을 다시 시작해 주세요."
+
+        TrackingFailureReason.CAMERA_UNAVAILABLE ->
+            "다른 앱에서 카메라를 사용하고 있습니다."
+
+        TrackingFailureReason.EXCESSIVE_MOTION ->
+            "너무 빨리 움직이고 있습니다. 천천히 움직여 주세요."
+
+        TrackingFailureReason.INSUFFICIENT_FEATURES ->
+            "평면의 무늬나 질감이 부족합니다. 특징이 있는 곳을 비춰 주세요."
+
+        TrackingFailureReason.INSUFFICIENT_LIGHT ->
+            "조명이 부족합니다. 더 밝은 곳으로 이동해 주세요."
+
+        TrackingFailureReason.NONE -> "평면을 천천히 스캔하세요."
+
+        else -> null
+    }
+    return reasonMessage
 }

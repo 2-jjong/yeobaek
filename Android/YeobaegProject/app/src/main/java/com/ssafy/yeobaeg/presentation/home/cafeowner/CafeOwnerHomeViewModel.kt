@@ -4,10 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
-import com.ssafy.yeobaeg.domain.model.Exhibition
-import com.ssafy.yeobaeg.domain.model.SlotStatus
-import com.ssafy.yeobaeg.domain.model.Vec2
-import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwnerInfo
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -30,14 +26,15 @@ class CafeOwnerHomeViewModel @Inject constructor(
     val uiState = _uiState.asStateFlow()
 
     fun loadMyCafe() {
+        _uiState.update { it.copy(isLoading = true) }
         viewModelScope.launch {
             cafeRepository.getMyCafe().onSuccess { data ->
                 _uiState.update {
-                    it.copy(cafeOwnerInfo = data)
+                    it.copy(cafeOwnerInfo = data, isLoading = false)
                 }
             }.onFailure {
                 Log.d("cafeOwnerHomeViewModel load error", it.message ?: "")
-
+                _uiState.update { it.copy(isLoading = false) }
                 snackBarController.showError(it.message ?: "오류")
             }
         }

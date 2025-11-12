@@ -77,17 +77,14 @@ fun ArtworkDetailScreen(
         }
     }
 
-    state.artwork?.let { artwork ->
+    state.artwork?.let {
         ArtworkDetailScreen(
-            artwork = artwork,
+            artwork = it,
             onBackClick = viewModel::onBackClick,
             toggleBookmark = viewModel::toggleBookmark,
-            onInquiryClick = {
-                viewModel.onInquiryClick(artistId = artwork.artist.artistId)
-            }
+            onArtistClick = viewModel::navigateToArtist
         )
     }
-
 }
 
 @Composable
@@ -95,8 +92,8 @@ fun ArtworkDetailScreen(
     modifier: Modifier = Modifier,
     artwork: ArtworkDetail,
     onBackClick: () -> Unit = {},
-    onInquiryClick: () -> Unit = {},
-    toggleBookmark: () -> Unit = {}
+    toggleBookmark: () -> Unit = {},
+    onArtistClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
 
@@ -105,7 +102,7 @@ fun ArtworkDetailScreen(
             YeobaegTopAppBar(
                 title = "작품 상세",
                 onBackClick = onBackClick,
-                actionIcon = if (artwork.isBookmarked) R.drawable.ic_fill_heart else R.drawable.ic_heart,
+                actionIcon = if (artwork.isBookmarked) R.drawable.ic_heart_fill else R.drawable.ic_heart,
                 onActionClick = toggleBookmark,
                 iconTint = YeobaegDarkRed
             )
@@ -113,7 +110,7 @@ fun ArtworkDetailScreen(
         bottomBar = {
             YeobaegButton(
                 text = "문의",
-                onClick = onInquiryClick,
+                onClick = {},
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp, horizontal = 16.dp),
@@ -175,7 +172,10 @@ fun ArtworkDetailScreen(
             }
 
             // 3) 작가 카드
-            ArtistCard(artwork.artist)
+            ArtistCard(
+                artist = artwork.artist,
+                onArtistClick = onArtistClick
+            )
 
             // 4) 작품 정보
             InfoCard(
@@ -242,11 +242,15 @@ private fun ArtworkImagePager(images: List<String>) {
 }
 
 @Composable
-private fun ArtistCard(artist: ArtistSummary) {
+private fun ArtistCard(
+    artist: ArtistSummary,
+    onArtistClick: () -> Unit = {}
+) {
     Surface(
         color = Color.White,
         tonalElevation = 0.dp,
-        shadowElevation = 0.dp
+        shadowElevation = 0.dp,
+        onClick = onArtistClick
     ) {
         Row(
             modifier = Modifier

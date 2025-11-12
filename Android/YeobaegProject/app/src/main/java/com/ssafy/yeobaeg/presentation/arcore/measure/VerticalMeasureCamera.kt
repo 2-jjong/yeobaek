@@ -1,11 +1,11 @@
-package com.ssafy.yeobaeg.presentation.arcore.vertical
+package com.ssafy.yeobaeg.presentation.arcore.measure
 
 import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,6 +31,7 @@ import com.google.ar.core.Config
 import com.google.ar.core.Frame
 import com.google.ar.core.Plane
 import com.google.ar.core.Session
+import com.google.ar.core.TrackingFailureReason
 import com.google.ar.core.TrackingState
 import com.ssafy.yeobaeg.presentation.arcore.common.detachAnchorSafe
 import com.ssafy.yeobaeg.presentation.arcore.common.distance
@@ -39,8 +40,8 @@ import com.ssafy.yeobaeg.presentation.arcore.common.removeNodeSafe
 import com.ssafy.yeobaeg.presentation.arcore.common.updateCylinderBetween3D
 import com.ssafy.yeobaeg.presentation.arcore.horizontal.CenterReticle
 import com.ssafy.yeobaeg.presentation.arcore.horizontal.DistanceHUD
-import com.ssafy.yeobaeg.presentation.arcore.measure.Seg
-import com.ssafy.yeobaeg.presentation.arcore.measure.VerticalMeasureViewModel
+import com.ssafy.yeobaeg.presentation.arcore.horizontal.failReasonToString
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import io.github.sceneview.ar.ARScene
 import io.github.sceneview.ar.node.AnchorNode
 import io.github.sceneview.ar.rememberARCameraStream
@@ -83,9 +84,12 @@ fun VerticalMeasureCamera(
 
     val maxPoints = 2
     val canAddPoint = segments.size < maxPoints
+    var trackingFailureReason by remember { mutableStateOf<TrackingFailureReason?>(null) }
 
     LaunchedEffect(viewSize) {
-        ready = if (viewSize.width > 0 && viewSize.height > 0) { awaitFrame(); true } else false
+        ready = if (viewSize.width > 0 && viewSize.height > 0) {
+            awaitFrame(); true
+        } else false
     }
 
     fun clearInScene() {
@@ -103,12 +107,14 @@ fun VerticalMeasureCamera(
         lastPoint = null
         liveDistance = null
     }
+
     fun disposeWithSceneAlive() {
         if (isDisposing) return
         isDisposing = true
         ready = false
         clearInScene()
     }
+
     fun disposeOnComposeDisposeOnly() {
         liveLine = null; liveDot = null
         segments.clear(); lastPoint = null; liveDistance = null
@@ -123,9 +129,7 @@ fun VerticalMeasureCamera(
     }
 
     MaterialTheme {
-        Box(
-            modifier.onSizeChanged { viewSize = it }
-        ) {
+        Box(modifier.onSizeChanged { viewSize = it }) {
             if (ready) {
                 key(sceneKey) {
                     ARScene(
@@ -136,14 +140,19 @@ fun VerticalMeasureCamera(
                         childNodes = nodes,
                         sessionConfiguration = { s: Session, cfg: Config ->
                             cfg.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
-                            cfg.focusMode  = Config.FocusMode.AUTO
-                            cfg.depthMode =
-                                if (s.isDepthModeSupported(Config.DepthMode.AUTOMATIC))
+                            cfg.focusMode = Config.FocusMode.AUTO
+                            cfg.depthMode = when {
+                                s.isDepthModeSupported(Config.DepthMode.AUTOMATIC) ->
                                     Config.DepthMode.AUTOMATIC
-                                else Config.DepthMode.DISABLED
+
+                                s.isDepthModeSupported(Config.DepthMode.RAW_DEPTH_ONLY) ->
+                                    Config.DepthMode.RAW_DEPTH_ONLY
+
+                                else -> Config.DepthMode.DISABLED
+                            }
                             cfg.instantPlacementMode = Config.InstantPlacementMode.DISABLED
-                            cfg.lightEstimationMode  = Config.LightEstimationMode.ENVIRONMENTAL_HDR
-                            cfg.planeFindingMode     = Config.PlaneFindingMode.VERTICAL
+                            cfg.lightEstimationMode = Config.LightEstimationMode.ENVIRONMENTAL_HDR
+                            cfg.planeFindingMode = Config.PlaneFindingMode.VERTICAL
                         },
                         onSessionFailed = {
                             scope.launch {
@@ -154,38 +163,53 @@ fun VerticalMeasureCamera(
                                 }
                             }
                         },
-                        onSessionUpdated = { _, updated ->
+                        onSessionUpdated = { session, updated ->
                             if (!ready || isDisposing) return@ARScene
                             frame = updated
                             val cam = updated.camera
+
                             if (cam.trackingState != TrackingState.TRACKING) {
+                                trackingFailureReason = cam.trackingFailureReason
                                 centerHasPlane = false
                                 liveLine?.isVisible = false
-                                liveDot?.isVisible  = false
+                                liveDot?.isVisible = false
                                 return@ARScene
+                            } else {
+                                trackingFailureReason = null
                             }
+
                             val cx = viewSize.width * 0.5f
                             val cy = viewSize.height * 0.5f
                             if (cx <= 0f || cy <= 0f) return@ARScene
 
                             val planeHit = runCatching {
-                                updated.hitTest(cx, cy).firstOrNull { hr ->
-                                    val pl = hr.trackable as? Plane ?: return@firstOrNull false
-                                    pl.type == Plane.Type.VERTICAL && pl.isPoseInPolygon(hr.hitPose)
-                                }
+                                updated.hitTest(cx, cy)
+                                    .filter { hr ->
+                                        val pl = hr.trackable as? Plane ?: return@filter false
+                                        pl.type == Plane.Type.VERTICAL &&
+                                                pl.trackingState == TrackingState.TRACKING &&
+                                                pl.isPoseInPolygon(hr.hitPose)
+                                    }
+                                    .minByOrNull { it.distance }
                             }.getOrNull()
-                            centerHasPlane = planeHit != null
 
+                            centerHasPlane = planeHit != null
+                            trackingFailureReason = TrackingFailureReason.NONE
                             val centerWorld = planeHit?.posePosition()
 
                             if (centerWorld != null) {
                                 if (liveDot == null) {
-                                    liveDot = SphereNode(engine = engine, radius = 0.006f).apply { isShadowCaster = false }
+                                    liveDot = SphereNode(
+                                        engine = engine,
+                                        radius = 0.015f
+                                    ).apply { isShadowCaster = false }
                                     nodes += liveDot!!
                                 }
                                 liveDot!!.position = centerWorld
                                 liveDot!!.isVisible = true
-                            } else liveDot?.isVisible = false
+                            } else {
+                                liveDot?.isVisible = false
+                            }
 
                             liveDistance = if (centerWorld != null && lastPoint != null) {
                                 distance(lastPoint!!, centerWorld)
@@ -195,13 +219,19 @@ fun VerticalMeasureCamera(
                             val b = centerWorld
                             if (a != null && b != null) {
                                 if (liveLine == null) {
-                                    liveLine = CylinderNode(engine = engine, radius = 0.006f, height = BASE_LINE_HEIGHT)
-                                        .apply { isShadowCaster = false }
+                                    liveLine = CylinderNode(
+                                        engine = engine,
+                                        radius = 0.008f,
+                                        height = BASE_LINE_HEIGHT
+                                    ).apply { isShadowCaster = false }
                                     nodes += liveLine!!
                                 }
-                                updateCylinderBetween3D(liveLine!!, a, b)
+                                val verticalEndPoint = Position(a.x, b.y, a.z)
+                                updateCylinderBetween3D(liveLine!!, a, verticalEndPoint)
                                 liveLine!!.isVisible = true
-                            } else liveLine?.isVisible = false
+                            } else {
+                                liveLine?.isVisible = false
+                            }
                         },
                         onTouchEvent = { _: MotionEvent, _: io.github.sceneview.collision.HitResult? -> false },
                         planeRenderer = true
@@ -209,46 +239,65 @@ fun VerticalMeasureCamera(
                 }
             }
 
-            if (ready && centerHasPlane) {
-                CenterReticle(Modifier.align(Alignment.Center), isVertical = true)
-                Box(Modifier.align(Alignment.TopCenter).padding(top = 12.dp)) {
-                    Surface(color = Color(0x332196F3), shape = MaterialTheme.shapes.small) {
-                        Text("벽 감지됨", modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            color = Color(0xFF1565C0), style = MaterialTheme.typography.labelLarge)
+            if (ready) {
+                if (centerHasPlane) {
+                    CenterReticle(Modifier.align(Alignment.Center), isVertical = true)
+                    Box(
+                        Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 12.dp)
+                    ) {
+                        Surface(color = Color(0x332196F3), shape = MaterialTheme.shapes.small) {
+                            Text(
+                                "벽 감지됨",
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                color = Color(0xFF1565C0),
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                        }
                     }
                 }
             }
 
-            // 포인트 추가 (⭐ 2개가 되면 자동 측정/종료)
-            Button(
+            // ⭐ 포인트 추가 버튼 (2개가 되면 자동 측정/종료)
+            YeobaegButton(
+                text = when {
+                    segments.isEmpty() -> "벽 하단 포인트 추가"
+                    else -> "벽 상단 포인트 추가"
+                },
                 onClick = {
-                    val f = frame ?: return@Button
-                    if (f.camera.trackingState != TrackingState.TRACKING) return@Button
-                    if (!canAddPoint) return@Button
+                    val f = frame ?: return@YeobaegButton
+                    if (f.camera.trackingState != TrackingState.TRACKING) return@YeobaegButton
+                    if (!canAddPoint) return@YeobaegButton
 
                     val cx = viewSize.width * 0.5f
                     val cy = viewSize.height * 0.5f
-                    if (cx <= 0f || cy <= 0f) return@Button
+                    if (cx <= 0f || cy <= 0f) return@YeobaegButton
 
                     val planeHit = runCatching {
                         f.hitTest(cx, cy).firstOrNull { hr ->
                             val pl = hr.trackable as? Plane ?: return@firstOrNull false
                             pl.type == Plane.Type.VERTICAL && pl.isPoseInPolygon(hr.hitPose)
                         }
-                    }.getOrNull() ?: return@Button
+                    }.getOrNull() ?: return@YeobaegButton
 
                     val world = planeHit.posePosition()
                     viewModel.addCorner(world, planeHit.trackable as? Plane)
 
-                    val anchor = planeHit.createAnchor() ?: return@Button
+                    val anchor = planeHit.createAnchor() ?: return@YeobaegButton
                     val anchorNode = AnchorNode(engine, anchor = anchor)
-                    val marker = SphereNode(engine = engine, radius = 0.01f).apply { isShadowCaster = false }
+                    val marker =
+                        SphereNode(engine = engine, radius = 0.01f).apply { isShadowCaster = false }
                     anchorNode.addChildNode(marker)
                     nodes += anchorNode
 
                     lastPoint?.let { prev ->
                         val len = distance(prev, world)
-                        val line = CylinderNode(engine = engine, radius = 0.003f, height = BASE_LINE_HEIGHT)
+                        val line = CylinderNode(
+                            engine = engine,
+                            radius = 0.003f,
+                            height = BASE_LINE_HEIGHT
+                        )
                             .apply { isShadowCaster = false }
                         updateCylinderBetween3D(line, prev, world)
                         nodes += line
@@ -258,36 +307,31 @@ fun VerticalMeasureCamera(
                     }
                     lastPoint = world
 
-                    // ⭐ 여기서 자동 완료 처리
+                    // ⭐ 2개 포인트 찍히면 자동 완료
                     if (segments.size == 2) {
                         val h = distance(segments[0].world, segments[1].world)
                         scope.launch {
-                            onMeasured(h*100)           // 1) 결과 전달
-                            disposeWithSceneAlive() // 2) Scene 정리
-                            awaitFrame()            // 3) 프레임 반영
-                            onCancel()              // 4) 부모에서 카메라 닫기 처리(showCamera=false 등)
+                            onMeasured(h * 100)
+                            disposeWithSceneAlive()
+                            awaitFrame()
+                            onCancel()
                         }
                     }
                 },
                 enabled = ready && centerHasPlane && canAddPoint,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 24.dp)
-            ) {
-                Text(
-                    when {
-                        !centerHasPlane   -> "벽을 인식 중…"
-                        !canAddPoint      -> "포인트 최대 개수 도달"
-                        segments.isEmpty() -> "벽 하단 포인트 추가"
-                        else              -> "벽 상단 포인트 추가"
-                    }
-                )
-            }
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
+            )
 
-            // ⛔ 저장 버튼 제거(자동 종료이므로 불필요)
-            // HUD(실시간/마지막만 표시)
+            val reasonMessage = failReasonToString(trackingFailureReason)
+
+
+            // HUD (실시간/마지막 거리 표시)
             DistanceHUD(
-                isVertical = true,
+                message = reasonMessage,
                 liveMeters = liveDistance,
-                lastSegmentMeters = segments.lastOrNull()?.lengthM?.takeIf { it > 0f },
                 onUndo = {
                     if (segments.isNotEmpty()) {
                         val last = segments.removeAt(segments.lastIndex)
@@ -304,4 +348,3 @@ fun VerticalMeasureCamera(
         }
     }
 }
-

@@ -38,7 +38,7 @@ fun PopularArtworkDto.toDomain() = PopularArtwork(
     status = when (status) {
         "AVAILABLE" -> SlotStatus.AVAILABLE
         "EXHIBITING" -> SlotStatus.EXHIBITING
-        else -> SlotStatus.RESERVED
+        else -> SlotStatus.AVAILABLE
     },
     bookmarkCount = bookmarkCount,
     cafeName = cafeName
