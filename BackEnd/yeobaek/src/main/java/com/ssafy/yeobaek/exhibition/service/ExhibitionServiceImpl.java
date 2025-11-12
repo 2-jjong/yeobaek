@@ -14,6 +14,7 @@ import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.enums.UserRole;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
+import com.ssafy.yeobaek.exhibition.dto.response.ExhibitionSummaryResponse;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.exhibition.mapper.ExhibitionMapper;
 import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
@@ -288,5 +289,23 @@ public class ExhibitionServiceImpl implements ExhibitionService {
     public Integer getCurrentExhibitionCountByArtist(Long artistId) {
         LocalDate today = LocalDate.now();
         return exhibitionRepository.countCurrentExhibitionsByArtistId(artistId, today);
+    }
+
+    /**
+     * 전시 ID로 전시 상세 정보 조회
+     * - 전시의 기본 정보를 반환
+     * - 카페, 작품, 슬롯의 간략한 정보 포함
+     *
+     * @param exhibitionId 전시 ID
+     * @return 전시 상세 정보
+     */
+    @Override
+    public ExhibitionSummaryResponse getExhibitionSummary(Long exhibitionId) {
+        // 1. 전시 조회
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new CustomException(ResponseCode.EXHIBITION_NOT_FOUND));
+
+        // 2. DTO 변환 및 반환
+        return exhibitionMapper.toExhibitionSummaryResponse(exhibition);
     }
 }

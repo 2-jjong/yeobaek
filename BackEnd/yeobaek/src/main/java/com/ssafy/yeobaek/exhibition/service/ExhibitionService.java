@@ -2,6 +2,7 @@ package com.ssafy.yeobaek.exhibition.service;
 
 import com.ssafy.yeobaek.cafe.entity.DisplaySlot;
 import com.ssafy.yeobaek.exhibition.dto.request.CreateExhibitionRequest;
+import com.ssafy.yeobaek.exhibition.dto.response.ExhibitionSummaryResponse;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 
 import java.util.Optional;
@@ -74,4 +75,14 @@ public interface ExhibitionService {
      * @return 현재 전시 중인 작품 수
      */
     Integer getCurrentExhibitionCountByArtist(Long artistId);
+
+    /**
+     * 전시 ID로 전시 요약 정보 조회
+     * - 전시의 기본 정보를 반환
+     * - 카페, 작품, 슬롯의 간략한 정보 포함
+     *
+     * @param exhibitionId 전시 ID
+     * @return 전시 요약 정보
+     */
+    ExhibitionSummaryResponse getExhibitionSummary(Long exhibitionId);
 }
