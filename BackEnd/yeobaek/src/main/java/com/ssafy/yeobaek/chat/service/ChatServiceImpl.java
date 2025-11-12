@@ -14,6 +14,7 @@ import com.ssafy.yeobaek.chat.repository.ChatRoomRepository;
 import com.ssafy.yeobaek.chat.repository.MessageRepository;
 import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.Pagination;
+import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
@@ -27,13 +28,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
 import org.springframework.data.domain.PageImpl;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomListData;
@@ -51,6 +52,7 @@ public class ChatServiceImpl implements ChatService {
     private final MessageRepository messageRepository;
     private final UserService userService;
     private final S3Service s3Service;
+    private final WebSocketMessageService webSocketMessageService;
 
     /**
      * 채팅방 생성
@@ -178,12 +180,11 @@ public class ChatServiceImpl implements ChatService {
      * 채팅 메시지 전송
      * @param userId 발신자 ID
      * @param request 채팅 메시지 요청
-     * @return 전송된 채팅 메시지 정보
      */
     @Override
     @Transactional
-    public ChatMessage sendMessage(Long userId, ChatMessageRequest request) {
-        log.info("[ChatService] Starting sendMessage for userId: {} in chatRoomId: {}", userId, request.getChatRoomId());
+    public void sendMessage(Long userId, ChatMessageRequest request) {
+        log.info("[ChatService] Start sending message from userId: {} in chatRoomId: {}", userId, request.getChatRoomId());
 
         // 1. 채팅방 유효성 검증
         ChatRoom chatRoom = chatRoomRepository.findById(request.getChatRoomId())
@@ -208,7 +209,9 @@ public class ChatServiceImpl implements ChatService {
         // 5. ChatMessage 생성 후 반환
         ChatMessage chatMessage = chatMapper.toChatMessage(message);
         log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
-        return chatMessage;
+
+        // 6. WebSocket을 통해 메시지 전송
+        webSocketMessageService.sendChatMessage(request.getChatRoomId(), chatMessage);
     }
 
     /**
@@ -299,5 +302,40 @@ public class ChatServiceImpl implements ChatService {
         // 3. 나간 시간 업데이트하여 소프트 삭제 처리
         member.setLeftAt(LocalDateTime.now());
         chatRoomMemberRepository.save(member);
+    }
+
+    /**
+     * 시스템 메시지 전송
+     * @param chatRoomId 채팅방 ID
+     * @param messageContent 메시지 내용 (프론트엔드에서 사용될 플레이스홀더 또는 실제 내용)
+     * @param messageType 메시지 타입 (예: PROPOSAL)
+     * @param exhibitionId 관련 전시 ID (nullable)
+     */
+    @Override
+    @Transactional
+    public void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId) {
+
+        log.info("[ChatService] Start sending system message in chatRoomId: {}", chatRoomId);
+
+        // 1. 채팅방 유효성 검증
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+                .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_NOT_FOUND));
+        log.info("[ChatService] ChatRoom found: {}", chatRoom.getId());
+
+        // 2. 메시지 엔티티 생성 및 저장
+        Message message = Message.builder()
+                .chatRoom(chatRoom)
+                .messageType(messageType)
+                .exhibitionId(exhibitionId)
+                .build();
+        messageRepository.save(message);
+        log.info("[ChatService] System message saved to DB with id: {}", message.getId());
+
+        // 3. ChatMessage 생성 후 반환
+        ChatMessage chatMessage = chatMapper.toChatMessage(message);
+        log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
+
+        // 4. WebSocket을 통해 메시지 전송
+        webSocketMessageService.sendChatMessage(chatRoomId, chatMessage);
     }
 }

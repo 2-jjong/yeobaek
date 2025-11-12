@@ -6,6 +6,7 @@ import com.ssafy.yeobaek.chat.dto.response.ChatRoomData;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomDetailData;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomListData;
 import com.ssafy.yeobaek.common.enums.ChatSortBy;
+import com.ssafy.yeobaek.common.enums.MessageType;
 
 public interface ChatService {
 
@@ -31,9 +32,8 @@ public interface ChatService {
      * 채팅 메시지 전송
      * @param userId 발신자 ID
      * @param chatMessageRequest 채팅 메시지 요청
-     * @return 전송된 채팅 메시지 정보
      */
-    ChatMessage sendMessage(Long userId, ChatMessageRequest chatMessageRequest);
+    void sendMessage(Long userId, ChatMessageRequest chatMessageRequest);
 
     /**
      * 채팅방 목록 조회
@@ -51,4 +51,13 @@ public interface ChatService {
      * @param chatRoomId 채팅방 ID
      */
     void leaveChatRoom(Long userId, Long chatRoomId);
+
+    /**
+     * 시스템 메시지 전송
+     * @param chatRoomId 채팅방 ID
+     * @param messageContent 메시지 내용 (프론트엔드에서 사용될 플레이스홀더 또는 실제 내용)
+     * @param messageType 메시지 타입 (예: PROPOSAL)
+     * @param exhibitionId 관련 전시 ID (nullable)
+     */
+    void sendSystemMessage(Long chatRoomId, String messageContent, MessageType messageType, Long exhibitionId);
 }

@@ -1,6 +1,7 @@
 package com.ssafy.yeobaek.chat.entity;
 
 import com.ssafy.yeobaek.common.enums.MessageType;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -22,7 +23,7 @@ public class Message {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
@@ -46,4 +47,8 @@ public class Message {
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "exhibition_id")
+    private Exhibition exhibition;
 }

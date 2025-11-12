@@ -7,6 +7,7 @@ import com.ssafy.yeobaek.chat.dto.response.ChatRoomSummary;
 import com.ssafy.yeobaek.chat.dto.response.ChatRoomInfo;
 import com.ssafy.yeobaek.chat.entity.ChatRoom;
 import com.ssafy.yeobaek.chat.entity.Message;
+import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -77,10 +78,11 @@ public class ChatMapper {
 
         return ChatMessage.builder()
                 .messageId(message.getId())
-                .senderId(message.getUser().getId())
+                .senderId(message.getUser() != null ? message.getUser().getId() : null)
                 .messageType(message.getMessageType())
                 .content(message.getContent())
                 .imageUrl(message.getImageUrl())
+                .exhibitionId(message.getExhibitionId())
                 .exhibition(null) // TODO: 전시 정보 연동 필요
                 .isRead(message.getIsRead())
                 .createdAt(message.getCreatedAt())

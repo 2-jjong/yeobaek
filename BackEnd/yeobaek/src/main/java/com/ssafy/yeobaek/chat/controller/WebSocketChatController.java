@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -21,7 +20,6 @@ import java.util.Map;
 public class WebSocketChatController {
 
     private final ChatService chatService;
-    private final SimpMessageSendingOperations messagingTemplate;
 
     @MessageMapping("/messages")
     public void sendMessage(
@@ -51,12 +49,7 @@ public class WebSocketChatController {
         try {
             // 2. 메시지 처리 로직 수행
             log.info("[WebSocket] Calling chatService.sendMessage for userId: {}", userId);
-            ChatMessage chatMessage = chatService.sendMessage(userId, chatMessageRequest);
-
-            // 3. 채팅방 채널로 메시지 브로드캐스트
-            String destination = "/sub/chat/room/" + chatMessageRequest.getChatRoomId();
-            messagingTemplate.convertAndSend(destination, chatMessage);
-            log.info("[WebSocket] Broadcasted message to {}: {}", destination, chatMessage);
+            chatService.sendMessage(userId, chatMessageRequest);
 
         } catch (Exception e) {
             log.error("[WebSocket] Error during message processing for userId: {}", userId, e);

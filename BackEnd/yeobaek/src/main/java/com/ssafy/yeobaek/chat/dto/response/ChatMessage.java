@@ -31,6 +31,9 @@ public class ChatMessage {
     @Schema(description = "첨부 이미지 url", example = "https://example.com/image1.jpg")
     private String imageUrl;
 
+    @Schema(description = "전시 ID", example = "1")
+    private Long exhibitionId;
+
     @Schema(description = "전시 정보")
     private ExhibitionInfo exhibition;
 
