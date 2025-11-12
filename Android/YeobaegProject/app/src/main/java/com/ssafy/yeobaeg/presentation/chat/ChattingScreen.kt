@@ -105,8 +105,8 @@ fun ChattingScreenContent(
 
     Scaffold(
         modifier = Modifier
-            .fillMaxSize()
-            .imePadding(), // 전체 Scaffold에 IME padding 적용
+            .fillMaxSize(),
+//            .imePadding(), // 전체 Scaffold에 IME padding 적용
         topBar = {
             YeobaegTopAppBar(
                 title = title,
@@ -119,13 +119,16 @@ fun ChattingScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(YeobaegWhite)
+                    .imePadding()
                     .padding(horizontal = 10.dp, vertical = 8.dp),
                 value = inputText,
                 onValueChange = onInputChange,
                 onSendClick = onSendClick
             )
-        }
-    ) { innerPadding ->
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+
+        ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -152,6 +155,7 @@ fun ChattingScreenContent(
                     modifier = Modifier
                         .fillMaxSize()
                         .clearFocusOnTap()
+                        .background(YeobaegWhite)
                         .padding(horizontal = 12.dp),
                     reverseLayout = true, // 최신 메시지가 아래에 표시되도록
                     verticalArrangement = Arrangement.spacedBy(12.dp),
