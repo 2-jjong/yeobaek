@@ -10,6 +10,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import ua.naiksoftware.stomp.HeartBeatTask
 import ua.naiksoftware.stomp.Stomp
 import ua.naiksoftware.stomp.StompClient
 import ua.naiksoftware.stomp.dto.LifecycleEvent
@@ -33,7 +34,10 @@ class ChatWebSocketService @Inject constructor(
 
     fun initClient() {
         if (stompClient == null) {
-            stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, wsUrl)
+            stompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP, wsUrl).apply {
+                withClientHeartbeat(300000)
+                withServerHeartbeat(300000)
+            }
             Log.d("ChatWebSocketService", "🧩 stompClient initialized")
         }
     }
