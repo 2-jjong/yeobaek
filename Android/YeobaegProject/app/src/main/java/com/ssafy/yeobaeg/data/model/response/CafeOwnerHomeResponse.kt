@@ -36,7 +36,7 @@ data class DisplaySlotResponse(
     val start: Point = Point(0.0, 0.0),
     val end: Point = Point(0.0, 0.0),
     val commissionRate: Float = 0f, // 수수료
-    val requirements: String = "없음", // 기타 요구 사항
+    val requirements: String = "", // 기타 요구 사항
     val currentExhibition: ExhibitionResponse? = null
 )
 

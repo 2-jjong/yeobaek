@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.presentation.arcore.plan
 import android.annotation.SuppressLint
 import android.graphics.Paint
 import android.graphics.Typeface
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -417,6 +418,7 @@ private fun wallColor(status: SlotStatus): Color {
         SlotStatus.UNAVAILABLE -> Color(0xFFCBD5E1)
         SlotStatus.AVAILABLE -> Color(0xFF10B981)
         SlotStatus.EXHIBITING -> Color(0xFFEF4444)
+        SlotStatus.RESERVED -> Color(0xFF684352)
     }
     return  baseColor
 }
@@ -437,7 +439,7 @@ private fun toggleWallPossible(walls: MutableList<DisplaySlot>, index: Int) {
     val w = walls[index]
     val newStatus = when (w.status) {
         SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
-        SlotStatus.AVAILABLE, SlotStatus.EXHIBITING -> SlotStatus.UNAVAILABLE
+        SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED -> SlotStatus.UNAVAILABLE
     }
     walls[index] = w.copy(status = newStatus)
 }

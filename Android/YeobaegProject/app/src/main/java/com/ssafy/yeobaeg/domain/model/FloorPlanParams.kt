@@ -4,7 +4,7 @@ import com.ssafy.yeobaeg.presentation.arcore.common.fmt
 import kotlinx.serialization.Serializable
 
 enum class SlotStatus {
-    AVAILABLE, UNAVAILABLE, EXHIBITING;
+    AVAILABLE, UNAVAILABLE, EXHIBITING, RESERVED;
 
     companion object {
         fun fromString(value: String): SlotStatus {
@@ -12,6 +12,7 @@ enum class SlotStatus {
                 "AVAILABLE" -> AVAILABLE
                 "UNAVAILABLE" -> UNAVAILABLE
                 "EXHIBITING" -> EXHIBITING
+
                 else -> AVAILABLE // 기본값
             }
         }

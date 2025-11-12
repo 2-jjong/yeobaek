@@ -129,19 +129,19 @@ fun ExhibitionListItem(
                         Text("📏 ${displaySlot.sizeText}", fontSize = 13.sp, color = YeobaegDarkGray)
                         Spacer(Modifier.height(8.dp))
 
-                        Button(
-                            onClick = { onMatchClick() },
-                            colors = ButtonDefaults.buttonColors(containerColor = YeobaegDarkBrown),
-                            shape = RoundedCornerShape(12.dp)
-                        ) {
-                            Text(
-                                text = "작품 매칭",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+//                        Button(
+//                            onClick = { onMatchClick() },
+//                            colors = ButtonDefaults.buttonColors(containerColor = YeobaegDarkBrown),
+//                            shape = RoundedCornerShape(12.dp)
+//                        ) {
+//                            Text(
+//                                text = "작품 매칭",
+//                                style = MaterialTheme.typography.bodyLarge,
+//                                fontSize = 14.sp,
+//                                fontWeight = FontWeight.Bold,
+//                                color = Color.White
+//                            )
+//                        }
                     }
 
                     else -> {}

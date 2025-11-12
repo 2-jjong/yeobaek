@@ -33,11 +33,14 @@ class CafeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun registerCafeWall(registerWall: List<DisplaySlot>) =
-        runCatching {
-            val response = cafeApiService.createCafeWall(registerWall.map { it.toDto() })
-            response.data ?: throw Exception(response.message)
+    override suspend fun registerCafeWall(registerWall: List<DisplaySlot>): Result<Unit> {
+        val response = cafeApiService.createCafeWall(registerWall.map { it.toDto() })
+
+        return runCatching {
+            if(response.code[0] == 'S') Unit
+            else throw Exception(response.message)
         }
+    }
 
     override suspend fun getMyCafe() = runCatching {
         val response = cafeApiService.getMyCafe()

@@ -66,7 +66,7 @@ class WallEditViewModel @Inject constructor(
             val w = s.walls[idx]
             val toggled = when (w.status) {
                 SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
-                SlotStatus.AVAILABLE, SlotStatus.EXHIBITING-> SlotStatus.UNAVAILABLE
+                SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED-> SlotStatus.UNAVAILABLE
             }
 
             val nextWalls = s.walls.toMutableList().also { it[idx] = w.copy(status = toggled) }

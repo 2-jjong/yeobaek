@@ -8,16 +8,13 @@ import com.ssafy.yeobaeg.data.model.request.RegisterCafeRequest
 import com.ssafy.yeobaeg.data.model.request.UpdateSlotRequest
 import com.ssafy.yeobaeg.data.model.response.CafeCategoryResponse
 import com.ssafy.yeobaeg.data.model.response.CafeOwnerHomeResponse
-import com.ssafy.yeobaeg.data.model.response.DisplaySlotResponse
 import com.ssafy.yeobaeg.data.model.response.PopularCafesData
-import kotlinx.serialization.Serializable
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
-import retrofit2.http.Query
 import retrofit2.http.Path
-import java.io.Serial
+import retrofit2.http.Query
 
 interface CafeApiService {
 
