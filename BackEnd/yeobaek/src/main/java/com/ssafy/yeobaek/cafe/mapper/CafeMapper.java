@@ -239,6 +239,30 @@ public class CafeMapper {
     }
 
     /**
+     * DisplaySlot 엔티티를 전시 가능한 슬롯 정보 DTO로 변환 (간소화 버전)
+     * @param displaySlot 슬롯 정보
+     * @return Slot DTO (필요한 필드만 포함)
+     */
+    public Slot toAvailableSlotDto(DisplaySlot displaySlot) {
+        return Slot.builder()
+                .wallId(displaySlot.getId())
+                .width(displaySlot.getWall().getWidthCm())
+                .height(displaySlot.getWall().getHeightCm())
+                .commissionRate(displaySlot.getCommissionRate())
+                .requirements(displaySlot.getRequirements())
+                .build();
+    }
+
+    /**
+     * Slot 목록을 AvailableSlotsData로 변환
+     * @param slots 전시 가능한 슬롯 목록
+     * @return AvailableSlotsData DTO
+     */
+    public AvailableSlotsData toAvailableSlotsData(List<Slot> slots) {
+        return new AvailableSlotsData(slots);
+    }
+
+    /**
      * Spring Data Page 객체를 Pagination DTO로 변환
      * @param page Spring Data Page 객체
      * @return Pagination DTO
