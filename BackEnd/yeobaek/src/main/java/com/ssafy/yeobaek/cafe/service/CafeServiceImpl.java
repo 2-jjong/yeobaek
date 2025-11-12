@@ -454,4 +454,41 @@ public class CafeServiceImpl implements CafeService {
         // 8. DTO 변환 및 반환
         return cafeMapper.toSlotAvailableDatesResponse(availableDates);
     }
+
+    /**
+     * 카페의 전시 가능한 슬롯 목록 조회
+     * - DisplaySlot이 존재하는 슬롯만 포함
+     * - 지정된 기간에 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시가 없는 슬롯만 반환
+     * @param cafeId 카페 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 전시 가능한 슬롯 목록
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public AvailableSlotsData getAvailableSlots(Long cafeId, LocalDate startDate, LocalDate endDate) {
+
+        // 1. Cafe 존재 여부 확인
+        if (!cafeRepository.existsById(cafeId)) {
+            throw new CustomException(ResponseCode.CAFE_NOT_FOUND);
+        }
+
+        // 2. 카페의 슬롯 목록 조회 (DisplaySlot이 존재하는 것만)
+        List<DisplaySlot> displaySlots = displaySlotRepository.findAllByCafeIdAndDisplayable(cafeId);
+
+        // 3. 각 슬롯에 대해 기간 내 전시 여부 확인 및 DTO 변환
+        List<Slot> availableSlots = displaySlots.stream()
+                .filter(slot -> {
+                    // 해당 기간에 전시가 없는지 확인
+                    List<Exhibition> exhibitions = exhibitionRepository.findBySlotIdAndDateRange(
+                            slot.getId(), startDate, endDate
+                    );
+                    return exhibitions.isEmpty();
+                })
+                .map(cafeMapper::toAvailableSlotDto)
+                .collect(Collectors.toList());
+
+        // 4. 응답 DTO 변환 및 반환
+        return cafeMapper.toAvailableSlotsData(availableSlots);
+    }
 }

@@ -91,4 +91,15 @@ public interface CafeService {
      * @return 전시 가능한 날짜 목록
      */
     SlotAvailableDatesResponse getSlotAvailableDates(Long slotId, LocalDate startDate);
+
+    /**
+     * 카페의 전시 가능한 슬롯 목록 조회
+     * - DisplaySlot이 존재하는 슬롯만 포함
+     * - 지정된 기간에 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시가 없는 슬롯만 반환
+     * @param cafeId 카페 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 전시 가능한 슬롯 목록
+     */
+    AvailableSlotsData getAvailableSlots(Long cafeId, LocalDate startDate, LocalDate endDate);
 }
