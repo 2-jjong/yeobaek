@@ -15,10 +15,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Tag(name = "전시 관리", description = "전시 관리 API")
 @RestController
@@ -449,6 +453,73 @@ public class ExhibitionController {
             @PathVariable Long exhibitionId
     ) {
         ExhibitionSummaryResponse data = exhibitionService.getExhibitionSummary(exhibitionId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ResponseDto.success(data));
+    }
+
+    @Operation(
+            summary = "슬롯별 전시 일정 조회",
+            description = "특정 슬롯의 특정 날짜 이후 전시 일정 목록을 조회합니다.\n\n" +
+                    "**조회 조건**:\n" +
+                    "- 전시 종료일이 조회 기준 날짜(from) 이후인 전시\n" +
+                    "- COMPLETED 또는 ONGOING 상태의 전시만\n" +
+                    "- 전시 시작일 기준 오름차순 정렬"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "슬롯별 전시 일정 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S0000\", \"data\": [{\"exhibitionId\": 1, \"artwork\": {\"artworkId\": 1, \"title\": \"여름의 여백\", \"description\": \"여름 바다의 고요한 여백을 담은 작품\", \"artCategory\": \"LANDSCAPE\"}, \"startDate\": \"2025-11-15\", \"endDate\": \"2025-12-15\", \"exhibitionState\": \"ONGOING\"}, {\"exhibitionId\": 2, \"artwork\": {\"artworkId\": 2, \"title\": \"가을의 초상\", \"description\": \"가을의 분위기를 담은 인물화\", \"artCategory\": \"PORTRAIT\"}, \"startDate\": \"2025-12-20\", \"endDate\": \"2026-01-20\", \"exhibitionState\": \"COMPLETED\"}], \"message\": \"정상 처리\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 요청",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "필수 파라미터 누락",
+                                    value = "{\"code\": \"S4001\", \"message\": \"필수 입력값이 누락되었습니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "리소스 없음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    name = "슬롯을 찾을 수 없음",
+                                    value = "{\"code\": \"CF4042\", \"message\": \"존재하지 않는 슬롯입니다\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "서버 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}"
+                            )
+                    )
+            )
+    })
+    @GetMapping("/slots/{slotId}")
+    public ResponseEntity<ResponseDto<List<ExhibitionSummaryResponse>>> getExhibitionsBySlot(
+            @Parameter(description = "조회할 슬롯 ID", required = true)
+            @PathVariable Long slotId,
+            @Parameter(description = "조회 기준 날짜", required = true, example = "2025-11-10")
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from
+    ) {
+        List<ExhibitionSummaryResponse> data = exhibitionService.getExhibitionsBySlot(slotId, from);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
