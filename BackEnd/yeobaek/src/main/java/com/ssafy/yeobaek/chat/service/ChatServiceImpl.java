@@ -16,6 +16,8 @@ import com.ssafy.yeobaek.common.code.ResponseCode;
 import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.common.enums.MessageType;
 import com.ssafy.yeobaek.common.exception.CustomException;
+import com.ssafy.yeobaek.exhibition.entity.Exhibition;
+import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
@@ -50,6 +52,7 @@ public class ChatServiceImpl implements ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomMemberRepository chatRoomMemberRepository;
     private final MessageRepository messageRepository;
+    private final ExhibitionRepository exhibitionRepository;
     private final UserService userService;
     private final S3Service s3Service;
     private final WebSocketMessageService webSocketMessageService;
@@ -162,7 +165,7 @@ public class ChatServiceImpl implements ChatService {
         // 5. 메시지 목록 조회 (페이지네이션 적용)
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
         Page<Message> messagePage = messageRepository.findByChatRoom(chatRoom, pageable);
-        List<ChatMessage> chatMessages = chatMapper.toChatMessageList(messagePage.getContent(), userId);
+        List<ChatMessage> chatMessages = chatMapper.toChatMessageList(messagePage.getContent());
 
         // 6. 페이징 정보 생성
         Pagination pagination = new Pagination(
@@ -322,20 +325,25 @@ public class ChatServiceImpl implements ChatService {
                 .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_NOT_FOUND));
         log.info("[ChatService] ChatRoom found: {}", chatRoom.getId());
 
-        // 2. 메시지 엔티티 생성 및 저장
+        // 2. Exhibition 엔티티 조회
+        Exhibition exhibition = exhibitionRepository.findById(exhibitionId)
+                .orElseThrow(() -> new CustomException(ResponseCode.EXHIBITION_NOT_FOUND));
+
+        // 3. 메시지 엔티티 생성 및 저장
         Message message = Message.builder()
                 .chatRoom(chatRoom)
                 .messageType(messageType)
-                .exhibitionId(exhibitionId)
+                .exhibition(exhibition)
+                .content(messageContent)
                 .build();
         messageRepository.save(message);
         log.info("[ChatService] System message saved to DB with id: {}", message.getId());
 
-        // 3. ChatMessage 생성 후 반환
-        ChatMessage chatMessage = chatMapper.toChatMessage(message);
+        // 4. ChatMessage 생성 후 반환
+        ChatMessage chatMessage = chatMapper.toChatMessage(message, exhibition);
         log.info("[ChatService] Returning ChatMessage DTO: {}", chatMessage);
 
-        // 4. WebSocket을 통해 메시지 전송
+        // 5. WebSocket을 통해 메시지 전송
         webSocketMessageService.sendChatMessage(chatRoomId, chatMessage);
     }
 }
