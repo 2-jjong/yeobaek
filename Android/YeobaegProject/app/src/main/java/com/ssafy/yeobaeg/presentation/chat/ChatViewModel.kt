@@ -92,7 +92,7 @@ class ChatViewModel @Inject constructor(
         return try {
             Json.decodeFromString(ChatMessage.serializer(), json)
         } catch (e: Exception) {
-            ChatMessage(0, 0L, "TEXT", "파싱 오류", "", null, false, "")
+            ChatMessage(0, 0L, "TEXT", "파싱 오류", "",1 , null,false, "")
         }
     }
 

@@ -10,6 +10,7 @@ data class ChatMessage(
     val messageType: String,
     val content: String,
     val imageUrl: String? =null,
+    val exhibitionId:Long?=null,
     val exhibition: ExhibitionInfoResponse? =null,
     val isRead: Boolean,
     val createdAt: String

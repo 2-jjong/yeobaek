@@ -10,6 +10,7 @@ data class ChatMessageResponse(
     val messageType: String,
     val content: String,
     val imageUrl: String?=null,
+    val exhibitionId:Long?=null,
     val exhibition: ExhibitionInfoResponse?=null,
     val isRead: Boolean,
     val createdAt: String
@@ -22,6 +23,7 @@ fun ChatMessageResponse.toDomain(): ChatMessage {
         messageType = messageType,
         content = content,
         imageUrl = imageUrl,
+        exhibitionId=exhibitionId,
         exhibition = exhibition,
         isRead = isRead,
         createdAt = createdAt

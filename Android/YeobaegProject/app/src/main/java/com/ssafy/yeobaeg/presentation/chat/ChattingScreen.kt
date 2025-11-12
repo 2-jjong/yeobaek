@@ -37,6 +37,7 @@ import com.ssafy.yeobaeg.ui.theme.*
 import kotlinx.coroutines.delay
 
 private const val TAG = "ChattingScreen"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChattingScreen(
@@ -283,6 +284,7 @@ fun ChatInputBar(
 ) {
     val trimmedValue = value.trim()
     val isSendEnabled = trimmedValue.isNotEmpty()
+    var showDialog by remember { mutableStateOf(false) }
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -292,7 +294,7 @@ fun ChatInputBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically ,
+            verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // + 버튼
@@ -306,8 +308,8 @@ fun ChatInputBar(
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(CircleShape)
-                        .clickable { onAddClick() }
-                ) {
+                        .clickable { showDialog = true })
+                {
                     Text(
                         text = "+",
                         color = YeobaegTextGray,
@@ -387,16 +389,56 @@ fun ChatInputBar(
             }
         }
     }
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {},
+            title = null,
+            text = {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    DialogOption("사진", Color(0xFFE3F2FD)) { /* TODO: 사진 업로드 로직 */ showDialog =
+                        false
+                    }
+                    DialogOption("파일", Color(0xFFF3E5F5)) { /* TODO: 파일 업로드 로직 */ showDialog =
+                        false
+                    }
+                    DialogOption("매칭 요청", Color(0xFFFFF8E1)) { /* TODO: 매칭 로직 */ showDialog =
+                        false
+                    }
+                }
+            },
+            containerColor = YeobaegWhite,
+            shape = RoundedCornerShape(16.dp)
+        )
+    }
+}
+
+@Composable
+fun DialogOption(text: String, color: Color, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .clickable { onClick() }
+            .background(color.copy(alpha = 0.4f))
+            .padding(vertical = 10.dp, horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text, fontSize = 16.sp, color = YeobaegBlack, fontFamily = jansilFont)
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun ChattingScreenPreview() {
     val dummyMessages = listOf(
-        ChatMessage(1, 1, "TEXT", "안녕하세요! 작품이 정말 마음에 들어요.", "", null, false, "2시간 전"),
-        ChatMessage(2, 0, "TEXT", "감사합니다 😊", "", null, false, "2시간 전"),
-        ChatMessage(3, 1, "TEXT", "전시 일정이 어떻게 되나요?", "", null, false, "1시간 전"),
-        ChatMessage(4, 0, "TEXT", "다음 주 월요일부터 가능합니다", "", null, false, "1시간 전")
+        ChatMessage(1, 1, "TEXT", "안녕하세요! 작품이 정말 마음에 들어요.", "", 0, null, false, "2시간 전"),
+        ChatMessage(2, 0, "TEXT", "감사합니다 😊", "", 0, null, false, "2시간 전"),
+        ChatMessage(3, 1, "TEXT", "전시 일정이 어떻게 되나요?", "", 0, null, false, "1시간 전"),
+        ChatMessage(4, 0, "TEXT", "다음 주 월요일부터 가능합니다", "", 0, null, false, "1시간 전")
     )
     ChattingScreenContent(
         title = "김아티스트",
