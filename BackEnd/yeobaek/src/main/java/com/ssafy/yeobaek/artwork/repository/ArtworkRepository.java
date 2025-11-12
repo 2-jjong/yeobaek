@@ -58,4 +58,11 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long>, JpaSpec
      * @return 전시 중인 작품 수
      */
     int countByArtistAndIsExhibiting(Artist artist, Boolean isExhibiting);
+
+    /**
+     * 특정 작가의 모든 작품 조회
+     * @param artistId 작가 ID
+     * @return 작품 목록
+     */
+    List<Artwork> findAllByArtistId(@Param("artistId") Long artistId);
 }
