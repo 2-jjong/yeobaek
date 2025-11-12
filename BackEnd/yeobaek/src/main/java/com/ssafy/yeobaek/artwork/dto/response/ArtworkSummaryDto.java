@@ -33,6 +33,9 @@ public class ArtworkSummaryDto {
     @Schema(description = "작품 세로 (cm)", example = "150")
     private Integer heightCm;
 
+    @Schema(description = "작품 무게 (kg)", example = "5.5")
+    private Double weightKg;
+
     @Schema(description = "전시 중 여부", example = "false")
     private Boolean isExhibiting;
 
