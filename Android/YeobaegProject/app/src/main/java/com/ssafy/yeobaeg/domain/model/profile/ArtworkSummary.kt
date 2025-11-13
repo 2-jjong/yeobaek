@@ -1,6 +1,6 @@
 package com.ssafy.yeobaeg.domain.model.profile
 
-data class BookmarkArtworkSummary(
+data class ArtworkSummary(
     val artworkId: Long,
     val title: String,
     val thumbnailUrl: String,
@@ -10,6 +10,6 @@ data class BookmarkArtworkSummary(
     val category: String,
     val widthCm: Int,
     val heightCm: Int,
-    val status: String,
+    val isExhibiting: Boolean,
     val bookmarkCount: Int
 )
