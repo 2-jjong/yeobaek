@@ -54,6 +54,9 @@ interface ArtworkApiService {
     suspend fun getMyArtHome(): BaseResponse<ArtHomeResponse>
 
     @GET("artworks/me")
-    suspend fun getMyArtworks(): BaseResponse<ArtworksResponse>
+    suspend fun getMyArtworks(
+        @Query("page") page: Int?,
+        @Query("size") size: Int?
+    ): BaseResponse<ArtworksResponse>
 }
 

@@ -90,8 +90,8 @@ class ArtRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getMyArtworks(): Result<Artwork> {
-        val response = artworkApiService.getMyArtworks()
+    override suspend fun getMyArtworks(page: Int?, size: Int?): Result<Artwork> {
+        val response = artworkApiService.getMyArtworks(page, size)
         return runCatching {
             response.data?.toDomain() ?: throw Exception(response.message)
         }

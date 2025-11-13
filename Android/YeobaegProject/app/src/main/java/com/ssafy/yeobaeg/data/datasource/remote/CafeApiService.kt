@@ -9,6 +9,7 @@ import com.ssafy.yeobaeg.data.model.request.UpdateSlotRequest
 import com.ssafy.yeobaeg.data.model.response.CafeCategoryResponse
 import com.ssafy.yeobaeg.data.model.response.CafeOwnerHomeResponse
 import com.ssafy.yeobaeg.data.model.response.PopularCafesData
+import com.ssafy.yeobaeg.data.model.response.RecommendedCafesResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
@@ -91,4 +92,11 @@ interface CafeApiService {
     suspend fun getCafeDetail(
         @Path("cafeId") cafeId: Long
     ): BaseResponse<CafeDetailData>
+
+    @GET("cafes/recommendations")
+    suspend fun getRecommendedCafes(
+        @Query("artworkId") artworkId: Long,
+        @Query("page") page: Int? = null,
+        @Query("size") size: Int? = null
+    ): BaseResponse<RecommendedCafesResponse>
 }

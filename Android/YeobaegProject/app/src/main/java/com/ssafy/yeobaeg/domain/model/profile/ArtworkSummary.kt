@@ -10,6 +10,6 @@ data class ArtworkSummary(
     val category: String,
     val widthCm: Int,
     val heightCm: Int,
-    val status: String,
+    val isExhibiting: Boolean,
     val bookmarkCount: Int
 )

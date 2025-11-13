@@ -60,6 +60,9 @@ sealed interface FullScreen : Screen {
 
     @Serializable
     data class ArtistProfile(val artistId: Long) : FullScreen
+
+    @Serializable
+    data object ArtistHomeMatching : FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {

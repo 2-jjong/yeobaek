@@ -30,7 +30,7 @@ fun ArtworkSummaryResponse.toDomain(): ArtworkSummary {
         category = category,
         widthCm = widthCm,
         heightCm = heightCm,
-        status = status,
+        isExhibiting = isExhibiting,
         bookmarkCount = bookmarkCount
     )
 }

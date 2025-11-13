@@ -40,5 +40,5 @@ interface ArtRepository {
 
     suspend fun getArtHome(): Result<ArtHome>
 
-    suspend fun getMyArtworks(): Result<Artwork>
+    suspend fun getMyArtworks(page: Int? = null, size: Int? = null): Result<Artwork>
 }
