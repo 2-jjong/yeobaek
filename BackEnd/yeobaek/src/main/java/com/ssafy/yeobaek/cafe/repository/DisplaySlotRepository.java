@@ -21,4 +21,15 @@ public interface DisplaySlotRepository extends JpaRepository<DisplaySlot, Long> 
            "WHERE w.cafe.id = :cafeId " +
            "AND w.status = true")
     List<DisplaySlot> findAllByCafeIdAndDisplayable(@Param("cafeId") Long cafeId);
+
+    /**
+     * 여러 카페의 전시 가능한 슬롯 목록 일괄 조회
+     * @param cafeIds 카페 ID 목록
+     * @return DisplaySlot 목록
+     */
+    @Query("SELECT ds FROM DisplaySlot ds " +
+           "JOIN FETCH ds.wall w " +
+           "WHERE w.cafe.id IN :cafeIds " +
+           "AND w.status = true")
+    List<DisplaySlot> findAllByCafeIdInAndDisplayable(@Param("cafeIds") List<Long> cafeIds);
 }
