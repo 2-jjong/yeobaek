@@ -21,12 +21,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 
 // ---------- 색상 (프로젝트 테마에 맞게 조절) ----------
-private val DarkSurface = Color(0xFF1E1510)    // 카드 배경(짙은 갈색)
-private val MutedText = Color(0xFFAEA39A)      // 주소 등 보조 텍스트
 private val PrimaryAccent = Color(0xFFDFB14A)  // 별/포인트 색
-private val ChipBorder = Color(0xFF32251F)     // 칩 테두리
 
 // ---------- Composable: CafeCard ----------
 @Composable
@@ -44,9 +42,10 @@ fun CafeCard(
         modifier = modifier
             .fillMaxWidth()
             .height(300.dp)
+            .background(Color.White)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = DarkSurface),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -89,7 +88,7 @@ fun CafeCard(
                             text = title,
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+//                            color = Color.White,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -97,7 +96,7 @@ fun CafeCard(
                         Text(
                             text = address,
                             fontSize = 14.sp,
-                            color = MutedText,
+                            color = YeobaegBrown,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -115,7 +114,7 @@ fun CafeCard(
                         Text(
                             text = String.format("%.1f", rating),
                             fontSize = 18.sp,
-                            color = Color.White,
+//                            color = Color.White,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
@@ -135,8 +134,7 @@ fun CafeCard(
                         Surface(
                             modifier = Modifier.height(40.dp),
                             shape = RoundedCornerShape(10.dp),
-                            color = if (enabled) Color(0xFF2E2A28) else Color(0xFF3A3634),
-                            border = BorderStroke(1.dp, Color(0xFF32251F))
+                            color = if (enabled) Color(0xFF2E2A28) else Color(0xFF4A4644),
                         ) {
                             Box(
                                 modifier = Modifier
@@ -147,7 +145,7 @@ fun CafeCard(
                                 Text(
                                     text = label,
                                     fontSize = 14.sp,
-                                    color = if (enabled) Color.White else Color(0xFF7A7572),
+                                    color = if (enabled) Color.White else Color(0xFF9A9592),
                                     fontWeight = if (enabled) FontWeight.Medium else FontWeight.Normal,
                                     maxLines = 1
                                 )

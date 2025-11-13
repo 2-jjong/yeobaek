@@ -2,6 +2,8 @@ package com.ssafy.yeobaeg.data.model.profile
 
 import com.ssafy.yeobaeg.data.model.PaginationResponse
 import com.ssafy.yeobaeg.data.model.toDomain
+import com.ssafy.yeobaeg.domain.model.ArtType
+import com.ssafy.yeobaeg.domain.model.ArtworkCategory
 import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.domain.model.profile.Artwork
 import kotlinx.serialization.Serializable
@@ -27,7 +29,14 @@ fun ArtworkSummaryResponse.toDomain(): ArtworkSummary {
         artistName = artistName,
         artistProfileImageUrl = artistProfileImageUrl,
         price = price,
-        category = category,
+        category = when (category) {
+            "LANDSCAPE"  -> "풍경화"
+            "PORTRAIT"   -> "인물화"
+            "STILL_LIFE" -> "정물화"
+            "HISTORY" -> "역사화"
+            "GENRE"      -> "장르화"
+            else     -> "기타"
+        },
         widthCm = widthCm,
         heightCm = heightCm,
         isExhibiting = isExhibiting,
