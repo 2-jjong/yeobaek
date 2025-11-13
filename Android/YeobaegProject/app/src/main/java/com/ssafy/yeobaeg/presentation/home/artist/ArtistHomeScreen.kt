@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,6 +47,7 @@ import com.ssafy.yeobaeg.domain.model.artist.ArtistHome
 import com.ssafy.yeobaeg.domain.model.artist.ArtworkHome
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.ui.theme.YeobaegGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegProjectTheme
 
 @Composable
@@ -152,6 +154,28 @@ private fun ArtistHomeContent(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
+        }
+
+        item {
+            if(artHome.artworks.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(top = 80.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "아직 등록한 작품이 없어요",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    )
+                    Text(
+                        text = "작품을 업로드하고 내 작품 현황을 확인하세요!",
+                        fontSize = 14.sp,
+                        color = YeobaegGray
+                    )
+                }
+            }
         }
 
         items(artHome.artworks, key = { it.artworkId }) { artwork ->

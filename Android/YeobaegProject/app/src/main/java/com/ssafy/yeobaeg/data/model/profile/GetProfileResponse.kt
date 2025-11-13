@@ -44,7 +44,7 @@ fun CafeProfileResponse.toDomain(): CafeInfo = CafeInfo(
 )
 
 fun ArtistProfileResponse.toDomain(): ArtistInfo = ArtistInfo(
-    introduction = introduction,
+    introduction = introduction ?: "",
     artworkCount = artworkCount,
     exhibitingCount = exhibitingCount,
     ratingStats = ratingStats.toDomain()

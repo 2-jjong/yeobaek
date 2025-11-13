@@ -82,7 +82,8 @@ fun WallEditScreen(
                     FloorPlanPreview(
                         initialWalls = state.walls,
                         readOnly = false,
-                        onWallTapped = { id -> viewModel.onWallTapped(id) }
+                        onWallTapped = { id -> viewModel.onWallTapped(id) },
+                        showHelpText = true
                     )
                     Spacer(Modifier.weight(1f))
                     YeobaegButton(

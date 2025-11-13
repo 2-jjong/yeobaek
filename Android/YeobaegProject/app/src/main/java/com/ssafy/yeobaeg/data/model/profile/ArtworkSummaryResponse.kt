@@ -7,7 +7,7 @@ data class ArtworkSummaryResponse(
     val artworkId: Long,
     val title: String,
     val thumbnailUrl: String,
-    val artist: ArtistInfoResponse,
+    val artist: ArtistInfoResponse? = null,
     val price: Int,
     val category: String,
     val widthCm: Int = 0,

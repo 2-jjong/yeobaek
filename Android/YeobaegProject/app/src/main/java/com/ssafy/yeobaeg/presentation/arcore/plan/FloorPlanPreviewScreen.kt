@@ -49,6 +49,7 @@ fun FloorPlanPreview(
     initialWalls: List<DisplaySlot>,
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
+    showHelpText: Boolean = false,
     onWallTapped: (Long) -> Unit = {},
     activeWallId: Long? = null,
 ) {
@@ -67,13 +68,17 @@ fun FloorPlanPreview(
     }
 
     Column(modifier = modifier) {
-        Legend(modifier = Modifier.padding(16.dp))
-        Spacer(Modifier.height(8.dp))
+        if(showHelpText) {
+            Legend(modifier = Modifier.padding(16.dp))
+            Spacer(Modifier.height(8.dp))
+        }
 
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val density = LocalDensity.current
-            val padOuter = 32.dp
-            val padOuterPx = with(density) { padOuter.toPx() }
+            val horizontalPad = 32.dp      // 좌우 여백 (기존 padOuter)
+            val verticalPad = 12.dp        // 위아래 여백 (새로 추가)
+            val horizPx = with(density) { horizontalPad.toPx() }
+            val vertPx = with(density) { verticalPad.toPx() }
 
             val allPoints = walls.flatMap { listOf(it.start, it.end) }
             val minX = allPoints.minOf { it.x }
@@ -86,15 +91,21 @@ fun FloorPlanPreview(
             val parentWpx = with(density) { maxWidth.toPx() }
             val parentHpx = with(density) { maxHeight.toPx() }
 
-            val s = min(
-                (parentWpx - 2 * padOuterPx) / contentW,
-                (parentHpx - 2 * padOuterPx) / contentH
-            ).coerceAtLeast(1f)
+            val s = ((parentWpx - 2 * horizPx) / contentW).coerceAtLeast(1e-6f)
 
-            val canvasWpx = (contentW * s + 2 * padOuterPx).coerceAtMost(parentWpx)
-            val canvasHpx = (contentH * s + 2 * padOuterPx).coerceAtMost(parentHpx)
+            val canvasWpx = parentWpx
+            val canvasHpx = parentHpx
             val canvasW = with(density) { canvasWpx.toDp() }
             val canvasH = with(density) { canvasHpx.toDp() }
+
+            val availableHForContent = parentHpx - 2 * vertPx
+            val centerOffset = (availableHForContent - contentH * s) / 2f
+
+            fun map(x: Float, y: Float): Offset {
+                val mx = (x - minX) * s + horizPx
+                val my = (y - minY) * s + vertPx + centerOffset
+                return Offset(mx, my)
+            }
 
             val labelPaint = remember {
                 Paint().apply {
@@ -141,11 +152,6 @@ fun FloorPlanPreview(
                     }
 
                 Canvas(modifier = canvasModifier) {
-                    fun map(x: Float, y: Float): Offset {
-                        val mx = (x - minX) * s + padOuterPx
-                        val my = (y - minY) * s + padOuterPx
-                        return Offset(mx, my)
-                    }
 
                     val orderedVertices = walls.map { it.start } + listOf(walls.last().end)
                     val mappedVertices = orderedVertices.map { map(it.x, it.y) }
@@ -417,7 +423,7 @@ private fun wallColor(status: SlotStatus): Color {
     val baseColor = when (status) {
         SlotStatus.UNAVAILABLE -> Color(0xFFCBD5E1)
         SlotStatus.AVAILABLE -> Color(0xFF10B981)
-        SlotStatus.EXHIBITING -> Color(0xFFEF4444)
+        SlotStatus.EXHIBITING -> Color(0xFFFFC107)
         SlotStatus.RESERVED -> Color(0xFF684352)
     }
     return  baseColor
