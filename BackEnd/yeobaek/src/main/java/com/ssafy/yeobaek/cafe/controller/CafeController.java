@@ -1014,7 +1014,7 @@ public class CafeController {
             )
     })
     @GetMapping("/slots/{slotId}/available-dates")
-    @PreAuthorize("hasRole('ARTIST')")
+    @PreAuthorize("hasAnyRole('ARTIST', 'CAFE_OWNER')")
     public ResponseEntity<ResponseDto<SlotAvailableDatesResponse>> getSlotAvailableDates(
             @Parameter(description = "슬롯 ID", required = true)
             @PathVariable Long slotId,
