@@ -464,7 +464,7 @@ public class ExhibitionController {
             description = "특정 슬롯의 특정 날짜 이후 전시 일정 목록을 조회합니다.\n\n" +
                     "**조회 조건**:\n" +
                     "- 전시 종료일이 조회 기준 날짜(from) 이후인 전시\n" +
-                    "- COMPLETED 또는 ONGOING 상태의 전시만\n" +
+                    "- APPROVED 또는 ONGOING 상태의 전시만\n" +
                     "- 전시 시작일 기준 오름차순 정렬"
     )
     @ApiResponses(value = {

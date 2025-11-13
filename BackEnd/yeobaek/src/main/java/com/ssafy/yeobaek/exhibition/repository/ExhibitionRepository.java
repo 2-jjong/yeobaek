@@ -136,14 +136,14 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
     );
 
     /**
-     * 특정 슬롯의 특정 날짜 이후 전시 목록 조회 (완료됨 또는 진행 중인 전시만)
+     * 특정 슬롯의 특정 날짜 이후 전시 목록 조회 (승인됨 또는 진행 중인 전시만)
      * @param slotId 슬롯 ID
      * @param fromDate 조회 기준일 (해당 날짜에 진행 중이거나 그 이후 전시)
      * @return 조건에 맞는 전시 목록 (시작일 기준 오름차순)
      */
     @Query("SELECT e FROM Exhibition e " +
             "WHERE e.displaySlot.id = :slotId " +
-            "AND e.state IN ('COMPLETED', 'ONGOING') " +
+            "AND e.state IN ('APPROVED', 'ONGOING') " +
             "AND e.endDate >= :fromDate " +
             "ORDER BY e.startDate ASC")
     List<Exhibition> findBySlotIdAndFromDate(

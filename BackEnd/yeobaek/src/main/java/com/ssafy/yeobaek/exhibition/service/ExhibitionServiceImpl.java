@@ -322,7 +322,7 @@ public class ExhibitionServiceImpl implements ExhibitionService {
     /**
      * 슬롯별 전시 일정 목록 조회
      * - 특정 날짜 이후의 전시 일정 목록을 반환
-     * - COMPLETED 또는 ONGOING 상태인 전시만 조회
+     * - APPROVED 또는 ONGOING 상태인 전시만 조회
      * - 시작일 기준 오름차순 정렬
      *
      * @param slotId 슬롯 ID
