@@ -33,8 +33,10 @@ class ChatRepositoryImpl @Inject constructor(
             val request = CreateChatRoomRequest(partnerId = partnerId)
             val response = chatApiService.createChatRoom(request)
 
-            response.data?.toDomain()
-                ?: throw IllegalStateException("Chat room creation response data is null")
+            val chatRoom = response.data?.chatRoom
+                ?: throw IllegalStateException("Chat room creation response data.chatRoom is null")
+
+            chatRoom.toDomain()
         }
     }
 
