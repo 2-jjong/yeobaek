@@ -23,7 +23,8 @@ data class ArtistProfileUiState(
     val userInfo: UserInfo = UserInfo(),
     val pagination: Pagination = Pagination(),
     val images: List<String> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val bookmarkCount: Int = 0
 )
 
 @HiltViewModel
@@ -57,6 +58,11 @@ class ArtistProfileViewModel @Inject constructor(
                         )
                     }
                     loadNextArtworks(reset = true)
+
+                    // 내 프로필인 경우에만 북마크 개수 로드
+                    if (userId == null) {
+                        loadBookmarkCount()
+                    }
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -65,6 +71,23 @@ class ArtistProfileViewModel @Inject constructor(
                             errorMessage = error.message ?: "알 수 없는 오류"
                         )
                     }
+                }
+        }
+    }
+
+    /**
+     * 북마크 총 개수 조회 (size=1로 조회해서 totalElements만 사용)
+     */
+    private fun loadBookmarkCount() {
+        viewModelScope.launch {
+            profileRepository.getBookmarkArtworkList(page = 0, size = 1)
+                .onSuccess { result ->
+                    _uiState.update {
+                        it.copy(bookmarkCount = result.pagination.totalElements.toInt())
+                    }
+                }
+                .onFailure { error ->
+                    // 북마크 개수 조회 실패는 무시 (프로필은 정상 표시)
                 }
         }
     }

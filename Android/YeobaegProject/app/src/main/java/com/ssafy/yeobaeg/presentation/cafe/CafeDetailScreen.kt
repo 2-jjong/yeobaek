@@ -57,6 +57,9 @@ fun CafeDetailScreen(
                         onTabSelected = viewModel::selectTab,
                         onBookmarkClick = viewModel::toggleBookmark,
                         onNavigateBack = viewModel::navigateBack,
+                        onSlotClick = { slotId, slotName ->
+                            viewModel.navigateToExhibitionCalendar(slotId, slotName)
+                        },
                         bottomPadding = paddingValues.calculateBottomPadding()
                     )
                 }
@@ -96,6 +99,7 @@ fun CafeDetailContent(
     onTabSelected: (CafeDetailTab) -> Unit,
     onBookmarkClick: () -> Unit,
     onNavigateBack: () -> Unit,
+    onSlotClick: (slotId: Long, slotName: String) -> Unit = { _, _ -> },
     bottomPadding: androidx.compose.ui.unit.Dp
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -155,7 +159,12 @@ fun CafeDetailContent(
                                 modifier = Modifier
                                     .padding(horizontal = 16.dp, vertical = 6.dp)
                             ) {
-                                DisplaySlotCard(slot = slot)
+                                DisplaySlotCard(
+                                    slot = slot,
+                                    onClick = {
+                                        onSlotClick(slot.wid, slot.wName)
+                                    }
+                                )
                             }
                         }
                     }

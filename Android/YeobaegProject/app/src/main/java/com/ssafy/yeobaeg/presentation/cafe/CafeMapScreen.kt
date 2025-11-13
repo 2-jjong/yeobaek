@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.presentation.cafe
 
 import android.Manifest
+import android.R.attr.onClick
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Typeface
@@ -8,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,11 +53,12 @@ fun CafeMapScreen(
     viewModel: CafeMapViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
     // 바텀 시트 상태
     val bottomSheetState = rememberStandardBottomSheetState(
         initialValue = SheetValue.PartiallyExpanded,
-        skipHiddenState = true
+        skipHiddenState = true  // Hidden 상태를 건너뛰어 항상 화면에 표시
     )
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = bottomSheetState
@@ -82,49 +85,55 @@ fun CafeMapScreen(
 
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        topBar = {
+        sheetContent = {
+            CafeListBottomSheetContent(
+                cafes = uiState.cafes,
+                onCafeClick = { cafeId ->
+                    viewModel.onCafeListItemClick(cafeId)
+                    // 바텀시트를 PartiallyExpanded 상태로 내리기
+                    coroutineScope.launch {
+                        bottomSheetState.partialExpand()
+                    }
+                }
+            )
+        },
+        sheetPeekHeight = 56.dp,
+        sheetSwipeEnabled = true,
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetContainerColor = Color.White
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 지도 (전체 화면)
+            GoogleMapView(
+                cafes = uiState.cafes,
+                currentLocation = uiState.currentLocation,
+                cameraPosition = uiState.cameraPosition,
+                currentZoomLevel = uiState.currentZoomLevel,
+                selectedCafeId = uiState.selectedCafeId,
+                shouldAnimateCamera = uiState.shouldAnimateCamera,
+                onCameraPositionChanged = viewModel::onCameraPositionChanged,
+                onCameraAnimationCompleted = viewModel::onCameraAnimationCompleted,
+                onCafeInfoWindowClick = { viewModel.navigateToCafeDetail(it) }
+            )
+
+            // 검색 바 (지도 위에 배치)
             CafeSearchBar(
                 searchKeyword = uiState.searchKeyword,
                 onSearchKeywordChanged = viewModel::onSearchKeywordChanged,
                 onSearch = viewModel::onSearch,
                 showFilterButton = uiState.userRole == UserRole.ARTIST,
                 onFilterClick = viewModel::toggleFilterDialog,
-                isFilterActive = uiState.filter.isActive()
-            )
-        },
-        sheetContent = {
-            // 네가 가진 실제 구현이 있으면 그걸 사용해도 됨
-            CafeListBottomSheetContent(
-                cafes = uiState.cafes,
-                onCafeClick = { viewModel.navigateToCafeDetail(it) }
-            )
-        },
-        sheetPeekHeight = 200.dp,
-        sheetSwipeEnabled = true,
-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        sheetContainerColor = Color.White
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            GoogleMapView(
-                cafes = uiState.cafes,
-                currentLocation = uiState.currentLocation,
-                cameraPosition = uiState.cameraPosition,
-                currentZoomLevel = uiState.currentZoomLevel,
-                // ★ 카메라 이동 종료 시 “이동 이유”까지 함께 전달
-                onCameraPositionChanged = viewModel::onCameraPositionChanged
+                isFilterActive = uiState.filter.isActive(),
+                modifier = Modifier.align(Alignment.TopCenter)
             )
 
-            // 현재 위치로 이동
+            // 현재 위치로 이동 버튼
             FloatingActionButton(
                 onClick = { viewModel.loadCurrentLocation() },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
-                    .padding(bottom = 200.dp),
+                    .padding(bottom = 72.dp),
                 containerColor = Color.White,
                 elevation = FloatingActionButtonDefaults.elevation(
                     defaultElevation = 4.dp,
@@ -181,12 +190,13 @@ fun CafeSearchBar(
     onSearch: () -> Unit,
     showFilterButton: Boolean,
     onFilterClick: () -> Unit,
-    isFilterActive: Boolean
+    isFilterActive: Boolean,
+    modifier: Modifier = Modifier
 ) {
     val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shadowElevation = 2.dp,
         color = Color.White
     ) {
@@ -290,7 +300,11 @@ fun GoogleMapView(
     currentLocation: LatLng?,
     cameraPosition: LatLng?,
     currentZoomLevel: Float,
-    onCameraPositionChanged: (LatLng, Float, CameraMoveStartedReason) -> Unit
+    selectedCafeId: Long?,
+    shouldAnimateCamera: Boolean,
+    onCameraPositionChanged: (LatLng, Float, CameraMoveStartedReason) -> Unit,
+    onCameraAnimationCompleted: () -> Unit,
+    onCafeInfoWindowClick: (Long) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val defaultPosition = remember { LatLng(37.5665, 126.9780) } // 서울 시청
@@ -315,13 +329,14 @@ fun GoogleMapView(
         }
     }
 
-    // 현재 위치가 강제 변경되었을 때는 프로그램적 애니메이션 → API 호출 안 됨
-    LaunchedEffect(currentLocation) {
-        currentLocation?.let {
+    // shouldAnimateCamera가 true일 때만 카메라 애니메이션 실행
+    LaunchedEffect(shouldAnimateCamera) {
+        if (shouldAnimateCamera && cameraPosition != null) {
             cameraPositionState.animate(
-                CameraUpdateFactory.newLatLngZoom(it, currentZoomLevel),
+                CameraUpdateFactory.newLatLngZoom(cameraPosition, currentZoomLevel),
                 durationMs = 600
             )
+            onCameraAnimationCompleted()
         }
     }
 
@@ -352,12 +367,29 @@ fun GoogleMapView(
                     singleMarkerIcon = BitmapDescriptorFactory.defaultMarker(15f)
                 }
 
-                // MarkerInfoWindow 사용 (MarkerState는 매번 새로 생성)
+                // MarkerState를 remember로 관리하여 InfoWindow 상태를 제어
+                val markerState = remember(cafe.cafeId) {
+                    MarkerState(position = pos)
+                }
+
+                // selectedCafeId가 변경되면 해당 마커의 InfoWindow 표시
+                LaunchedEffect(selectedCafeId, cafe.cafeId) {
+                    if (selectedCafeId == cafe.cafeId) {
+                        markerState.showInfoWindow()
+                    } else {
+                        markerState.hideInfoWindow()
+                    }
+                }
+
+                // MarkerInfoWindow 사용
                 MarkerInfoWindow(
-                    state = MarkerState(position = pos),
-                    icon = singleMarkerIcon
+                    state = markerState,
+                    icon = singleMarkerIcon,
+                    onInfoWindowClick = { onCafeInfoWindowClick(cafe.cafeId) }
                 ) {
-                    CafeInfoWindow(cafe = cafe)
+                    CafeInfoWindow(
+                        cafe = cafe
+                    )
                 }
             } else {
                 // 클러스터 마커: 임시 객체이므로 자체 MarkerState를 생성해서 사용
@@ -398,12 +430,15 @@ fun GoogleMapView(
 
 /** 카페 정보 윈도우 (마커 클릭 시 표시) */
 @Composable
-fun CafeInfoWindow(cafe: CafeSummary) {
+fun CafeInfoWindow(
+    cafe: CafeSummary,
+) {
     Surface(
         shape = RoundedCornerShape(12.dp),
         color = Color.White,
         shadowElevation = 8.dp,
-        modifier = Modifier.width(280.dp)
+        modifier = Modifier
+            .width(280.dp)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),

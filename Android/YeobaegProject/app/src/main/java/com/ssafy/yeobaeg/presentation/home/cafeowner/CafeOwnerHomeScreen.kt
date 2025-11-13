@@ -63,8 +63,11 @@ fun CafeOwnerHomeScreen(
             onRegisterClick = viewModel::navigateToRegister,
             onTabSelected = { viewModel.selectTab(it) },
             onScanClick = viewModel::navigateToSpaceScan,
-            onSearchArtistClick = { },
-            onWallClick = viewModel::navigateToSlot
+            onWallClick = viewModel::navigateToSlot,
+            onExhibitionItemClick = { slotId, slotName ->
+                viewModel.navigateToExhibitionCalendar(slotId, slotName)
+            },
+            onMatchingClick = viewModel::navigateToMatching,
         )
     }
 }
@@ -76,7 +79,8 @@ private fun CafeOwnerHomeScreen(
     onRegisterClick: () -> Unit = {},
     onTabSelected: (CafeOwnerTab) -> Unit = {},
     onScanClick: () -> Unit = {},
-    onSearchArtistClick: () -> Unit = {},
+    onExhibitionItemClick: (Long, String) -> Unit = { _, _ -> },
+    onMatchingClick: () -> Unit = {},
     onWallClick: (DisplaySlot) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
@@ -130,7 +134,7 @@ private fun CafeOwnerHomeScreen(
 
                 CafeOwnerHomeActions(
                     onScanClick = onScanClick,
-                    onSearchArtistClick = onSearchArtistClick
+                    onMatchingClick = onMatchingClick
                 )
                 Spacer(Modifier.height(8.dp))
 
@@ -138,7 +142,8 @@ private fun CafeOwnerHomeScreen(
                     slots = cafeOwnerInfo.displaySlots,
                     tab = selectedTab,
                     onTabSelected = onTabSelected,
-                    onWallClick = onWallClick
+                    onWallClick = onWallClick,
+                    onExhibitionItemClick = onExhibitionItemClick
                 )
             }
         }
@@ -182,7 +187,7 @@ fun CafeOwnerHomeHeader(
 fun CafeOwnerHomeActions(
     onRegisterClick: (() -> Unit)? = null,
     onScanClick: () -> Unit = {},
-    onSearchArtistClick: () -> Unit = {}
+    onMatchingClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -206,9 +211,9 @@ fun CafeOwnerHomeActions(
 
             YeobaegOutlinedButton(
                 modifier = Modifier.weight(1f),
-                text = "작가 찾기",
+                text = "작품 매칭",
                 icon = R.drawable.ic_cafe_add,
-                onClick = onSearchArtistClick
+                onClick = onMatchingClick
             )
         }
     }
@@ -220,7 +225,8 @@ fun CafeOwnerHomeContent(
     slots: List<DisplaySlot>,
     tab: CafeOwnerTab,
     onTabSelected: (CafeOwnerTab) -> Unit = { },
-    onWallClick: (DisplaySlot) -> Unit
+    onWallClick: (DisplaySlot) -> Unit,
+    onExhibitionItemClick: (Long, String) -> Unit = { _, _ -> }
 ) {
     var sheetVisible by remember { mutableStateOf(false) }
     var selected by remember { mutableStateOf<DisplaySlot?>(null) }
@@ -270,7 +276,10 @@ fun CafeOwnerHomeContent(
                 }
             )
 
-            CafeOwnerTab.STATUS -> ExhibitionStatusSection(slots = slots.filter { it.status != SlotStatus.UNAVAILABLE })
+            CafeOwnerTab.STATUS -> ExhibitionStatusSection(
+                slots = slots.filter { it.status != SlotStatus.UNAVAILABLE },
+                onSlotClick = onExhibitionItemClick
+            )
         }
     }
 
@@ -373,14 +382,20 @@ private fun SlotAvailabilityRow(
 }
 
 @Composable
-fun ExhibitionStatusSection(slots: List<DisplaySlot>) {
+fun ExhibitionStatusSection(
+    slots: List<DisplaySlot>,
+    onSlotClick: (Long, String) -> Unit = { _, _ -> }
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        DisplaySlotList(slots = slots)
+        DisplaySlotList(
+            slots = slots,
+            onSlotClick = onSlotClick
+        )
 
         if (slots.isEmpty()) {
             Box(
@@ -395,11 +410,17 @@ fun ExhibitionStatusSection(slots: List<DisplaySlot>) {
 }
 
 @Composable
-fun DisplaySlotList(slots: List<DisplaySlot>) {
+fun DisplaySlotList(
+    slots: List<DisplaySlot>,
+    onSlotClick: (Long, String) -> Unit = { _, _ -> }
+) {
     slots.forEach { displaySlot ->
         ExhibitionListItem(
             displaySlot = displaySlot,
-            onMatchClick = {}
+            onMatchClick = {},
+            onClick = {
+                onSlotClick(displaySlot.wid, displaySlot.wName)
+            }
         )
     }
 }

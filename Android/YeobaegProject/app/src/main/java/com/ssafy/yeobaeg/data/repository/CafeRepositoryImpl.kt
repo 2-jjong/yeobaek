@@ -11,6 +11,7 @@ import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
 import com.ssafy.yeobaeg.domain.model.cafe.CafeListResult
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
+import com.ssafy.yeobaeg.domain.model.cafe.RecommendedCafes
 import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwnerInfo
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
@@ -113,6 +114,27 @@ class CafeRepositoryImpl @Inject constructor(
 
             response.data?.cafeDetail?.toDomain()
                 ?: throw Exception("카페 정보를 불러올 수 없습니다")
+        }
+    }
+
+    override suspend fun getRecommendedCafes(
+        artworkId: Long,
+        page: Int?,
+        size: Int?
+    ): Result<RecommendedCafes> {
+        val response = cafeApiService.getRecommendedCafes(artworkId,page,size)
+        return runCatching {
+            response.data?.toDomain() ?: throw Exception(response.message)
+        }
+    }
+
+    override suspend fun toggleCafeBookmark(cafeId: Long): Result<Boolean> {
+        return runCatching {
+            val response = cafeApiService.toggleCafeBookmark(cafeId)
+            Log.d("CafeRepository", "toggleCafeBookmark response: ${response.data}")
+
+            response.data?.isBookmarked
+                ?: throw Exception("북마크 상태를 확인할 수 없습니다")
         }
     }
 }

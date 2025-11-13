@@ -5,7 +5,7 @@ import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import com.ssafy.yeobaeg.data.model.profile.UpdateProfileRequest
 import com.ssafy.yeobaeg.data.model.profile.toDomain
 import com.ssafy.yeobaeg.data.model.review.toDomain
-import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtwork
+import com.ssafy.yeobaeg.domain.model.profile.Artwork
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafe
 import com.ssafy.yeobaeg.domain.model.profile.Profile
 import com.ssafy.yeobaeg.domain.model.review.ReviewList
@@ -59,7 +59,7 @@ class ProfileRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getBookmarkArtworkList(page: Int, size: Int): Result<BookmarkArtwork> {
+    override suspend fun getBookmarkArtworkList(page: Int, size: Int): Result<Artwork> {
         return try {
             val response = api.getBookmarkArtworkList(page = page, size = size)
             if (response.isSuccessful) {

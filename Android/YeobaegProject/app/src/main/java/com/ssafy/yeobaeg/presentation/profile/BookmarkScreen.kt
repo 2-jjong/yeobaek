@@ -15,14 +15,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafeSummary
 import com.ssafy.yeobaeg.presentation.common.component.PaginatedList
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
@@ -40,7 +39,7 @@ fun BookmarkScreen(
 ) {
     val uiState by bookmarkViewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf(0) }
-    val artworks = uiState.bookmarkArtwork?.bookmarkArtworks ?: emptyList()
+    val artworks = uiState.artwork?.artworks ?: emptyList()
     val cafes = uiState.bookmarkCafe?.bookmarkCafes ?: emptyList()
     val tabs = listOf("작품", "카페")
 
@@ -98,26 +97,40 @@ fun BookmarkScreen(
 
             // 탭별 리스트
             when (selectedTab) {
-                0 -> ArtworkList(
-                    items = artworks,
-                    isLoading = uiState.isLoading,
-                    hasNext = uiState.bookmarkArtwork?.pagination?.hasNext ?: false,
-                    onLoadMore = { bookmarkViewModel.loadNextArtworkPage() }
-                )
+                0 -> {
+                    // 작품 탭: 로드 완료 후 빈 목록인 경우 빈 상태 표시
+                    if (!uiState.isLoading && artworks.isEmpty() && uiState.artwork != null) {
+                        EmptyBookmarkContent("저장한 작품이 없습니다")
+                    } else {
+                        ArtworkList(
+                            items = artworks,
+                            isLoading = uiState.isLoading,
+                            hasNext = uiState.artwork?.pagination?.hasNext ?: false,
+                            onLoadMore = { bookmarkViewModel.loadNextArtworkPage() }
+                        )
+                    }
+                }
 
                 1 -> {
-                    // 카페 탭 선택 시 데이터가 없으면 자동 로드
-                    if (cafes.isEmpty() && !uiState.isLoading) {
+                    // 카페 탭 선택 시 데이터가 없고 아직 로드하지 않았다면 자동 로드
+                    val isInitialLoad = uiState.bookmarkCafe == null
+                    if (isInitialLoad && !uiState.isLoading) {
                         LaunchedEffect(Unit) {
                             bookmarkViewModel.loadBookmarkCafes()
                         }
                     }
-                    CafeList(
-                        items = cafes,
-                        isLoading = uiState.isLoading,
-                        hasNext = uiState.bookmarkCafe?.pagination?.hasNext ?: false,
-                        onLoadMore = { bookmarkViewModel.loadNextCafePage() }
-                    )
+
+                    // 로드 완료 후 빈 목록인 경우 빈 상태 표시
+                    if (!uiState.isLoading && cafes.isEmpty() && !isInitialLoad) {
+                        EmptyBookmarkContent("저장한 카페가 없습니다")
+                    } else {
+                        CafeList(
+                            items = cafes,
+                            isLoading = uiState.isLoading,
+                            hasNext = uiState.bookmarkCafe?.pagination?.hasNext ?: false,
+                            onLoadMore = { bookmarkViewModel.loadNextCafePage() }
+                        )
+                    }
                 }
             }
         }
@@ -125,8 +138,37 @@ fun BookmarkScreen(
 }
 
 @Composable
+fun EmptyBookmarkContent(message: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_heart),
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = Color.LightGray
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                color = YeobaegTextGray,
+                fontFamily = jansilFont
+            )
+        }
+    }
+}
+
+@Composable
 fun ArtworkList(
-    items: List<BookmarkArtworkSummary>,
+    items: List<ArtworkSummary>,
     isLoading: Boolean,
     hasNext: Boolean,
     onLoadMore: () -> Unit

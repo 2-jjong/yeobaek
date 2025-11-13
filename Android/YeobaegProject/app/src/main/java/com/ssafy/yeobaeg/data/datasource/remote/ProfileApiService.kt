@@ -1,7 +1,7 @@
 package com.ssafy.yeobaeg.data.datasource.remote
 
 import com.ssafy.yeobaeg.data.model.BaseResponse
-import com.ssafy.yeobaeg.data.model.profile.BookmarkArtworksResponse
+import com.ssafy.yeobaeg.data.model.profile.ArtworksResponse
 import com.ssafy.yeobaeg.data.model.profile.BookmarkCafesResponse
 import com.ssafy.yeobaeg.data.model.profile.GetProfileResponseDto
 import com.ssafy.yeobaeg.data.model.profile.UpdateProfileRequest
@@ -29,7 +29,7 @@ interface ProfileApiService {
     suspend fun getBookmarkArtworkList(
         @Query("page") page: Int = 0,
         @Query("size") size: Int = 20
-    ): Response<BaseResponse<BookmarkArtworksResponse>>
+    ): Response<BaseResponse<ArtworksResponse>>
 
     @GET("cafes/bookmarks")
     suspend fun getBookmarkCafeList(

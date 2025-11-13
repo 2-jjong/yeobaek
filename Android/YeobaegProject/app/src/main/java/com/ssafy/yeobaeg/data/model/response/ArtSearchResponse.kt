@@ -5,7 +5,7 @@ import com.ssafy.yeobaeg.data.model.toDomain
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.domain.model.art.ArtSearchResult
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
-import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import kotlinx.serialization.Serializable
 
 @Serializable

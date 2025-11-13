@@ -27,7 +27,7 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.layout.ContentScale
-import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite

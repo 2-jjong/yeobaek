@@ -1,11 +1,12 @@
 package com.ssafy.yeobaeg.domain.repository
 
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
 import com.ssafy.yeobaeg.domain.model.cafe.CafeListResult
-import com.ssafy.yeobaeg.domain.model.DisplaySlot
-import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
+import com.ssafy.yeobaeg.domain.model.cafe.RecommendedCafes
 import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwnerInfo
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 
@@ -60,4 +61,17 @@ interface CafeRepository {
 
     suspend fun getCafeCategories(): Result<List<CafeCategory>>
 
+    suspend fun getRecommendedCafes(
+        artworkId: Long,
+        page: Int? = null,
+        size: Int? = null
+    ): Result<RecommendedCafes>
+
+    /**
+     * 카페 북마크 토글
+     *
+     * @param cafeId 카페 ID
+     * @return 북마크 상태 (true: 북마크됨, false: 북마크 해제됨)
+     */
+    suspend fun toggleCafeBookmark(cafeId: Long): Result<Boolean>
 }

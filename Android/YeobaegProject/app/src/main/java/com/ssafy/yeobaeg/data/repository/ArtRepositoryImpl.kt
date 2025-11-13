@@ -2,9 +2,11 @@ package com.ssafy.yeobaeg.data.repository
 
 import com.ssafy.yeobaeg.data.datasource.remote.ArtworkApiService
 import com.ssafy.yeobaeg.data.model.art.request.toDto
+import com.ssafy.yeobaeg.data.model.profile.toDomain
 import com.ssafy.yeobaeg.data.model.response.toDomain
 import com.ssafy.yeobaeg.domain.model.artist.ArtHome
 import com.ssafy.yeobaeg.domain.model.artist.ArtworkRegister
+import com.ssafy.yeobaeg.domain.model.profile.Artwork
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import javax.inject.Inject
 
@@ -83,6 +85,24 @@ class ArtRepositoryImpl @Inject constructor(
 
     override suspend fun getArtHome(): Result<ArtHome> {
         val response = artworkApiService.getMyArtHome()
+        return runCatching {
+            response.data?.toDomain() ?: throw Exception(response.message)
+        }
+    }
+
+    override suspend fun getMyArtworks(page: Int?, size: Int?): Result<Artwork> {
+        val response = artworkApiService.getMyArtworks(page, size)
+        return runCatching {
+            response.data?.toDomain() ?: throw Exception(response.message)
+        }
+    }
+
+    override suspend fun getRecommendedArtworks(
+        slotId: Long,
+        page: Int?,
+        size: Int?
+    ): Result<Artwork> {
+        val response = artworkApiService.getRecommendedArtworks(slotId, page, size)
         return runCatching {
             response.data?.toDomain() ?: throw Exception(response.message)
         }
