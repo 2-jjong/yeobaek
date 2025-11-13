@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
+import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -86,6 +87,20 @@ class CafeDetailViewModel @Inject constructor(
 
     fun navigateBack() = viewModelScope.launch {
         navigator.navigateBack()
+    }
+
+    /**
+     * 전시 캘린더로 이동
+     */
+    fun navigateToExhibitionCalendar(slotId: Long, slotName: String) {
+        viewModelScope.launch {
+            navigator.navigate(
+                route = FullScreen.ExhibitionCalendar(
+                    slotId = slotId,
+                    slotName = slotName
+                )
+            )
+        }
     }
 
     /**

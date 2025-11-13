@@ -68,18 +68,21 @@ fun StatusChip(status: SlotStatus) {
  *
  * @param displaySlot DisplaySlot 객체 (전시 공간 정보)
  * @param onMatchClick 전시 가능일 때 "작품 매칭" 버튼 클릭
+ * @param onClick 카드 클릭 시 콜백
  */
 @Composable
 fun ExhibitionListItem(
     modifier: Modifier = Modifier,
     displaySlot: DisplaySlot,
     onMatchClick: () -> Unit = {},
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFFE6E6E8))
+        border = BorderStroke(1.dp, Color(0xFFE6E6E8)),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.padding(16.dp),

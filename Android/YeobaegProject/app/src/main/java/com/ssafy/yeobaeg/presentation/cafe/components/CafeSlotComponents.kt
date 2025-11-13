@@ -69,12 +69,16 @@ fun ExhibitionSlotEmptyState() {
 }
 
 @Composable
-fun DisplaySlotCard(slot: DisplaySlot) {
+fun DisplaySlotCard(
+    slot: DisplaySlot,
+    onClick: () -> Unit = {}
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        onClick = onClick
     ) {
         Column(
             modifier = Modifier
