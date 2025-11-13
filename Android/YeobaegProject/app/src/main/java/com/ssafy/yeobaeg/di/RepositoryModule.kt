@@ -5,6 +5,7 @@ import com.ssafy.yeobaeg.data.repository.AuthRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.CafeRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.ChatRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.ChatWebSocketRepositoryImpl
+import com.ssafy.yeobaeg.data.repository.ExhibitionRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.ProfileRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.RecentSearchRepositoryImpl
 import com.ssafy.yeobaeg.data.repository.StorageRepositoryImpl
@@ -13,6 +14,7 @@ import com.ssafy.yeobaeg.domain.repository.AuthRepository
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.domain.repository.ChatRepository
 import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
+import com.ssafy.yeobaeg.domain.repository.ExhibitionRepository
 import com.ssafy.yeobaeg.domain.repository.ProfileRepository
 import com.ssafy.yeobaeg.domain.repository.RecentSearchRepository
 import com.ssafy.yeobaeg.domain.repository.StorageRepository
@@ -76,5 +78,11 @@ abstract class RepositoryModule {
     abstract fun bindChatWebSocketRepository(
         chatWebSocketRepositoryImpl: ChatWebSocketRepositoryImpl
     ): ChatWebSocketRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindExhibitionRepository(
+        exhibitionRepositoryImpl: ExhibitionRepositoryImpl
+    ): ExhibitionRepository
 }
 

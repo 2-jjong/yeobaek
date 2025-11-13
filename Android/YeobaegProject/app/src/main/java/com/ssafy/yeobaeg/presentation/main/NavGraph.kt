@@ -42,6 +42,7 @@ import com.ssafy.yeobaeg.presentation.chat.ChattingScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtistHomeScreen
 import com.ssafy.yeobaeg.presentation.cafe.CafeDetailScreen
 import com.ssafy.yeobaeg.presentation.cafe.CafeMapScreen
+import com.ssafy.yeobaeg.presentation.exhibition.ExhibitionCalendarScreen
 import com.ssafy.yeobaeg.presentation.home.GeneralHomeScreen
 import com.ssafy.yeobaeg.presentation.home.artist.ArtworkRegisterScreen
 import com.ssafy.yeobaeg.presentation.home.cafeowner.CafeOwnerHomeScreen
@@ -243,6 +244,14 @@ fun NavGraph(
                     is FullScreen.ArtistProfile -> NavEntry(key) {
                         ArtistProfileScreen(key.artistId)
                     }
+
+                    is FullScreen.ExhibitionCalendar -> NavEntry(key) {
+                        ExhibitionCalendarScreen(
+                            slotId = key.slotId,
+                            slotName = key.slotName
+                        )
+                    }
+
                     else -> throw IllegalArgumentException("Unknown route: $key")
                 }
             }

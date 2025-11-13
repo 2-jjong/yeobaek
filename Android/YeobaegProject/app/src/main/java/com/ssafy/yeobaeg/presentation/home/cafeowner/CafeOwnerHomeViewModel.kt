@@ -68,4 +68,13 @@ class CafeOwnerHomeViewModel @Inject constructor(
             )
         }
     }
+
+    fun navigateToExhibitionCalendar(slotId: Long, slotName: String) = viewModelScope.launch {
+        navigator.navigate(
+            FullScreen.ExhibitionCalendar(
+                slotId = slotId,
+                slotName = slotName
+            )
+        )
+    }
 }

@@ -8,6 +8,7 @@ import com.ssafy.yeobaeg.data.datasource.remote.AuthApiService
 import com.ssafy.yeobaeg.data.datasource.remote.CafeApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ChatApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ChatWebSocketService
+import com.ssafy.yeobaeg.data.datasource.remote.ExhibitionApiService
 import com.ssafy.yeobaeg.data.datasource.remote.ProfileApiService
 import com.ssafy.yeobaeg.data.datasource.remote.StorageApiService
 import com.ssafy.yeobaeg.data.network.AuthAuthenticator
@@ -164,5 +165,10 @@ object NetworkModule {
     fun provideChatWebSocketService(
         tokenDataSource: TokenDataSource
     ): ChatWebSocketService = ChatWebSocketService(tokenDataSource)
+
+    @Provides
+    @Singleton
+    fun provideExhibitionApiService(@GeneralRetrofit retrofit: Retrofit): ExhibitionApiService =
+        retrofit.create(ExhibitionApiService::class.java)
 
 }
