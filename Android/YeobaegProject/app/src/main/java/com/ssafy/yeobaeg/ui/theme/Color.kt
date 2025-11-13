@@ -12,6 +12,7 @@ val Pink40 = Color(0xFF7D5260)
 
 // 여백 앱 커스텀 컬러
 val YeobaegBrown = Color(0xFF754106)  // 로고 브라운 색상
+
 val YeobaegDarkBrown = Color(0xFF754106)  // 버튼 다크 브라운
 val YeobaegMediumBrown = Color(0xFF8B4513)  // 중간 브라운 (타이틀, 포인트 색상)
 val YeobaegLightBrown = Color(0xFF8B5A3C)  // 연한 브라운 (카테고리)

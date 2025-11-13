@@ -63,7 +63,7 @@ class ArtistHomeViewModel @Inject constructor(
     }
 
     fun navigateToMatching() = viewModelScope.launch {
-        navigator.navigate(FullScreen.RegisterArtwork)
+        navigator.navigate(FullScreen.ArtistHomeMatching)
     }
 
     fun navigateToArtworkDetail(artworkId: Int) = viewModelScope.launch {

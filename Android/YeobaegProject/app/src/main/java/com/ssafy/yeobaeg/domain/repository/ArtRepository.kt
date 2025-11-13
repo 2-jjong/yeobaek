@@ -6,6 +6,7 @@ import com.ssafy.yeobaeg.domain.model.artist.ArtworkRegister
 import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
 import com.ssafy.yeobaeg.domain.model.art.PopularArtwork
 import com.ssafy.yeobaeg.domain.model.artist.ArtHome
+import com.ssafy.yeobaeg.domain.model.profile.Artwork
 
 interface ArtRepository {
 
@@ -38,4 +39,6 @@ interface ArtRepository {
     suspend fun registerArtwork(request: ArtworkRegister)
 
     suspend fun getArtHome(): Result<ArtHome>
+
+    suspend fun getMyArtworks(page: Int? = null, size: Int? = null): Result<Artwork>
 }

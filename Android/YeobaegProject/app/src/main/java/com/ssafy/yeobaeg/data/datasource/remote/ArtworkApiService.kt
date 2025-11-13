@@ -2,6 +2,7 @@ package com.ssafy.yeobaeg.data.datasource.remote
 
 import com.ssafy.yeobaeg.data.model.BaseResponse
 import com.ssafy.yeobaeg.data.model.art.request.ArtworkRegisterRequest
+import com.ssafy.yeobaeg.data.model.profile.ArtworksResponse
 import com.ssafy.yeobaeg.data.model.response.ArtHomeResponse
 import com.ssafy.yeobaeg.data.model.response.ArtSearchResponse
 import com.ssafy.yeobaeg.data.model.response.ArtworkDetailResponse
@@ -51,5 +52,11 @@ interface ArtworkApiService {
 
     @GET("artworks/me/home")
     suspend fun getMyArtHome(): BaseResponse<ArtHomeResponse>
+
+    @GET("artworks/me")
+    suspend fun getMyArtworks(
+        @Query("page") page: Int?,
+        @Query("size") size: Int?
+    ): BaseResponse<ArtworksResponse>
 }
 

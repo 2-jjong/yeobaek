@@ -15,14 +15,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
-import com.ssafy.yeobaeg.domain.model.profile.BookmarkArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafeSummary
 import com.ssafy.yeobaeg.presentation.common.component.PaginatedList
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
@@ -40,7 +39,7 @@ fun BookmarkScreen(
 ) {
     val uiState by bookmarkViewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf(0) }
-    val artworks = uiState.bookmarkArtwork?.bookmarkArtworks ?: emptyList()
+    val artworks = uiState.artwork?.bookmarkArtworks ?: emptyList()
     val cafes = uiState.bookmarkCafe?.bookmarkCafes ?: emptyList()
     val tabs = listOf("작품", "카페")
 
@@ -101,7 +100,7 @@ fun BookmarkScreen(
                 0 -> ArtworkList(
                     items = artworks,
                     isLoading = uiState.isLoading,
-                    hasNext = uiState.bookmarkArtwork?.pagination?.hasNext ?: false,
+                    hasNext = uiState.artwork?.pagination?.hasNext ?: false,
                     onLoadMore = { bookmarkViewModel.loadNextArtworkPage() }
                 )
 
@@ -126,7 +125,7 @@ fun BookmarkScreen(
 
 @Composable
 fun ArtworkList(
-    items: List<BookmarkArtworkSummary>,
+    items: List<ArtworkSummary>,
     isLoading: Boolean,
     hasNext: Boolean,
     onLoadMore: () -> Unit

@@ -44,7 +44,14 @@ data class CurrentExhibition(
 fun ArtworkDetailData.toDomain(): ArtworkDetail = ArtworkDetail(
     artworkId = artworkId,
     title = title,
-    category = category,
+    category = when (category) {
+        "LANDSCAPE"  -> "풍경화"
+        "PORTRAIT"   -> "인물화"
+        "STILL_LIFE" -> "정물화"
+        "HISTORY" -> "역사화"
+        "GENRE"      -> "장르화"
+        else     -> "기타"
+    },
     price = price,
     widthCm = widthCm,
     heightCm = heightCm,

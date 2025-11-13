@@ -1,11 +1,12 @@
 package com.ssafy.yeobaeg.domain.repository
 
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
+import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import com.ssafy.yeobaeg.domain.model.cafe.CafeFilter
 import com.ssafy.yeobaeg.domain.model.cafe.CafeListResult
-import com.ssafy.yeobaeg.domain.model.DisplaySlot
-import com.ssafy.yeobaeg.domain.model.cafe.CafeCategory
 import com.ssafy.yeobaeg.domain.model.cafe.CafeSummary
+import com.ssafy.yeobaeg.domain.model.cafe.RecommendedCafes
 import com.ssafy.yeobaeg.domain.model.cafeowner.CafeOwnerInfo
 import com.ssafy.yeobaeg.domain.model.cafeowner.RegisterCafe
 
@@ -60,4 +61,9 @@ interface CafeRepository {
 
     suspend fun getCafeCategories(): Result<List<CafeCategory>>
 
+    suspend fun getRecommendedCafes(
+        artworkId: Long,
+        page: Int? = null,
+        size: Int? = null
+    ): Result<RecommendedCafes>
 }
