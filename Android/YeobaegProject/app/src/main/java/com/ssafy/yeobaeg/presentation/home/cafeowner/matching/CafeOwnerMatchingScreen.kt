@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.home.cafeowner.matching
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -40,7 +41,8 @@ fun CafeOwnerMatchingScreen(
             slots = state.slots,
             currentWallId = state.currentWallId,
             onWallTapped = { id -> viewModel.selectWall(id) },
-            onNext = { viewModel.moveToArtworkSelection() }
+            onNext = { viewModel.moveToArtworkSelection() },
+            onBackClick = viewModel::navigateToBack
         )
 
         MatchingMode.SELECT_ARTWORK -> RecommendedArtworksScreen(
@@ -57,16 +59,18 @@ private fun SelectSlotScreen(
     slots: List<DisplaySlot>,
     currentWallId: Long,
     onWallTapped: (Long) -> Unit,
-    onNext: () -> Unit
+    onNext: () -> Unit,
+    onBackClick: () -> Unit
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Spacer(Modifier.height(20.dp))
-        Text(text = "작품을 매칭할 슬롯을 선택하세요.", fontSize = 22.sp)
+        YeobaegTopAppBar(
+            title = "작품을 매칭할 슬롯을 선택하세요",
+            onBackClick = onBackClick
+        )
+
         Spacer(Modifier.height(20.dp))
 
         FloorPlanPreview(
@@ -74,7 +78,7 @@ private fun SelectSlotScreen(
             readOnly = true,
             onWallTapped = onWallTapped,
             activeWallId = currentWallId,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).padding(20.dp)
         )
 
         Spacer(Modifier.height(16.dp))
@@ -83,7 +87,7 @@ private fun SelectSlotScreen(
             text = "작품 선택",
             onClick = onNext,
             enabled = currentWallId != -1L,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth().padding(20.dp)
         )
     }
 }
@@ -95,13 +99,16 @@ private fun RecommendedArtworksScreen(
     onLoadMore: () -> Unit,
     onBackClick: () -> Unit
 ) {
+    BackHandler {
+        onBackClick()
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
         YeobaegTopAppBar(
-            title = "매칭할 작품 선택",
+            title = "작품 추천 결과",
             onBackClick = onBackClick
         )
 

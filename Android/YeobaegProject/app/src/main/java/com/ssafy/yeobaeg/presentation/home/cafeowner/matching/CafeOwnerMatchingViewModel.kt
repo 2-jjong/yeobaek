@@ -134,4 +134,8 @@ class CafeOwnerMatchingViewModel @Inject constructor(
     fun navigateToArtworkDetail(artworkId: Long) = viewModelScope.launch {
         navigator.navigate(FullScreen.ArtworkDetail(artworkId))
     }
+
+    fun navigateToBack() = viewModelScope.launch {
+        navigator.navigateBack()
+    }
 }

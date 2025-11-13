@@ -367,7 +367,7 @@ private fun CafeSelectionStep(
         .background(Color.White)
     ) {
         YeobaegTopAppBar(
-            title = "카페 선택",
+            title = "카페 추천 결과",
             onBackClick = onBackClick
         )
 
