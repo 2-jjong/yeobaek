@@ -5,7 +5,6 @@ import com.ssafy.yeobaek.artwork.dto.request.UpdateArtworkRequest;
 import com.ssafy.yeobaek.artwork.dto.response.*;
 import com.ssafy.yeobaek.artwork.service.ArtworkBookmarkService;
 import com.ssafy.yeobaek.artwork.service.ArtworkService;
-import com.ssafy.yeobaek.common.dto.Pagination;
 import com.ssafy.yeobaek.common.dto.ResponseDto;
 import com.ssafy.yeobaek.common.enums.ArtCategory;
 import com.ssafy.yeobaek.common.enums.ArtworkSortBy;
@@ -32,7 +31,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.IntStream;
 
 @Tag(name = "작품 관리", description = "작품 관리 API")
 @RestController
@@ -42,7 +40,6 @@ import java.util.stream.IntStream;
 public class ArtworkController {
 
     private final ArtworkService artworkService;
-    private final int MOCK_ARTWORK_COUNT = 20;
     private final ArtworkBookmarkService artworkBookmarkService;
 
     @Operation(summary = "작품 등록", description = "작가가 피드 형식으로 작품을 등록합니다. 이미지는 최소 1장, 최대 10장까지 등록 가능합니다.")
@@ -364,7 +361,7 @@ public class ArtworkController {
                                     @ExampleObject(
                                             name = "작품이 있는 경우",
                                             description = "사용자가 등록한 작품이 있는 경우",
-                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 1, \"title\": \"여름의 여백\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork1.jpg\", \"price\": 500000, \"category\": \"PAINTING\", \"widthCm\": 100, \"heightCm\": 150, \"exhibitionStatus\": \"AVAILABLE\", \"bookmarkCount\": 42}, {\"artworkId\": 2, \"title\": \"가을의 정적\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork2.jpg\", \"price\": 750000, \"category\": \"SCULPTURE\", \"widthCm\": 80, \"heightCm\": 120, \"exhibitionStatus\": \"EXHIBITING\", \"bookmarkCount\": 35}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 15, \"totalPages\": 1, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 3, \"title\": \"도시의 밤\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork3.jpg\", \"price\": 1200000, \"category\": \"PAINTING\", \"widthCm\": 120, \"heightCm\": 180, \"weightKg\": 5.5, \"productionYear\": 2024, \"isExhibiting\": false, \"bookmarkCount\": 89}, {\"artworkId\": 7, \"title\": \"추상의 세계\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork7.jpg\", \"price\": 950000, \"category\": \"MIXED_MEDIA\", \"widthCm\": 90, \"heightCm\": 120, \"weightKg\": 4.2, \"productionYear\": 2023, \"isExhibiting\": true, \"bookmarkCount\": 76}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 45, \"totalPages\": 3, \"hasNext\": true}}, \"message\": \"정상 처리\"}"
                                     ),
                                     @ExampleObject(
                                             name = "작품이 없는 경우",
@@ -718,19 +715,34 @@ public class ArtworkController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "추천 작품 목록 조회", description = "특정 카페에 어울리는 작품 목록을 추천합니다. 알고리즘 기반으로 카페 특성과 작품 특성을 매칭합니다.")
+    @Operation(summary = "추천 작품 목록 조회", description = "특정 카페에 어울리는 작품 목록을 추천합니다. 현재는 임시로 인기순으로 작품을 반환하며, 추후 추천 시스템 연결 예정입니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponseDto.class))
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "추천 작품이 있는 경우",
+                                            description = "추천할 작품이 있는 경우 (인기순으로 반환)",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [{\"artworkId\": 3, \"title\": \"도시의 밤\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork3.jpg\", \"price\": 1200000, \"category\": \"PAINTING\", \"widthCm\": 120, \"heightCm\": 180, \"weightKg\": 5.5, \"productionYear\": 2024, \"isExhibiting\": false, \"bookmarkCount\": 89}, {\"artworkId\": 7, \"title\": \"추상의 세계\", \"thumbnailUrl\": \"https://s3.presigned.url/artwork7.jpg\", \"price\": 950000, \"category\": \"MIXED_MEDIA\", \"widthCm\": 90, \"heightCm\": 120, \"weightKg\": 4.2, \"productionYear\": 2023, \"isExhibiting\": true, \"bookmarkCount\": 76}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 45, \"totalPages\": 3, \"hasNext\": true}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "추천 작품이 없는 경우",
+                                            description = "추천할 작품이 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"artworks\": [], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 0, \"totalPages\": 0, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
+                    )
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"CF4041\", \"data\": null, \"message\": \"존재하지 않는 카페입니다\"}")
+                            examples = @ExampleObject(value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}")
                     )
             ),
             @ApiResponse(
@@ -738,7 +750,7 @@ public class ArtworkController {
                     description = "서버 오류",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"data\": null, \"message\": \"서버 내부 오류가 발생했습니다\"}")
+                            examples = @ExampleObject(value = "{\"code\": \"S5000\", \"message\": \"서버 내부 오류가 발생했습니다\"}")
                     )
             )
     })
@@ -751,12 +763,8 @@ public class ArtworkController {
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터 - 20개로 증가
-        List<ArtworkSummaryDto> artworks = createMockArtworks(MOCK_ARTWORK_COUNT, 300L); // 다른 ID로 시작
-
-        // 전체 개수를 MOCK_ARTWORK_COUNT(20)으로 설정
-        Pagination pagination = new Pagination(page, size, (long) MOCK_ARTWORK_COUNT, (int) Math.ceil((double) MOCK_ARTWORK_COUNT / size), false);
-        ArtworkListResponse data = new ArtworkListResponse(null, artworks, pagination);
+        // TODO: 임시 구현: 인기순으로 작품 조회 (추후 추천 시스템 연결 예정)
+        ArtworkListResponse data = artworkService.getRecommendedArtworks(cafeId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -1322,23 +1330,5 @@ public class ArtworkController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success(data));
-    }
-
-    private List<ArtworkSummaryDto> createMockArtworks(int count, Long startId) {
-        String[] titles = {"여름의 여백", "가을의 정적", "봄날의 꿈", "겨울의 침묵", "도시의 밤", "산속의 오두막", "추상의 세계", "바다의 속삭임", "황혼의 노래", "새벽의 기도", "꽃병과 과일", "푸른 하늘", "고요한 아침", "빛과 그림자", "시간의 흐름", "미지의 공간", "노을 진 풍경", "밤하늘의 별", "꿈속의 정원", "자유로운 영혼"};
-
-        return IntStream.range(0, count)
-                .mapToObj(i -> {
-                    long id = startId + i;
-                    String title = titles[i % titles.length] + " #" + id;
-                    String thumbnailUrl = "https://example.com/artwork" + (i + 1) + ".jpg";
-
-                    return ArtworkSummaryDto.builder()
-                            .artworkId(id)
-                            .title(title)
-                            .thumbnailUrl(thumbnailUrl)
-                            .build();
-                })
-                .toList();
     }
 }

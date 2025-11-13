@@ -18,6 +18,8 @@ import com.ssafy.yeobaek.common.exception.CustomException;
 import com.ssafy.yeobaek.exhibition.entity.Exhibition;
 import com.ssafy.yeobaek.exhibition.repository.ExhibitionRepository;
 import com.ssafy.yeobaek.exhibition.service.ExhibitionService;
+import com.ssafy.yeobaek.review.entity.Review;
+import com.ssafy.yeobaek.review.repository.ReviewRepository;
 import com.ssafy.yeobaek.storage.service.S3Service;
 import com.ssafy.yeobaek.user.entity.User;
 import com.ssafy.yeobaek.user.service.UserService;
@@ -45,6 +47,7 @@ public class CafeServiceImpl implements CafeService {
     private final DisplayWallRepository displayWallRepository;
     private final DisplaySlotRepository displaySlotRepository;
     private final ExhibitionRepository exhibitionRepository;
+    private final ReviewRepository reviewRepository;
     private final UserService userService;
     private final S3Service s3Service;
     private final GeocoderService geocoderService;
@@ -453,5 +456,130 @@ public class CafeServiceImpl implements CafeService {
 
         // 8. DTO 변환 및 반환
         return cafeMapper.toSlotAvailableDatesResponse(availableDates);
+    }
+
+    /**
+     * 카페의 전시 가능한 슬롯 목록 조회
+     * - DisplaySlot이 존재하는 슬롯만 포함
+     * - 지정된 기간에 승인됨(APPROVED) 또는 진행 중(ONGOING) 상태의 전시가 없는 슬롯만 반환
+     * @param cafeId 카페 ID
+     * @param startDate 조회 시작일
+     * @param endDate 조회 종료일
+     * @return 전시 가능한 슬롯 목록
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public AvailableSlotsData getAvailableSlots(Long cafeId, LocalDate startDate, LocalDate endDate) {
+
+        // 1. Cafe 존재 여부 확인
+        if (!cafeRepository.existsById(cafeId)) {
+            throw new CustomException(ResponseCode.CAFE_NOT_FOUND);
+        }
+
+        // 2. 카페의 슬롯 목록 조회 (DisplaySlot이 존재하는 것만)
+        List<DisplaySlot> displaySlots = displaySlotRepository.findAllByCafeIdAndDisplayable(cafeId);
+
+        // 3. 각 슬롯에 대해 기간 내 전시 여부 확인 및 DTO 변환
+        List<Slot> availableSlots = displaySlots.stream()
+                .filter(slot -> {
+                    // 해당 기간에 전시가 없는지 확인
+                    List<Exhibition> exhibitions = exhibitionRepository.findBySlotIdAndDateRange(
+                            slot.getId(), startDate, endDate
+                    );
+                    return exhibitions.isEmpty();
+                })
+                .map(cafeMapper::toAvailableSlotDto)
+                .collect(Collectors.toList());
+
+        // 4. 응답 DTO 변환 및 반환
+        return cafeMapper.toAvailableSlotsData(availableSlots);
+    }
+
+    /**
+     * 추천 카페 목록 조회 (임시 구현 - 전체 카페 페이징)
+     * @param artworkId 작품 ID (현재 미사용)
+     * @param page 페이지 번호
+     * @param size 페이지 크기
+     * @return 추천 카페 목록 및 페이징 정보
+     */
+    @Override
+    public CafeRecommendationResponse getRecommendedCafes(Long artworkId, Integer page, Integer size) {
+        // 1. 카페 페이징 조회 (ID 오름차순)
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Cafe> cafePage = cafeRepository.findAll(pageable);
+
+        // 2. 카페 ID 목록 수집
+        List<Long> cafeIds = cafePage.getContent().stream()
+                .map(Cafe::getId)
+                .collect(Collectors.toList());
+
+        if (cafeIds.isEmpty()) {
+            // 카페가 없으면 빈 목록 반환
+            Pagination pagination = cafeMapper.toPagination(cafePage);
+            return cafeMapper.toCafeRecommendationResponse(new ArrayList<>(), pagination);
+        }
+
+        // 3. 카테고리 일괄 조회 (N+1 문제 해결)
+        Map<Long, List<String>> cafeCategoriesMap = cafeCategoryTagRepository.findAllByCafe_IdIn(cafeIds).stream()
+                .collect(Collectors.groupingBy(
+                        tag -> tag.getCafe().getId(),
+                        Collectors.mapping(tag -> tag.getCategory().getCategoryName(), Collectors.toList())
+                ));
+
+        // 4. 카페 오너 ID 일괄 수집
+        List<Long> ownerIds = cafePage.getContent().stream()
+                .map(cafe -> cafe.getCafeOwner().getId())
+                .collect(Collectors.toList());
+
+        // 5. 리뷰 일괄 조회 (평점 계산용)
+        List<Review> reviews = reviewRepository.findAllByRevieweeIdIn(ownerIds);
+        Map<Long, List<Review>> reviewsByOwnerId = reviews.stream()
+                .collect(Collectors.groupingBy(review -> review.getReviewee().getId()));
+
+        // 6. 슬롯 일괄 조회 (전시 가능한 슬롯만)
+        List<DisplaySlot> displaySlots = displaySlotRepository.findAllByCafeIdInAndDisplayable(cafeIds);
+        Map<Long, List<DisplaySlot>> slotsByCafeId = displaySlots.stream()
+                .collect(Collectors.groupingBy(slot -> slot.getWall().getCafe().getId()));
+
+        // 7. 각 카페별 DTO 변환
+        List<CafeSummaryForRecommendation> cafeSummaries = cafePage.getContent().stream()
+                .map(cafe -> {
+                    // 대표 이미지 URL 변환 (첫 번째 이미지 사용)
+                    String primaryImageUrl = null;
+                    if (cafe.getImages() != null && !cafe.getImages().isEmpty()) {
+                        primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
+                    }
+
+                    // 카테고리 조회
+                    List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), new ArrayList<>());
+
+                    // 평점 계산 (카페 오너의 리뷰 평균)
+                    Long ownerId = cafe.getCafeOwner().getId();
+                    List<Review> ownerReviews = reviewsByOwnerId.getOrDefault(ownerId, new ArrayList<>());
+                    Double totalReviewScore = ownerReviews.stream()
+                            .mapToInt(Review::getRating)
+                            .average()
+                            .orElse(0.0);
+                    // 소수점 첫째 자리까지 반올림
+                    totalReviewScore = Math.round(totalReviewScore * 10.0) / 10.0;
+
+                    // 슬롯 목록 변환
+                    List<DisplaySlot> cafeSlots = slotsByCafeId.getOrDefault(cafe.getId(), new ArrayList<>());
+                    List<Slot> slots = cafeSlots.stream()
+                            .map(cafeMapper::toSlotForRecommendation)
+                            .collect(Collectors.toList());
+
+                    // DTO 변환
+                    return cafeMapper.toCafeSummaryForRecommendation(
+                            cafe, primaryImageUrl, categories, totalReviewScore, slots
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // 8. Pagination 정보 생성
+        Pagination pagination = cafeMapper.toPagination(cafePage);
+
+        // 9. Response 반환
+        return cafeMapper.toCafeRecommendationResponse(cafeSummaries, pagination);
     }
 }
