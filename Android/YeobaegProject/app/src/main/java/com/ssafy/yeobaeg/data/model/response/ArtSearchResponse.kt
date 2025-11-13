@@ -20,7 +20,7 @@ data class Artist(
     val artistName: String,
     val artworkCount: Int = 0,
     val introduction: String="",
-    val profileImageUrl: String,
+    val profileImageUrl: String="",
     val userId: Long
 )
 

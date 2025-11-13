@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class ArtistProfileResponse(
-    val introduction: String,
+    val introduction: String? = "",
+    val category: String? = null,
     val artworkCount: Int,
     val exhibitingCount: Int,
     val ratingStats: ProfileRatingSummaryResponse

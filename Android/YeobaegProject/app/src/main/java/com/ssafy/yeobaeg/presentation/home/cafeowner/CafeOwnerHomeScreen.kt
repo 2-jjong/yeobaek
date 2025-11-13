@@ -417,7 +417,6 @@ fun DisplaySlotList(
     slots.forEach { displaySlot ->
         ExhibitionListItem(
             displaySlot = displaySlot,
-            onMatchClick = {},
             onClick = {
                 onSlotClick(displaySlot.wid, displaySlot.wName)
             }

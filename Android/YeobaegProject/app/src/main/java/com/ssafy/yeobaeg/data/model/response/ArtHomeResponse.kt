@@ -16,7 +16,7 @@ data class ArtistHomeResponse(
     val artistName: String,
     val artworkCount: Int,
     val currentExhibitionCount: Int,
-    val profileImageUrl: String,
+    val profileImageUrl: String? = null,
     val userId: Int
 )
 
@@ -43,7 +43,7 @@ fun ArtistHomeResponse.toDomain() = ArtistHome(
     artistName = artistName,
     artworkCount = artworkCount,
     currentExhibitionCount = currentExhibitionCount,
-    profileImageUrl = profileImageUrl,
+    profileImageUrl = profileImageUrl ?: "",
     userId = userId
 )
 

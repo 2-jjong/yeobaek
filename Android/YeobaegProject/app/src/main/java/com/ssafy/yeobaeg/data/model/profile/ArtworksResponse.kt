@@ -24,8 +24,8 @@ fun ArtworkSummaryResponse.toDomain(): ArtworkSummary {
         artworkId = artworkId,
         title = title,
         thumbnailUrl = thumbnailUrl,
-        artistName = artist.artistName,
-        artistProfileImageUrl = artist.profileImageUrl,
+        artistName = artist?.artistName ?: "",
+        artistProfileImageUrl = artist?.profileImageUrl ?: "",
         price = price,
         category = when (category) {
             "LANDSCAPE"  -> "풍경화"
