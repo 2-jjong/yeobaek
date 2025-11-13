@@ -66,4 +66,12 @@ interface CafeRepository {
         page: Int? = null,
         size: Int? = null
     ): Result<RecommendedCafes>
+
+    /**
+     * 카페 북마크 토글
+     *
+     * @param cafeId 카페 ID
+     * @return 북마크 상태 (true: 북마크됨, false: 북마크 해제됨)
+     */
+    suspend fun toggleCafeBookmark(cafeId: Long): Result<Boolean>
 }

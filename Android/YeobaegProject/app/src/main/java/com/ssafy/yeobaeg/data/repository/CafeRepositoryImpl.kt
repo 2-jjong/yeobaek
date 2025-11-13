@@ -127,4 +127,14 @@ class CafeRepositoryImpl @Inject constructor(
             response.data?.toDomain() ?: throw Exception(response.message)
         }
     }
+
+    override suspend fun toggleCafeBookmark(cafeId: Long): Result<Boolean> {
+        return runCatching {
+            val response = cafeApiService.toggleCafeBookmark(cafeId)
+            Log.d("CafeRepository", "toggleCafeBookmark response: ${response.data}")
+
+            response.data?.isBookmarked
+                ?: throw Exception("북마크 상태를 확인할 수 없습니다")
+        }
+    }
 }
