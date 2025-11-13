@@ -99,4 +99,14 @@ interface CafeApiService {
         @Query("page") page: Int? = null,
         @Query("size") size: Int? = null
     ): BaseResponse<RecommendedCafesResponse>
+
+    /**
+     * 카페 북마크 토글
+     *
+     * @param cafeId 카페 ID
+     */
+    @POST("cafes/{cafeId}/bookmarks")
+    suspend fun toggleCafeBookmark(
+        @Path("cafeId") cafeId: Long
+    ): BaseResponse<com.ssafy.yeobaeg.data.model.response.ToggleBookmarkResponse>
 }

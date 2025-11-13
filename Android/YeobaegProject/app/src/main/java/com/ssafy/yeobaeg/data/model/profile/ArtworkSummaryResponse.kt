@@ -7,12 +7,18 @@ data class ArtworkSummaryResponse(
     val artworkId: Long,
     val title: String,
     val thumbnailUrl: String,
-    val artistName: String = "",
-    val artistProfileImageUrl: String? = null,
+    val artist: ArtistInfoResponse,
     val price: Int,
     val category: String,
-    val widthCm: Int,
-    val heightCm: Int,
+    val widthCm: Int = 0,
+    val heightCm: Int = 0,
     val isExhibiting: Boolean,
     val bookmarkCount: Int
+)
+
+@Serializable
+data class ArtistInfoResponse(
+    val userId: Long,
+    val artistName: String,
+    val profileImageUrl: String?
 )

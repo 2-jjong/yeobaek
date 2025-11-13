@@ -75,13 +75,43 @@ class CafeDetailViewModel @Inject constructor(
      * 북마크 토글
      */
     fun toggleBookmark() {
-        // TODO: 북마크 API 연동
-        _uiState.update {
-            it.copy(
-                cafeDetail = it.cafeDetail?.copy(
-                    isBookmarked = !it.cafeDetail.isBookmarked
+        val cafeId = _uiState.value.cafeDetail?.cafeId ?: return
+
+        viewModelScope.launch {
+            // 낙관적 업데이트 (UI 즉시 반영)
+            val currentBookmarkState = _uiState.value.cafeDetail?.isBookmarked ?: false
+            _uiState.update {
+                it.copy(
+                    cafeDetail = it.cafeDetail?.copy(
+                        isBookmarked = !currentBookmarkState
+                    )
                 )
-            )
+            }
+
+            // API 호출
+            cafeRepository.toggleCafeBookmark(cafeId)
+                .onSuccess { isBookmarked ->
+                    // API 응답으로 최종 상태 업데이트
+                    _uiState.update {
+                        it.copy(
+                            cafeDetail = it.cafeDetail?.copy(
+                                isBookmarked = isBookmarked
+                            )
+                        )
+                    }
+                }
+                .onFailure { e ->
+                    Log.e("CafeDetailViewModel", "Failed to toggle bookmark", e)
+                    // 실패 시 원래 상태로 롤백
+                    _uiState.update {
+                        it.copy(
+                            cafeDetail = it.cafeDetail?.copy(
+                                isBookmarked = currentBookmarkState
+                            ),
+                            error = "북마크 처리에 실패했습니다"
+                        )
+                    }
+                }
         }
     }
 
