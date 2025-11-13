@@ -119,6 +119,7 @@ fun ArtistProfileScreen(
                         ProfileSettingsSection(
                             artistInfo = uiState.artistInfo,
                             onBookmarkClick = artistViewModel::navigateToBookmark,
+                            onReviewClick = artistViewModel::navigateToReviewManagement,
                             onLogoutClick = artistViewModel::logout
                         )
                     } else {
@@ -293,6 +294,7 @@ fun ProfileTabs(selectedTab: Int, onTabSelected: (Int) -> Unit, isMyProfile: Boo
 fun ProfileSettingsSection(
     artistInfo: ArtistInfo?,
     onBookmarkClick: () -> Unit,
+    onReviewClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
     Column(
@@ -301,7 +303,7 @@ fun ProfileSettingsSection(
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         SettingItem("좋아요 한 목록", "12", R.drawable.ic_heart, onBookmarkClick)
-        SettingItem("리뷰 관리", "5", R.drawable.ic_star, {})
+        SettingItem("리뷰 관리", "5", R.drawable.ic_star, onReviewClick)
         SettingItem("알림 설정", null, R.drawable.ic_notify, {})
 
         Spacer(Modifier.weight(1f))
