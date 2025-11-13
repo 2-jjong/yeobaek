@@ -126,6 +126,51 @@ public class S3ServiceImpl implements S3Service {
     }
 
     /**
+     * 썸네일 조회용 Presigned URL 생성
+     * fileKey가 null이면 null로 반환
+     * fileKey 앞에 "thumbnail/" prefix를 추가하여 썸네일 이미지의 URL 생성
+     * @param fileKey 원본 S3 파일 키 (예: artwork/image123.png)
+     * @return 썸네일 조회용 Presigned URL 문자열 (예: thumbnail/artwork/image123.png의 URL)
+     */
+    @Override
+    public String generatePresignedUrlForThumbnail(String fileKey) {
+        if (fileKey == null) {
+            return null;
+        }
+
+        String thumbnailKey = "thumbnail/" + fileKey;
+
+        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                .bucket(bucketName)
+                .key(thumbnailKey)
+                .build();
+
+        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(PRESIGNED_URL_EXPIRATION_MINUTES))
+                .getObjectRequest(getObjectRequest)
+                .build();
+
+        return s3Presigner.presignGetObject(presignRequest).url().toString();
+    }
+
+    /**
+     * 여러 파일의 썸네일 조회용 Presigned URL 생성
+     * fileKeys가 null이면 빈 리스트 반환, null 요소는 null로 변환
+     * @param fileKeys 원본 S3 파일 키 리스트
+     * @return 썸네일 조회용 Presigned URL 리스트
+     */
+    @Override
+    public List<String> generatePresignedUrlsForThumbnail(List<String> fileKeys) {
+        if (fileKeys == null) {
+            return new ArrayList<>();
+        }
+
+        return fileKeys.stream()
+                .map(this::generatePresignedUrlForThumbnail)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * 파일 삭제
      * @param fileKey 삭제할 S3 파일 키
      */
