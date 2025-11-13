@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.cafe.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -25,20 +26,55 @@ fun CafeListBottomSheetContent(
     cafes: List<CafeSummary>,
     onCafeClick: (Long) -> Unit = {}
 ) {
-    LazyColumn(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 200.dp, max = 600.dp),
-        contentPadding = PaddingValues(vertical = 0.dp)
+            .heightIn(min = 56.dp, max = 600.dp)
     ) {
-        items(cafes) { cafe ->
-            CafeListItem(
-                cafe = cafe,
-                onClick = { onCafeClick(cafe.cafeId) }
+
+        // 헤더
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "근처 카페",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF212121)
             )
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+
+            Text(
+                text = "${cafes.size}개",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color(0xFF757575),
+                fontWeight = FontWeight.Medium
             )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(horizontal = 20.dp),
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
+
+        // 카페 리스트
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(vertical = 8.dp)
+        ) {
+            items(cafes) { cafe ->
+                CafeListItem(
+                    cafe = cafe,
+                    onClick = { onCafeClick(cafe.cafeId) }
+                )
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 20.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+                )
+            }
         }
     }
 }

@@ -36,7 +36,10 @@ data class CafeMapUiState(
     val isBottomSheetExpanded: Boolean = false,
     val userRole: UserRole? = null,
     val hasLocationPermission: Boolean = false,
-    val currentZoomLevel: Float = 15f
+    val currentZoomLevel: Float = 15f,
+    val selectedCafeId: Long? = null,
+    val isFirstLoad: Boolean = true,  // 첫 로드 여부
+    val shouldAnimateCamera: Boolean = false  // 카메라 애니메이션 트리거
 )
 
 @HiltViewModel
@@ -67,13 +70,16 @@ class CafeMapViewModel @Inject constructor(
 
     fun updateLocationPermission(hasPermission: Boolean) {
         _uiState.update { it.copy(hasLocationPermission = hasPermission) }
-        if (hasPermission) {
-            loadCurrentLocation()
-        } else {
-            val defaultLocation = locationService.getDefaultLocation()
-            val defaultLatLng = LatLng(defaultLocation.latitude, defaultLocation.longitude)
-            _uiState.update { it.copy(currentLocation = defaultLatLng, cameraPosition = defaultLatLng) }
-            loadCafesWithCurrentState()
+        // 첫 로드일 때만 현재 위치로 이동
+        if (_uiState.value.isFirstLoad) {
+            if (hasPermission) {
+                loadCurrentLocation()
+            } else {
+                val defaultLocation = locationService.getDefaultLocation()
+                val defaultLatLng = LatLng(defaultLocation.latitude, defaultLocation.longitude)
+                _uiState.update { it.copy(currentLocation = defaultLatLng, cameraPosition = defaultLatLng, isFirstLoad = false) }
+                loadCafesWithCurrentState()
+            }
         }
     }
 
@@ -83,7 +89,14 @@ class CafeMapViewModel @Inject constructor(
                 val location = locationService.getCurrentLocation()
                     ?: locationService.getDefaultLocation()
                 val latLng = LatLng(location.latitude, location.longitude)
-                _uiState.update { it.copy(currentLocation = latLng, cameraPosition = latLng) }
+                _uiState.update {
+                    it.copy(
+                        currentLocation = latLng,
+                        cameraPosition = latLng,
+                        isFirstLoad = false,
+                        shouldAnimateCamera = true
+                    )
+                }
                 loadCafesWithCurrentState()
             } catch (e: Exception) {
                 Log.e("CafeMapViewModel", "Failed to get current location", e)
@@ -206,6 +219,32 @@ class CafeMapViewModel @Inject constructor(
     }
 
     fun clearError() { _uiState.update { it.copy(error = null) } }
+
+    fun onCafeListItemClick(cafeId: Long) {
+        val cafe = _uiState.value.cafes.find { it.cafeId == cafeId }
+        val lat = cafe?.latitude
+        val lng = cafe?.longitude
+
+        if (lat != null && lng != null) {
+            val targetPosition = LatLng(lat, lng)
+            _uiState.update {
+                it.copy(
+                    cameraPosition = targetPosition,
+                    currentZoomLevel = 17f,  // 상세 줌 레벨로 이동
+                    selectedCafeId = cafeId,  // 선택된 카페 ID 설정
+                    shouldAnimateCamera = true
+                )
+            }
+        }
+    }
+
+    fun onCameraAnimationCompleted() {
+        _uiState.update { it.copy(shouldAnimateCamera = false) }
+    }
+
+    fun clearSelectedCafe() {
+        _uiState.update  { it.copy(selectedCafeId = null) }
+    }
 
     fun navigateToCafeDetail(cafeId: Long) = viewModelScope.launch {
         navigator.navigate(FullScreen.CafeDetail(cafeId = cafeId))
