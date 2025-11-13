@@ -1316,7 +1316,7 @@ public class ArtworkController {
             )
     })
     @GetMapping("/{artworkId}/available-dates")
-    @PreAuthorize("hasRole('CAFE_OWNER')")
+    @PreAuthorize("hasAnyRole('CAFE_OWNER', 'ARTIST')")
     public ResponseEntity<ResponseDto<ArtworkAvailableDatesResponse>> getArtworkAvailableDates(
             @Parameter(description = "작품 ID", required = true)
             @PathVariable Long artworkId,
