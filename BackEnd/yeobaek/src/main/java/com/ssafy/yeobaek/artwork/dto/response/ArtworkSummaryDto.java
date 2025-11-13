@@ -36,6 +36,9 @@ public class ArtworkSummaryDto {
     @Schema(description = "작품 무게 (kg)", example = "5.5")
     private Double weightKg;
 
+    @Schema(description = "제작 연도", example = "2024")
+    private Integer productionYear;
+
     @Schema(description = "전시 중 여부", example = "false")
     private Boolean isExhibiting;
 

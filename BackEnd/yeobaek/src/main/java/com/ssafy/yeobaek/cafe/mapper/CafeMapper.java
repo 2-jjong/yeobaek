@@ -276,4 +276,59 @@ public class CafeMapper {
                 .hasNext(page.hasNext())
                 .build();
     }
+
+    /**
+     * DisplaySlot을 추천용 Slot DTO로 변환 (slotName, isExhibiting만)
+     * @param displaySlot 슬롯 정보
+     * @return Slot DTO (wallName, isExhibiting만 포함, 나머지는 null)
+     */
+    public Slot toSlotForRecommendation(DisplaySlot displaySlot) {
+        return Slot.builder()
+                .wallName(displaySlot.getWall().getWallName())
+                .isExhibiting(displaySlot.getIsExhibiting())
+                .build();
+    }
+
+    /**
+     * Cafe 엔티티를 추천용 CafeSummary DTO로 변환
+     * @param cafe Cafe 엔티티
+     * @param primaryImageUrl 대표 이미지 URL (presigned URL)
+     * @param categories 인테리어 스타일 목록
+     * @param totalReviewScore 총 평점
+     * @param slots 전시 슬롯 목록
+     * @return CafeSummaryForRecommendation DTO
+     */
+    public CafeSummaryForRecommendation toCafeSummaryForRecommendation(
+            Cafe cafe,
+            String primaryImageUrl,
+            List<String> categories,
+            Double totalReviewScore,
+            List<Slot> slots
+    ) {
+        return CafeSummaryForRecommendation.builder()
+                .cafeId(cafe.getId())
+                .cafeName(cafe.getCafeName())
+                .address(cafe.getAddress())
+                .primaryImageUrl(primaryImageUrl)
+                .categories(categories)
+                .totalReviewScore(totalReviewScore)
+                .slots(slots)
+                .build();
+    }
+
+    /**
+     * 추천 카페 목록과 페이징 정보를 응답 DTO로 변환
+     * @param cafes 추천 카페 목록
+     * @param pagination 페이징 정보
+     * @return CafeRecommendationResponse
+     */
+    public CafeRecommendationResponse toCafeRecommendationResponse(
+            List<CafeSummaryForRecommendation> cafes,
+            Pagination pagination
+    ) {
+        return CafeRecommendationResponse.builder()
+                .cafes(cafes)
+                .pagination(pagination)
+                .build();
+    }
 }

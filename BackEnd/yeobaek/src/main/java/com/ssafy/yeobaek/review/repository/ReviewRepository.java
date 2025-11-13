@@ -50,4 +50,11 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
      * @return 리뷰 페이지
      */
     Page<Review> findAllByReviewerIdAndRating(Long reviewerId, Integer rating, Pageable pageable);
+
+    /**
+     * 여러 사용자가 받은 모든 리뷰 일괄 조회 (평점 계산용)
+     * @param revieweeIds 리뷰를 받은 사용자 ID 목록
+     * @return 리뷰 목록
+     */
+    List<Review> findAllByRevieweeIdIn(List<Long> revieweeIds);
 }

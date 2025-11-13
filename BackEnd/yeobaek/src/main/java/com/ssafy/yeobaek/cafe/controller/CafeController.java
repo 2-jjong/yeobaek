@@ -705,14 +705,26 @@ public class CafeController {
                 .body(ResponseDto.success(data));
     }
 
-    @Operation(summary = "추천 카페 목록 조회", description = "특정 작품에 어울리는 카페 목록을 추천합니다. 알고리즘 기반으로 작품 특성과 카페 특성을 매칭합니다. 작품의 규격, 카테고리, 가격대 등을 고려합니다. 카페의 슬롯 규격, 수수료율, 위치, 인테리어 스타일 등을 고려합니다. 사용자 행동 데이터(북마크, 조회 이력 등)를 활용합니다.")
+    @Operation(summary = "추천 카페 목록 조회", description = "특정 작품에 어울리는 카페 목록을 추천합니다. 현재는 임시로 전체 카페를 ID 오름차순으로 반환하며, 추후 추천 시스템 연결 예정입니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "정상 처리",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = ResponseDto.class)
+                            schema = @Schema(implementation = ResponseDto.class),
+                            examples = {
+                                    @ExampleObject(
+                                            name = "추천 카페가 있는 경우",
+                                            description = "추천할 카페가 있는 경우 (전체 카페 페이징)",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"cafes\": [{\"cafeId\": 1, \"cafeName\": \"카페 여백\", \"address\": \"서울시 강남구 테헤란로 123\", \"primaryImageUrl\": \"https://s3.presigned.url/cafe1.jpg\", \"categories\": [\"모던\", \"미니멀\"], \"totalReviewScore\": 4.5, \"slots\": [{\"wallName\": \"입구 벽\", \"isExhibiting\": false}, {\"wallName\": \"중앙 벽\", \"isExhibiting\": true}]}, {\"cafeId\": 2, \"cafeName\": \"갤러리 카페\", \"address\": \"서울시 종로구 인사동 45\", \"primaryImageUrl\": \"https://s3.presigned.url/cafe2.jpg\", \"categories\": [\"빈티지\"], \"totalReviewScore\": 4.2, \"slots\": [{\"wallName\": \"메인 벽\", \"isExhibiting\": false}]}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 45, \"totalPages\": 3, \"hasNext\": true}}, \"message\": \"정상 처리\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "추천 카페가 없는 경우",
+                                            description = "추천할 카페가 없는 경우",
+                                            value = "{\"code\": \"S0000\", \"data\": {\"cafes\": [], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 0, \"totalPages\": 0, \"hasNext\": false}}, \"message\": \"정상 처리\"}"
+                                    )
+                            }
                     )
             ),
             @ApiResponse(
@@ -737,7 +749,7 @@ public class CafeController {
             )
     })
     @GetMapping("/recommendations")
-    public ResponseEntity<ResponseDto<CafeListData>> getRecommendedCafes(
+    public ResponseEntity<ResponseDto<CafeRecommendationResponse>> getRecommendedCafes(
             @Parameter(description = "작품 ID", required = true)
             @RequestParam Long artworkId,
             @Parameter(description = "페이지 번호 (0부터 시작, 기본값: 0)")
@@ -745,11 +757,8 @@ public class CafeController {
             @Parameter(description = "페이지 크기 (기본값: 20, 최대: 50)")
             @RequestParam(defaultValue = "20") Integer size
     ) {
-        // Mock 데이터
-        List<CafeSummary> cafes = createMockCafes(MOCK_CAFE_COUNT, 300L, null);
-
-        Pagination pagination = new Pagination(page, size, (long) MOCK_CAFE_COUNT, (int) Math.ceil((double) MOCK_CAFE_COUNT / size), false);
-        CafeListData data = new CafeListData(cafes, pagination);
+        // TODO: 임시 구현: 전체 카페 페이징 조회 (추후 추천 시스템 연결 예정)
+        CafeRecommendationResponse data = cafeService.getRecommendedCafes(artworkId, page, size);
 
         return ResponseEntity
                 .status(HttpStatus.OK)
