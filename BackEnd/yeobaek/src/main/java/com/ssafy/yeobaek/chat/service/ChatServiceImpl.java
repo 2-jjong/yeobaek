@@ -101,7 +101,7 @@ public class ChatServiceImpl implements ChatService {
                         }
                     });
 
-            String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
+            String partnerImageUrl = s3Service.generatePresignedUrlForThumbnail(partner.getProfileImageUrl());
             chatRoomData = chatMapper.toChatRoomData(existingChatRoom, partner, partnerImageUrl);
         } else {
             // 5. 새로운 채팅방 생성
@@ -125,7 +125,7 @@ public class ChatServiceImpl implements ChatService {
             newChatRoom.setMembers(List.of(senderMember, recipientMember));
 
             // 7. 프로필 이미지 Url 발급
-            String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
+            String partnerImageUrl = s3Service.generatePresignedUrlForThumbnail(partner.getProfileImageUrl());
 
             chatRoomData = chatMapper.toChatRoomData(newChatRoom, partner, partnerImageUrl);
 
@@ -267,7 +267,7 @@ public class ChatServiceImpl implements ChatService {
                     .findFirst()
                     .orElseThrow(() -> new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND));
 
-            String partnerImageUrl = s3Service.generatePresignedUrlForDownload(partner.getProfileImageUrl());
+            String partnerImageUrl = s3Service.generatePresignedUrlForThumbnail(partner.getProfileImageUrl());
 
             // 4. 마지막 메시지 조회
             Optional<Message> lastMessageOpt = messageRepository.findTopByChatRoomOrderByCreatedAtDesc(chatRoom);

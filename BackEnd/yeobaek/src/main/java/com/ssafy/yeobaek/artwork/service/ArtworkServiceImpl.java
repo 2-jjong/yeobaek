@@ -264,7 +264,7 @@ public class ArtworkServiceImpl implements ArtworkService {
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
                     String thumbnailUrl = null;
                     if (artwork.getImages() != null && !artwork.getImages().isEmpty()) {
-                        thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                        thumbnailUrl = s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
                     }
                     return artworkMapper.toArtworkSummary(artwork, thumbnailUrl);
                 })
@@ -284,7 +284,7 @@ public class ArtworkServiceImpl implements ArtworkService {
                     // 프로필 이미지 URL을 presigned URL로 변환
                     String profileImageUrl = null;
                     if (artist.getUser().getProfileImageUrl() != null && !artist.getUser().getProfileImageUrl().isEmpty()) {
-                        profileImageUrl = s3Service.generatePresignedUrlForDownload(artist.getUser().getProfileImageUrl());
+                        profileImageUrl = s3Service.generatePresignedUrlForThumbnail(artist.getUser().getProfileImageUrl());
                     }
 
                     return artworkMapper.toArtist(artist, artworkCount, profileImageUrl);
@@ -317,7 +317,7 @@ public class ArtworkServiceImpl implements ArtworkService {
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
                     String thumbnailUrl = null;
                     if (artwork.getImages() != null && !artwork.getImages().isEmpty()) {
-                        thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                        thumbnailUrl = s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
                     }
                     return artworkMapper.toArtworkSummaryWithDetails(artwork, thumbnailUrl);
                 })
@@ -349,7 +349,7 @@ public class ArtworkServiceImpl implements ArtworkService {
         Integer currentExhibitionCount = exhibitionService.getCurrentExhibitionCountByArtist(userId);
 
         // 3. 작가 프로필 이미지 URL 변환
-        String profileImageUrl = s3Service.generatePresignedUrlForDownload(artist.getUser().getProfileImageUrl());
+        String profileImageUrl = s3Service.generatePresignedUrlForThumbnail(artist.getUser().getProfileImageUrl());
 
         // 4. ArtistDto 생성
         ArtistDto artistDto = artworkMapper.toArtistDtoForArtistHome(artist, profileImageUrl, artworkCount, currentExhibitionCount);
@@ -364,7 +364,7 @@ public class ArtworkServiceImpl implements ArtworkService {
                     // 썸네일 URL 변환
                     String thumbnailUrl = null;
                     if (artwork.getImages() != null && !artwork.getImages().isEmpty()) {
-                        thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                        thumbnailUrl = s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
                     }
 
                     // 전시 중이면 카페명 조회
@@ -405,10 +405,10 @@ public class ArtworkServiceImpl implements ArtworkService {
                     Artist artist = artwork.getArtist();
 
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
-                    String thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                    String thumbnailUrl = s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
 
                     // 작가 프로필 이미지 URL 변환
-                    String profileImageUrl = s3Service.generatePresignedUrlForDownload(artist.getUser().getProfileImageUrl());
+                    String profileImageUrl = s3Service.generatePresignedUrlForThumbnail(artist.getUser().getProfileImageUrl());
 
                     // 작가 정보 DTO 생성 (기본 정보만)
                     ArtistDto artistDto = artworkMapper.toArtist(artist, profileImageUrl);
@@ -452,10 +452,10 @@ public class ArtworkServiceImpl implements ArtworkService {
                     Artist artist = artwork.getArtist();
 
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
-                    String thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                    String thumbnailUrl = s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
 
                     // 작가 프로필 이미지 URL 변환
-                    String profileImageUrl = s3Service.generatePresignedUrlForDownload(artist.getUser().getProfileImageUrl());
+                    String profileImageUrl = s3Service.generatePresignedUrlForThumbnail(artist.getUser().getProfileImageUrl());
 
                     // 작가 정보 DTO 생성 (기본 정보만)
                     ArtistDto artistDto = artworkMapper.toArtist(artist, profileImageUrl);
@@ -499,7 +499,7 @@ public class ArtworkServiceImpl implements ArtworkService {
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
                     String thumbnailUrl = null;
                     if (artwork.getImages() != null && !artwork.getImages().isEmpty()) {
-                        thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                        thumbnailUrl = s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
                     }
                     return artworkMapper.toArtworkSummaryWithDetails(artwork, thumbnailUrl);
                 })
@@ -596,7 +596,7 @@ public class ArtworkServiceImpl implements ArtworkService {
         List<ArtworkSummaryDto> artworkSummaries = availableArtworks.stream()
                 .map(artwork -> {
                     // 썸네일 URL 변환 (첫 번째 이미지 사용)
-                    String thumbnailUrl = s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
+                    String thumbnailUrl = s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
                     return artworkMapper.toArtworkSummaryForAvailableArtworks(artwork, thumbnailUrl);
                 })
                 .collect(Collectors.toList());

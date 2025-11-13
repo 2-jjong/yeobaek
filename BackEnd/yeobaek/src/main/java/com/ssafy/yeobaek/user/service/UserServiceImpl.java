@@ -90,7 +90,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
         // S3 presigned URL 변환
-        String profileImageUrl = s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl());
+        String profileImageUrl = s3Service.generatePresignedUrlForThumbnail(user.getProfileImageUrl());
 
         // 북마크 수 조회 (카페 북마크 + 작품 북마크)
         int bookmarkCount = getTotalBookmarkCount(userId);
@@ -126,7 +126,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
 
         // S3 presigned URL 변환
-        String profileImageUrl = s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl());
+        String profileImageUrl = s3Service.generatePresignedUrlForThumbnail(user.getProfileImageUrl());
 
         // 공개 프로필용 사용자 기본 정보 변환 (userId, nickname, userType, profileImageUrl만 공개)
         UserData userData = userMapper.toPublicUserData(user, profileImageUrl);
