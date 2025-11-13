@@ -246,6 +246,7 @@ public class CafeMapper {
     public Slot toAvailableSlotDto(DisplaySlot displaySlot) {
         return Slot.builder()
                 .wallId(displaySlot.getId())
+                .wallName(displaySlot.getWall().getWallName())
                 .width(displaySlot.getWall().getWidthCm())
                 .height(displaySlot.getWall().getHeightCm())
                 .commissionRate(displaySlot.getCommissionRate())
