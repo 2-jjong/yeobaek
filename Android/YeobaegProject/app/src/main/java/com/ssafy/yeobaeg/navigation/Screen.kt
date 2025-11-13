@@ -66,6 +66,9 @@ sealed interface FullScreen : Screen {
 
     @Serializable
     data object ArtistHomeMatching : FullScreen
+
+    @Serializable
+    data class CafeOwnerMatching(val slots: List<DisplaySlot>) : FullScreen
 }
 
 sealed interface BottomNavScreen : Screen {

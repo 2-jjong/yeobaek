@@ -39,7 +39,7 @@ fun BookmarkScreen(
 ) {
     val uiState by bookmarkViewModel.uiState.collectAsStateWithLifecycle()
     var selectedTab by remember { mutableStateOf(0) }
-    val artworks = uiState.artwork?.bookmarkArtworks ?: emptyList()
+    val artworks = uiState.artwork?.artworks ?: emptyList()
     val cafes = uiState.bookmarkCafe?.bookmarkCafes ?: emptyList()
     val tabs = listOf("작품", "카페")
 

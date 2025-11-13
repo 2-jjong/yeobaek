@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.presentation.home.cafeowner
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.ar.core.dependencies.g
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
@@ -48,6 +49,11 @@ class CafeOwnerHomeViewModel @Inject constructor(
         navigator.navigate(
             FullScreen.SpaceScan
         )
+    }
+
+    fun navigateToMatching() = viewModelScope.launch {
+        val cafe = _uiState.value.cafeOwnerInfo ?: return@launch
+        navigator.navigate (FullScreen.CafeOwnerMatching(cafe.displaySlots))
     }
 
     fun navigateToRegister() = viewModelScope.launch {

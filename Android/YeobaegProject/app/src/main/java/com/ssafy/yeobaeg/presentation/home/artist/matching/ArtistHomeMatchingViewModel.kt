@@ -57,7 +57,7 @@ class ArtistHomeMatchingViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoadingArtworks = false,
-                        myArtworks = data.bookmarkArtworks,
+                        myArtworks = data.artworks,
                         artworkPagination = data.pagination,
                     )
                 }
@@ -81,7 +81,7 @@ class ArtistHomeMatchingViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoadingMoreArtworks = false,
-                        myArtworks = it.myArtworks + data.bookmarkArtworks,
+                        myArtworks = it.myArtworks + data.artworks,
                         artworkPagination = data.pagination,
                     )
                 }

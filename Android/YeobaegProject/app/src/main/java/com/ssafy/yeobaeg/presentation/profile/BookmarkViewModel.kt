@@ -49,15 +49,15 @@ class BookmarkViewModel @Inject constructor(
                     _uiState.update { current ->
                         val updatedList =
                             if (append && current.artwork != null)
-                                current.artwork.bookmarkArtworks + result.bookmarkArtworks
+                                current.artwork.artworks + result.artworks
                             else
-                                result.bookmarkArtworks
+                                result.artworks
 
                         currentArtworkPage = result.pagination.currentPage
 
                         current.copy(
                             isLoading = false,
-                            artwork = result.copy(bookmarkArtworks = updatedList),
+                            artwork = result.copy(artworks = updatedList),
                             errorMessage = null
                         )
                     }

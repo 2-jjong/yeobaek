@@ -194,7 +194,7 @@ private fun SelectedArtworkBar(
 }
 
 @Composable
-private fun ArtworkList(
+fun ArtworkList(
     artworks: List<ArtworkSummary>,
     isLoading: Boolean,
     isLoadingMore: Boolean,
@@ -367,7 +367,7 @@ private fun CafeSelectionStep(
         .background(Color.White)
     ) {
         YeobaegTopAppBar(
-            title = "카페 선택",
+            title = "카페 추천 결과",
             onBackClick = onBackClick
         )
 
