@@ -63,11 +63,11 @@ fun CafeOwnerHomeScreen(
             onRegisterClick = viewModel::navigateToRegister,
             onTabSelected = { viewModel.selectTab(it) },
             onScanClick = viewModel::navigateToSpaceScan,
-            onSearchArtistClick = { },
             onWallClick = viewModel::navigateToSlot,
             onExhibitionItemClick = { slotId, slotName ->
                 viewModel.navigateToExhibitionCalendar(slotId, slotName)
-            }
+            },
+            onMatchingClick = viewModel::navigateToMatching,
         )
     }
 }
@@ -79,9 +79,9 @@ private fun CafeOwnerHomeScreen(
     onRegisterClick: () -> Unit = {},
     onTabSelected: (CafeOwnerTab) -> Unit = {},
     onScanClick: () -> Unit = {},
-    onSearchArtistClick: () -> Unit = {},
-    onWallClick: (DisplaySlot) -> Unit = {},
-    onExhibitionItemClick: (Long, String) -> Unit = { _, _ -> }
+    onExhibitionItemClick: (Long, String) -> Unit = { _, _ -> },
+    onMatchingClick: () -> Unit = {},
+    onWallClick: (DisplaySlot) -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -134,7 +134,7 @@ private fun CafeOwnerHomeScreen(
 
                 CafeOwnerHomeActions(
                     onScanClick = onScanClick,
-                    onSearchArtistClick = onSearchArtistClick
+                    onMatchingClick = onMatchingClick
                 )
                 Spacer(Modifier.height(8.dp))
 
@@ -187,7 +187,7 @@ fun CafeOwnerHomeHeader(
 fun CafeOwnerHomeActions(
     onRegisterClick: (() -> Unit)? = null,
     onScanClick: () -> Unit = {},
-    onSearchArtistClick: () -> Unit = {}
+    onMatchingClick: () -> Unit = {}
 ) {
     Row(
         modifier = Modifier
@@ -211,9 +211,9 @@ fun CafeOwnerHomeActions(
 
             YeobaegOutlinedButton(
                 modifier = Modifier.weight(1f),
-                text = "작가 찾기",
+                text = "작품 매칭",
                 icon = R.drawable.ic_cafe_add,
-                onClick = onSearchArtistClick
+                onClick = onMatchingClick
             )
         }
     }

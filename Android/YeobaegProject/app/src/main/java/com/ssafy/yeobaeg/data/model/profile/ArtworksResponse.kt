@@ -2,8 +2,6 @@ package com.ssafy.yeobaeg.data.model.profile
 
 import com.ssafy.yeobaeg.data.model.PaginationResponse
 import com.ssafy.yeobaeg.data.model.toDomain
-import com.ssafy.yeobaeg.domain.model.ArtType
-import com.ssafy.yeobaeg.domain.model.ArtworkCategory
 import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.domain.model.profile.Artwork
 import kotlinx.serialization.Serializable
@@ -16,7 +14,7 @@ data class ArtworksResponse(
 
 fun ArtworksResponse.toDomain(): Artwork {
     return Artwork(
-        bookmarkArtworks = artworks.map { it.toDomain() },
+        artworks = artworks.map { it.toDomain() },
         pagination = pagination.toDomain()
     )
 }

@@ -49,7 +49,7 @@ import com.ssafy.yeobaeg.domain.model.ArtworkCategory
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
-import com.ssafy.yeobaeg.domain.model.art.ArtworkSummary
+import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.main.LocalUserRole
@@ -424,8 +424,6 @@ private fun PreviewArtExploreScreen_Browse() {
                     category = "현대미술",
                     widthCm = 120,
                     heightCm = 80,
-                    status = SlotStatus.AVAILABLE,
-                    bookmarkCount = 128
                 ),
                 ArtworkSummary(
                     artworkId = 2L,
@@ -435,7 +433,6 @@ private fun PreviewArtExploreScreen_Browse() {
                     category = "서양화",
                     widthCm = 90,
                     heightCm = 120,
-                    status = SlotStatus.AVAILABLE,
                     bookmarkCount = 67
                 )
             )
@@ -502,7 +499,6 @@ private fun PreviewSearchResultContent() {
                     category = "현대미술",
                     widthCm = 120,
                     heightCm = 80,
-                    status = SlotStatus.AVAILABLE,
                     bookmarkCount = 128
                 ),
                 ArtworkSummary(
@@ -513,7 +509,6 @@ private fun PreviewSearchResultContent() {
                     category = "서양화",
                     widthCm = 90,
                     heightCm = 120,
-                    status = SlotStatus.AVAILABLE,
                     bookmarkCount = 67
                 )
             )

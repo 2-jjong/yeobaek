@@ -194,7 +194,7 @@ private fun SelectedArtworkBar(
 }
 
 @Composable
-private fun ArtworkList(
+fun ArtworkList(
     artworks: List<ArtworkSummary>,
     isLoading: Boolean,
     isLoadingMore: Boolean,

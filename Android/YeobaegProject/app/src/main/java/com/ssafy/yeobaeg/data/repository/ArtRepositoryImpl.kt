@@ -96,4 +96,15 @@ class ArtRepositoryImpl @Inject constructor(
             response.data?.toDomain() ?: throw Exception(response.message)
         }
     }
+
+    override suspend fun getRecommendedArtworks(
+        slotId: Long,
+        page: Int?,
+        size: Int?
+    ): Result<Artwork> {
+        val response = artworkApiService.getRecommendedArtworks(slotId, page, size)
+        return runCatching {
+            response.data?.toDomain() ?: throw Exception(response.message)
+        }
+    }
 }
