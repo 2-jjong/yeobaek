@@ -13,7 +13,7 @@ import javax.inject.Inject
 sealed interface RouteSideEffect {
     data class Navigate(
         val route: NavKey,
-        val popUpTo: NavKey?
+        val popUpTo: Boolean
     ) : RouteSideEffect
 
     data object NavigateBack : RouteSideEffect

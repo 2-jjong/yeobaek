@@ -12,7 +12,7 @@ class NavigatorImpl @Inject constructor() : Navigator, InternalNavigator {
 
     override suspend fun navigate(
         route: NavKey,
-        popUpTo: NavKey?
+        popUpTo: Boolean
     ) {
         Log.d("LaunchedNavigator", "Navigating to route: $route")
         channel.send(
