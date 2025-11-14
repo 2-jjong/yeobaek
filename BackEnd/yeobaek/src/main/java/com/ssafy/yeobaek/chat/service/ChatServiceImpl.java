@@ -171,9 +171,20 @@ public class ChatServiceImpl implements ChatService {
         // 5. 메시지 목록 조회 (페이지네이션 적용)
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
         Page<Message> messagePage = messageRepository.findByChatRoom(chatRoom, pageable);
-        List<ChatMessage> chatMessages = chatMapper.toChatMessageList(messagePage.getContent());
 
-        // 6. 페이징 정보 생성
+        // 6. DTO 변환 (S3 URL 변환 포함)
+        List<ChatMessage> chatMessages = messagePage.getContent().stream()
+                .map(message -> {
+                    ChatMessage chatMessage = chatMapper.toChatMessage(message);
+                    if (message.getMessageType() == MessageType.IMAGE && message.getImageUrl() != null) {
+                        String presignedUrl = s3Service.generatePresignedUrlForDownload(message.getImageUrl());
+                        chatMessage.setImageUrl(presignedUrl);
+                    }
+                    return chatMessage;
+                })
+                .collect(Collectors.toList());
+
+        // 7. 페이징 정보 생성
         Pagination pagination = new Pagination(
                 messagePage.getNumber(),
                 messagePage.getSize(),
