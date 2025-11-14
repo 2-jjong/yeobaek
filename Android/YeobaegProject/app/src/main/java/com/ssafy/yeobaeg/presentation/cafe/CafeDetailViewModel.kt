@@ -4,8 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.analytics.AnalyticsLogger
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,7 +22,8 @@ data class CafeDetailUiState(
     val cafeDetail: CafeDetail? = null,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val selectedTab: CafeDetailTab = CafeDetailTab.EXHIBITION
+    val selectedTab: CafeDetailTab = CafeDetailTab.EXHIBITION,
+    val userRole: UserRole? = null
 )
 
 enum class CafeDetailTab {
@@ -32,11 +35,20 @@ enum class CafeDetailTab {
 class CafeDetailViewModel @Inject constructor(
     private val cafeRepository: CafeRepository,
     private val navigator: Navigator,
-    private val analyticsLogger: AnalyticsLogger
+    private val analyticsLogger: AnalyticsLogger,
+    private val authSessionManager: AuthSessionManager
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(CafeDetailUiState())
     val uiState: StateFlow<CafeDetailUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            authSessionManager.currentUserRole.collect { role ->
+                _uiState.update { it.copy(userRole = role) }
+            }
+        }
+    }
     
     /**
      * 카페 상세 정보 로드
@@ -47,6 +59,10 @@ class CafeDetailViewModel @Inject constructor(
             
             cafeRepository.getCafeDetail(cafeId)
                 .onSuccess { detail ->
+                    Log.d("CafeDetailViewModel", "Loaded cafe detail with ${detail.displaySlots.size} slots")
+                    detail.displaySlots.forEach { slot ->
+                        Log.d("CafeDetailViewModel", "Slot: wid=${slot.wid}, name=${slot.wName}, width=${slot.width}, height=${slot.height}, commission=${slot.commission}, requirements=${slot.requirements}")
+                    }
                     _uiState.update {
                         it.copy(
                             cafeDetail = detail,
@@ -131,12 +147,17 @@ class CafeDetailViewModel @Inject constructor(
     /**
      * 전시 캘린더로 이동
      */
-    fun navigateToExhibitionCalendar(slotId: Long, slotName: String) {
+    fun navigateToExhibitionCalendar(slot: com.ssafy.yeobaeg.domain.model.DisplaySlot) {
         viewModelScope.launch {
+            Log.d("CafeDetailViewModel", "Navigating to calendar with slot: wid=${slot.wid}, name=${slot.wName}, width=${slot.width}, height=${slot.height}, commission=${slot.commission}, requirements=${slot.requirements}")
             navigator.navigate(
                 route = FullScreen.ExhibitionCalendar(
-                    slotId = slotId,
-                    slotName = slotName
+                    slotId = slot.wid,
+                    slotName = slot.wName,
+                    width = slot.width,
+                    height = slot.height,
+                    commission = slot.commission,
+                    requirements = slot.requirements
                 )
             )
         }

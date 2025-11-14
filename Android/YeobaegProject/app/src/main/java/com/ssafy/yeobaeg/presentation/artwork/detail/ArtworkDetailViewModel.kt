@@ -5,8 +5,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.analytics.AnalyticsLogger
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
+import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
@@ -22,7 +24,8 @@ import javax.inject.Inject
 data class ArtworkDetailUiState(
     val loading: Boolean = true,
     val error: String? = null,
-    val artwork: ArtworkDetail? = null
+    val artwork: ArtworkDetail? = null,
+    val userRole: UserRole? = null
 )
 
 @HiltViewModel
@@ -30,13 +33,22 @@ class ArtworkDetailViewModel @Inject constructor(
     private val artRepository: ArtRepository,
     private val navigator: Navigator,
     private val snackBarController: SnackBarController,
-    private val analyticsLogger: AnalyticsLogger
+    private val analyticsLogger: AnalyticsLogger,
+    private val authSessionManager: AuthSessionManager
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ArtworkDetailUiState())
     val uiState: StateFlow<ArtworkDetailUiState> = _uiState.asStateFlow()
 
     private var toggleJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            authSessionManager.currentUserRole.collect { role ->
+                _uiState.update { it.copy(userRole = role) }
+            }
+        }
+    }
 
     fun onBackClick() = viewModelScope.launch {
         navigator.navigateBack()
