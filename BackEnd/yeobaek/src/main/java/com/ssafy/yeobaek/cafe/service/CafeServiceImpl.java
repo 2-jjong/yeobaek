@@ -585,7 +585,7 @@ public class CafeServiceImpl implements CafeService {
 
     /**
      * 인기 카페 목록 조회
-     * - 북마크 수와 조회수를 9:1로 가중치를 두어 상위 10개 카페를 조회
+     * - 북마크 수와 조회수를 9:1로 가중치를 두어 상위 N개 카페를 조회
      * @param size 조회할 작품 수 (최대 20개)
      * @return 인기 카페 목록
      */
