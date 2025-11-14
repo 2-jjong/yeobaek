@@ -83,18 +83,18 @@ public class CafeMapper {
      * Cafe 엔티티와 DisplayWall 엔티티 리스트를 내 카페 정보 DTO로 변환
      * @param cafe 카페 정보
      * @param displayWalls 카페 공간 정보
+     * @param primaryImage 카페 대표 이미지
+     * @param exhibitionInfoMap 전시 정보
+     * @param collaboratingArtists 협업 작가 수
      * @return MyCafeData DTO
      */
-    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> displayWalls, String primaryImage, Map<Long, ExhibitionInfo> exhibitionInfoMap) {
+    public MyCafeData toMyCafeData(Cafe cafe, List<DisplayWall> displayWalls, String primaryImage, Map<Long, ExhibitionInfo> exhibitionInfoMap, Long collaboratingArtists) {
 
         // 통계 계산
         long totalSlots = displayWalls.size();
         long exhibitingSlots = displayWalls.stream()
                 .filter(w -> w.getSlot() != null && w.getSlot().getIsExhibiting())
                 .count();
-
-        // 협업 작가 수 (임시)
-        long collaboratingArtists = 15L;
 
         // 슬롯 정보
         List<Slot> slots = displayWalls.stream()

@@ -229,8 +229,11 @@ public class CafeServiceImpl implements CafeService {
         // 4. 카페 이미지 URL 변환
         String primaryImage = s3Service.generatePresignedUrlForThumbnail(cafe.getImages().get(0));
 
-        // 5. DTO 변환하여 반환
-        return cafeMapper.toMyCafeData(cafe, walls, primaryImage, exhibitionInfoMap);
+        // 5. 협업 작가 수 조회
+        Long collaboratingArtists = exhibitionRepository.countDistinctArtistsByCafeId(cafe.getId());
+
+        // 6. DTO 변환하여 반환
+        return cafeMapper.toMyCafeData(cafe, walls, primaryImage, exhibitionInfoMap, collaboratingArtists);
     }
 
 
