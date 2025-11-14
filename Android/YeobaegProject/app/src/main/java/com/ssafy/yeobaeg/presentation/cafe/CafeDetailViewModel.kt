@@ -42,7 +42,7 @@ class CafeDetailViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            authSessionManager.userRole.collect { role ->
+            authSessionManager.currentUserRole.collect { role ->
                 _uiState.update { it.copy(userRole = role) }
             }
         }
