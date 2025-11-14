@@ -1,12 +1,25 @@
 package com.ssafy.yeobaeg.presentation.chat
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -16,8 +29,25 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,11 +59,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
+import com.ssafy.yeobaeg.presentation.chat.matching.MatchingNavHost
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
 import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
-import com.ssafy.yeobaeg.ui.theme.*
+import com.ssafy.yeobaeg.ui.theme.YeobaegBackground
+import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
+import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
+import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
+import com.ssafy.yeobaeg.ui.theme.jansilFont
 import kotlinx.coroutines.delay
 
 private const val TAG = "ChattingScreen"
@@ -46,6 +84,9 @@ fun ChattingScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val myUserId = viewModel.myUserId.collectAsState().value
+    val myUserRole = viewModel.myUserRole.collectAsState().value
+    var showMatchingFlow by remember { mutableStateOf(false) }
+    var inputText by remember { mutableStateOf("") }
 
     DisposableEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
@@ -56,25 +97,36 @@ fun ChattingScreen(
         }
     }
 
-    var inputText by remember { mutableStateOf("") }
+    if (showMatchingFlow) {
+        MatchingNavHost(
+            myId = myUserId ?: 0L,
+            partnerId = uiState.chatRoomMessages.chatRoom.partnerId,
+            myRole = myUserRole?: UserRole.ARTIST,
+            onFinish = { showMatchingFlow = false }
+        )
 
-    ChattingScreenContent(
-        title = uiState.chatRoomMessages.chatRoom.partnerName,
-        profileImg = uiState.chatRoomMessages.chatRoom.partnerImageUrl,
-        messages = uiState.chatRoomMessages.messages,
-        isLoading = uiState.isLoading,
-        errorMessage = uiState.errorMessage,
-        inputText = inputText,
-        onInputChange = { inputText = it },
-        onSendClick = { message ->
-            if (message.isNotBlank()) {
-                viewModel.sendMessage(message, myUserId)
-                inputText = ""
-            }
-        },
-        onBackClick = viewModel::navigateBack,
-        myUserId = myUserId
-    )
+    } else {
+        ChattingScreenContent(
+            title = uiState.chatRoomMessages.chatRoom.partnerName,
+            profileImg = uiState.chatRoomMessages.chatRoom.partnerImageUrl,
+            messages = uiState.chatRoomMessages.messages,
+            isLoading = uiState.isLoading,
+            errorMessage = uiState.errorMessage,
+            inputText = inputText,
+            onInputChange = { inputText = it },
+            onSendClick = { message ->
+                if (message.isNotBlank()) {
+                    viewModel.sendMessage(message, myUserId)
+                    inputText = ""
+                }
+            },
+            onBackClick = viewModel::navigateBack,
+            onMatchingClick = { showMatchingFlow = true },
+            myUserId = myUserId
+        )
+    }
+
+
 }
 
 /**
@@ -92,6 +144,7 @@ fun ChattingScreenContent(
     onInputChange: (String) -> Unit = {},
     onSendClick: (String) -> Unit = {},
     onBackClick: (() -> Unit)? = null,
+    onMatchingClick: () -> Unit = {},
     myUserId: Long?
 ) {
     val listState = rememberLazyListState()
@@ -125,7 +178,8 @@ fun ChattingScreenContent(
                     .padding(horizontal = 10.dp, vertical = 8.dp),
                 value = inputText,
                 onValueChange = onInputChange,
-                onSendClick = onSendClick
+                onSendClick = onSendClick,
+                onMatchingClick = onMatchingClick
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -214,7 +268,7 @@ fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
                     .wrapContentWidth()
             ) {
                 Text(
-                    text = message.content,
+                    text = message.content?:"",
                     fontFamily = jansilFont,
                     color = YeobaegBlack,
                     fontSize = 15.sp,
@@ -255,7 +309,7 @@ fun MyMessageBubble(message: ChatMessage) {
                     .wrapContentWidth()
             ) {
                 Text(
-                    text = message.content,
+                    text = message.content?:"",
                     fontFamily = jansilFont,
                     color = YeobaegWhite,
                     fontSize = 15.sp,
@@ -279,7 +333,7 @@ fun ChatInputBar(
     value: String,
     onValueChange: (String) -> Unit,
     onSendClick: (String) -> Unit,
-    onAddClick: () -> Unit = {},
+    onMatchingClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val trimmedValue = value.trim()
@@ -402,9 +456,11 @@ fun ChatInputBar(
                     DialogOption("사진", Color(0xFFE3F2FD)) { /* TODO: 사진 업로드 로직 */ showDialog =
                         false
                     }
-                    DialogOption("파일", Color(0xFFF3E5F5)) { /* TODO: 파일 업로드 로직 */ showDialog =
-                        false
+                    DialogOption("매칭 요청", Color(0xFFFFF8E1)) {
+                        showDialog = false
+                        onMatchingClick()
                     }
+
                     DialogOption("매칭 요청", Color(0xFFFFF8E1)) { /* TODO: 매칭 로직 */ showDialog =
                         false
                     }

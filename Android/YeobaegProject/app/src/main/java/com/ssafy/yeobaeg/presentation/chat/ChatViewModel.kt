@@ -3,6 +3,7 @@ package com.ssafy.yeobaeg.presentation.chat
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomInfo
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomMessages
@@ -45,6 +46,7 @@ class ChatViewModel @Inject constructor(
     val uiState: StateFlow<ChatUiState> = _uiState
     private var receiveJob: Job? = null
     val myUserId: StateFlow<Long?> = authSessionManager.currentUserId
+    val myUserRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
 
     /** 채팅방 구독 시작 (입장 시) */
     fun subscribeToChatRoom(chatRoomId: Long) {

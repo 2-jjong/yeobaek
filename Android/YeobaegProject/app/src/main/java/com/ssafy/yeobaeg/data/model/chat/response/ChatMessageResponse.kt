@@ -6,12 +6,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChatMessageResponse(
     val messageId: Long,
-    val senderId: Long,
+    val senderId: Long? = null,
     val messageType: String,
-    val content: String,
-    val imageUrl: String?=null,
-    val exhibitionId:Long?=null,
-    val exhibition: ExhibitionInfoResponse?=null,
+    val content: String? = null,
+    val imageUrl: String? = null,
+    val exhibitionId: Long? = null,
+    val exhibition: ExhibitionInfoResponse? = null,
     val isRead: Boolean,
     val createdAt: String
 )
@@ -23,7 +23,7 @@ fun ChatMessageResponse.toDomain(): ChatMessage {
         messageType = messageType,
         content = content,
         imageUrl = imageUrl,
-        exhibitionId=exhibitionId,
+        exhibitionId = exhibitionId,
         exhibition = exhibition,
         isRead = isRead,
         createdAt = createdAt
