@@ -148,7 +148,7 @@ public class CafeMapper {
      * @param categories 카페 카테고리 목록
      * @return CafeDetailData DTO
      */
-    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage, Map<Long, ExhibitionInfo> exhibitionInfoMap, Boolean isBookmarked) {
+    public CafeDetailData toCafeDetailData(Cafe cafe, List<DisplayWall> displayWalls, List<String> categories, List<String> images, String profileImage, Map<Long, ExhibitionInfo> exhibitionInfoMap, Boolean isBookmarked, RatingStatsData ratingStats) {
 
         // 1. 슬롯 정보
         List<Slot> slots = displayWalls.stream()
@@ -157,8 +157,6 @@ public class CafeMapper {
 
         // 2. 카페 사장 정보 DTO 생성
         User ownerUser = cafe.getCafeOwner();
-        // TODO: 실제 작가 평점 정보 연동 필요
-        RatingStatsData ratingStats = new RatingStatsData(0, 0.0);
         CafeOwner owner = new CafeOwner(ownerUser.getId(), ownerUser.getNickname(), profileImage, ratingStats);
 
         // 3. 최종 CafeDetail DTO 조립
