@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.presentation.cafe.components.*
 
@@ -58,8 +59,8 @@ fun CafeDetailScreen(
                         onTabSelected = viewModel::selectTab,
                         onBookmarkClick = viewModel::toggleBookmark,
                         onNavigateBack = viewModel::navigateBack,
-                        onSlotClick = { slotId, slotName ->
-                            viewModel.navigateToExhibitionCalendar(slotId, slotName)
+                        onSlotClick = { slot ->
+                            viewModel.navigateToExhibitionCalendar(slot)
                         },
                         bottomPadding = paddingValues.calculateBottomPadding()
                     )
@@ -100,7 +101,7 @@ fun CafeDetailContent(
     onTabSelected: (CafeDetailTab) -> Unit,
     onBookmarkClick: () -> Unit,
     onNavigateBack: () -> Unit,
-    onSlotClick: (slotId: Long, slotName: String) -> Unit = { _, _ -> },
+    onSlotClick: (DisplaySlot) -> Unit = { },
     bottomPadding: androidx.compose.ui.unit.Dp
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -163,7 +164,7 @@ fun CafeDetailContent(
                                 DisplaySlotCard(
                                     slot = slot,
                                     onClick = {
-                                        onSlotClick(slot.wid, slot.wName)
+                                        onSlotClick(slot)
                                     }
                                 )
                             }

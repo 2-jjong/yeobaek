@@ -45,6 +45,10 @@ class CafeDetailViewModel @Inject constructor(
             
             cafeRepository.getCafeDetail(cafeId)
                 .onSuccess { detail ->
+                    Log.d("CafeDetailViewModel", "Loaded cafe detail with ${detail.displaySlots.size} slots")
+                    detail.displaySlots.forEach { slot ->
+                        Log.d("CafeDetailViewModel", "Slot: wid=${slot.wid}, name=${slot.wName}, width=${slot.width}, height=${slot.height}, commission=${slot.commission}, requirements=${slot.requirements}")
+                    }
                     _uiState.update {
                         it.copy(
                             cafeDetail = detail,
@@ -122,12 +126,17 @@ class CafeDetailViewModel @Inject constructor(
     /**
      * 전시 캘린더로 이동
      */
-    fun navigateToExhibitionCalendar(slotId: Long, slotName: String) {
+    fun navigateToExhibitionCalendar(slot: com.ssafy.yeobaeg.domain.model.DisplaySlot) {
         viewModelScope.launch {
+            Log.d("CafeDetailViewModel", "Navigating to calendar with slot: wid=${slot.wid}, name=${slot.wName}, width=${slot.width}, height=${slot.height}, commission=${slot.commission}, requirements=${slot.requirements}")
             navigator.navigate(
                 route = FullScreen.ExhibitionCalendar(
-                    slotId = slotId,
-                    slotName = slotName
+                    slotId = slot.wid,
+                    slotName = slot.wName,
+                    width = slot.width,
+                    height = slot.height,
+                    commission = slot.commission,
+                    requirements = slot.requirements
                 )
             )
         }
