@@ -1,9 +1,11 @@
 package com.ssafy.yeobaeg.presentation.cafe
 
+import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,8 +24,29 @@ fun CafeDetailScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    val scrollState = rememberScrollState()
+    val sessionStart = remember(cafeId) { SystemClock.elapsedRealtime() }
+    var maxPct by remember(cafeId) { mutableIntStateOf(0) }
+
     LaunchedEffect(cafeId) {
         viewModel.loadCafeDetail(cafeId)
+    }
+
+    LaunchedEffect(scrollState.value, scrollState.maxValue) {
+        if (scrollState.maxValue > 0) {
+            val currentPct = ((scrollState.value.toFloat() / scrollState.maxValue) * 100).toInt()
+            if (currentPct > maxPct) {
+                maxPct = currentPct
+            }
+        }
+    }
+
+    DisposableEffect(cafeId) {
+        onDispose {
+            val dwell = SystemClock.elapsedRealtime() - sessionStart
+            if (cafeId < 0 || dwell < 1000) return@onDispose
+            viewModel.logViewEnd(cafeId, dwell, maxPct)
+        }
     }
 
     Scaffold(

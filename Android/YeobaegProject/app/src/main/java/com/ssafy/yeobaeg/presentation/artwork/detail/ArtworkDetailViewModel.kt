@@ -1,8 +1,10 @@
 // presentation/artwork/detail/ArtworkDetailViewModel.kt
 package com.ssafy.yeobaeg.presentation.artwork.detail
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ssafy.yeobaeg.analytics.AnalyticsLogger
 import com.ssafy.yeobaeg.domain.model.art.ArtworkDetail
 import com.ssafy.yeobaeg.domain.repository.ArtRepository
 import com.ssafy.yeobaeg.navigation.FullScreen
@@ -27,7 +29,8 @@ data class ArtworkDetailUiState(
 class ArtworkDetailViewModel @Inject constructor(
     private val artRepository: ArtRepository,
     private val navigator: Navigator,
-    private val snackBarController: SnackBarController
+    private val snackBarController: SnackBarController,
+    private val analyticsLogger: AnalyticsLogger
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ArtworkDetailUiState())
@@ -45,6 +48,7 @@ class ArtworkDetailViewModel @Inject constructor(
             artRepository.getArtworkDetail(artworkId)
                 .onSuccess { detail ->
                     _uiState.update { it.copy(loading = false, artwork = detail) }
+                    analyticsLogger.logArtworkClick(detail.artworkId)
                 }
                 .onFailure { error ->
                     _uiState.update {
@@ -68,6 +72,12 @@ class ArtworkDetailViewModel @Inject constructor(
             _uiState.update { it.copy(artwork = d.copy(isBookmarked = !b)) }
             artRepository.toggleBookmark(d.artworkId).onSuccess { response ->
                 _uiState.update { it.copy(artwork = d.copy(isBookmarked = response)) }
+                if(response) {
+                    analyticsLogger.logArtworkLike(d.artworkId)
+                }
+                else {
+                    analyticsLogger.logArtworkUnlike(d.artworkId)
+                }
             }.onFailure {
                 _uiState.update { it.copy(artwork = d.copy(isBookmarked = b)) }
                 snackBarController.showError(it.message ?: "오류")
@@ -78,5 +88,10 @@ class ArtworkDetailViewModel @Inject constructor(
     fun navigateToArtist() = viewModelScope.launch {
         val artistId = _uiState.value.artwork?.artist?.artistId ?: return@launch
         navigator.navigate(FullScreen.ArtistProfile(artistId))
+    }
+
+    fun logViewEnd(id: Long, dwell: Long, maxPct: Int) {
+        Log.d("logViewEnd", "$id / $dwell / $maxPct")
+        analyticsLogger.logArtworkViewEnd(artworkId = id, dwellMs = dwell, scrollPct = maxPct)
     }
 }
