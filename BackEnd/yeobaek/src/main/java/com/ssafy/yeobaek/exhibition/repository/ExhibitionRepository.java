@@ -150,4 +150,12 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             @Param("slotId") Long slotId,
             @Param("fromDate") LocalDate fromDate
     );
+
+    /**
+     * 특정 상태와 시작일을 기준으로 전시 목록 조회
+     * @param state 전시 상태
+     * @param startDate 전시 시작일
+     * @return 전시 목록
+     */
+    List<Exhibition> findAllByStateAndStartDate(ExhibitionState state, LocalDate startDate);
 }
