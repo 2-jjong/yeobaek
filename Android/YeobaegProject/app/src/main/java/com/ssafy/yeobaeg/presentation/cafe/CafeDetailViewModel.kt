@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.cafe.CafeDetail
 import com.ssafy.yeobaeg.domain.repository.CafeRepository
+import com.ssafy.yeobaeg.domain.repository.ChatRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -30,9 +31,11 @@ enum class CafeDetailTab {
     INFO         // 정보
 }
 
+private const val TAG = "CafeDetailViewModel"
 @HiltViewModel
 class CafeDetailViewModel @Inject constructor(
     private val cafeRepository: CafeRepository,
+    private val chatRepository: ChatRepository,
     private val navigator: Navigator,
     private val authSessionManager: AuthSessionManager
 ) : ViewModel() {
@@ -127,6 +130,22 @@ class CafeDetailViewModel @Inject constructor(
                             error = "북마크 처리에 실패했습니다"
                         )
                     }
+                }
+        }
+    }
+
+    fun onInquiryClick() {
+        val cafeId = _uiState.value.cafeDetail?.cafeId ?: return
+
+        viewModelScope.launch {
+            chatRepository.createChatRoom(cafeId)
+                .onSuccess { room ->
+                    navigator.navigate(
+                        FullScreen.ChattingScreen(room.chatRoomId)
+                    )
+                }
+                .onFailure { e ->
+                    Log.d(TAG, "onInquiryClick: 채팅방 생성 실패")
                 }
         }
     }

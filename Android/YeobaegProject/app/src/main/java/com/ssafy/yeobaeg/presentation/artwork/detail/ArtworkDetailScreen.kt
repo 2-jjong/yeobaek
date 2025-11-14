@@ -85,7 +85,8 @@ fun ArtworkDetailScreen(
             userRole = state.userRole,
             onBackClick = viewModel::onBackClick,
             toggleBookmark = viewModel::toggleBookmark,
-            onArtistClick = viewModel::navigateToArtist
+            onArtistClick = viewModel::navigateToArtist,
+            onInquiryClick = viewModel::onInquiryClick
         )
     }
 }
