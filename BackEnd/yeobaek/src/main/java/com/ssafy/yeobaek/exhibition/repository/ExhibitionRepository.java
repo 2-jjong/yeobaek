@@ -158,4 +158,12 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
      * @return 전시 목록
      */
     List<Exhibition> findAllByStateAndStartDate(ExhibitionState state, LocalDate startDate);
+
+    /**
+     * 특정 상태와 종료일을 기준으로 전시 목록 조회
+     * @param state 전시 상태
+     * @param endDate 전시 종료일
+     * @return 전시 목록
+     */
+    List<Exhibition> findAllByStateAndEndDate(ExhibitionState state, LocalDate endDate);
 }

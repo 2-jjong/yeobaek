@@ -29,6 +29,7 @@ public class ExhibitionScheduler {
     public void manageExhibitionStatus() {
         log.info("매일 자정 전시 상태 업데이트 스케줄러 실행");
         startExhibitions();
+        completeExhibitions();
     }
 
     private void startExhibitions() {
@@ -43,8 +44,8 @@ public class ExhibitionScheduler {
                 exhibition.start();
 
                 // 2. 채팅방에 시스템 메시지 전송
-                Long cafeOwnerId = exhibition.getCafe().getCafeOwner().getId();
-                Long artistId = exhibition.getArtwork().getArtist().getUser().getId();
+                Long cafeOwnerId = exhibition.getCafe().getId();
+                Long artistId = exhibition.getArtwork().getArtist().getId();
                 ChatRoomData chatRoomData = chatService.createChatRoom(cafeOwnerId, artistId);
                 Long chatRoomId = chatRoomData.getChatRoom().getChatRoomId();
 
@@ -54,6 +55,33 @@ public class ExhibitionScheduler {
 
             } catch (Exception e) {
                 log.error("전시 ID {} 시작 처리 중 오류 발생: {}", exhibition.getId(), e.getMessage());
+            }
+        }
+    }
+
+    private void completeExhibitions() {
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        List<Exhibition> exhibitionsToComplete = exhibitionRepository.findAllByStateAndEndDate(ExhibitionState.ONGOING, yesterday);
+
+        log.info("어제 종료된 전시 {}개를 확인했습니다.", exhibitionsToComplete.size());
+
+        for (Exhibition exhibition : exhibitionsToComplete) {
+            try {
+                // 1. 전시 상태 변경 (ONGOING -> COMPLETED)
+                exhibition.complete();
+
+                // 2. 채팅방에 시스템 메시지 전송
+                Long cafeOwnerId = exhibition.getCafe().getId();
+                Long artistId = exhibition.getArtwork().getArtist().getId();
+                ChatRoomData chatRoomData = chatService.createChatRoom(cafeOwnerId, artistId);
+                Long chatRoomId = chatRoomData.getChatRoom().getChatRoomId();
+
+                chatService.sendSystemMessage(chatRoomId, null, MessageType.ENDED, exhibition, null);
+
+                log.info("전시 ID {}가 종료되었습니다.", exhibition.getId());
+
+            } catch (Exception e) {
+                log.error("전시 ID {} 종료 처리 중 오류 발생: {}", exhibition.getId(), e.getMessage());
             }
         }
     }
