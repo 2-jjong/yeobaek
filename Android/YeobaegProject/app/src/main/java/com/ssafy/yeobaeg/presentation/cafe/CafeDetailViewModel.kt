@@ -171,7 +171,7 @@ class CafeDetailViewModel @Inject constructor(
     }
 
     fun logViewEnd(id: Long, dwell: Long, maxPct: Int) {
-        Log.d("logViewEnd", "$id / $dwell / $maxPct")
+        Log.d("logViewEnd cafe", "$id / $dwell / $maxPct")
         analyticsLogger.logCafeViewEnd(cafeId = id, dwellMs = dwell, scrollPct = maxPct)
     }
 }

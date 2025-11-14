@@ -103,7 +103,7 @@ class ArtworkDetailViewModel @Inject constructor(
     }
 
     fun logViewEnd(id: Long, dwell: Long, maxPct: Int) {
-        Log.d("logViewEnd", "$id / $dwell / $maxPct")
+        Log.d("logViewEnd art", "$id / $dwell / $maxPct")
         analyticsLogger.logArtworkViewEnd(artworkId = id, dwellMs = dwell, scrollPct = maxPct)
     }
 }
