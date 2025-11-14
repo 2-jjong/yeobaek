@@ -23,8 +23,7 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchingFeeScreen(
-    onNext: () -> Unit,
-    viewModel: MatchingViewModel
+    viewModel: MatchingViewModel = hiltViewModel()
 ) {
     var selectedFee by remember { mutableStateOf<Int?>(null) }
     var expanded by remember { mutableStateOf(false) }
@@ -45,7 +44,6 @@ fun MatchingFeeScreen(
                     onClick = {
                         selectedFee?.let {
                             viewModel.setCommission(it.toDouble())
-                            onNext()
                         }
                     }, enabled = selectedFee != null,
                     modifier = Modifier.fillMaxWidth()

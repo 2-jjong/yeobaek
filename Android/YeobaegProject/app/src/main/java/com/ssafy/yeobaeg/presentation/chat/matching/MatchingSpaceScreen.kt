@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.chat.matching
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,11 +44,11 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 
+private const val TAG = "MatchingSpaceScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchingSpaceScreen(
-    onNext: () -> Unit,
-    viewModel: MatchingViewModel
+    viewModel: MatchingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val selectedId = remember { mutableStateOf<Long?>(null) }
@@ -56,6 +57,7 @@ fun MatchingSpaceScreen(
         val startDate = uiState.proposal.startDate
         val endDate = uiState.proposal.endDate
 
+        Log.d(TAG, "MatchingSpaceScreen: $startDate $endDate")
         if (startDate.isNotEmpty() && endDate.isNotEmpty()) {
             viewModel.loadPossibleSlots()
         }
@@ -75,8 +77,7 @@ fun MatchingSpaceScreen(
                     text = "다음",
                     onClick = {
                         selectedId.value?.let {
-                            viewModel.setSpace(uiState.proposal.cafeId, it)
-                            onNext()
+                            viewModel.setSpace(it)
                         }
                     },
                     enabled = selectedId.value != null && !uiState.isLoading,
@@ -146,11 +147,16 @@ fun SpaceCard(space: PossibleSlotSummary, selected: Boolean, onClick: () -> Unit
         colors = CardDefaults.cardColors(containerColor = Color(0xFFFDFDFD))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(space.wallName, fontWeight = FontWeight.SemiBold, fontSize = 16.sp, fontFamily = jansilFont)
+            Text(
+                space.wallName,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                fontFamily = jansilFont
+            )
             Spacer(Modifier.height(4.dp))
             InfoRow("크기", "${space.width}cm x ${space.height}cm")
             InfoRow("수수료", "${space.commissionRate}%")
-            if(space.requirements!=null){
+            if (space.requirements != null) {
                 InfoRow("요구사항", space.requirements)
             }
         }

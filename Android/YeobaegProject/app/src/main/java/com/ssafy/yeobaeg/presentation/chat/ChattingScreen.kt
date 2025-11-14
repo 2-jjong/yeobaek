@@ -63,7 +63,6 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.domain.model.chat.MessageType
-import com.ssafy.yeobaeg.presentation.chat.matching.MatchingNavHost
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
 import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
@@ -99,37 +98,30 @@ fun ChattingScreen(
         }
     }
 
-    if (showMatchingFlow) {
-        MatchingNavHost(
-            myId = myUserId ?: 0L,
-            partnerId = uiState.chatRoomMessages.chatRoom.partnerId,
-            myRole = myUserRole ?: UserRole.ARTIST,
-            onFinish = { showMatchingFlow = false }
-        )
 
-    } else {
-        ChattingScreenContent(
-            title = uiState.chatRoomMessages.chatRoom.partnerName,
-            profileImg = uiState.chatRoomMessages.chatRoom.partnerImageUrl,
-            messages = uiState.chatRoomMessages.messages,
-            partnerName = uiState.chatRoomMessages.chatRoom.partnerName,
-            isLoading = uiState.isLoading,
-            errorMessage = uiState.errorMessage,
-            inputText = inputText,
-            onInputChange = { inputText = it },
-            onSendClick = { message ->
-                if (message.isNotBlank()) {
-                    viewModel.sendMessage(message, myUserId)
-                    inputText = ""
-                }
-            },
-            onBackClick = viewModel::navigateBack,
-            onMatchingClick = { showMatchingFlow = true },
-            myUserId = myUserId
-        )
-    }
-
-
+    ChattingScreenContent(
+        title = uiState.chatRoomMessages.chatRoom.partnerName,
+        profileImg = uiState.chatRoomMessages.chatRoom.partnerImageUrl,
+        messages = uiState.chatRoomMessages.messages,
+        partnerName = uiState.chatRoomMessages.chatRoom.partnerName,
+        isLoading = uiState.isLoading,
+        errorMessage = uiState.errorMessage,
+        inputText = inputText,
+        onInputChange = { inputText = it },
+        onSendClick = { message ->
+            if (message.isNotBlank()) {
+                viewModel.sendMessage(message, myUserId)
+                inputText = ""
+            }
+        },
+        onBackClick = viewModel::navigateBack,
+        onMatchingClick = {
+            viewModel.navigateToMatching(
+                uiState.chatRoomMessages.chatRoom.partnerId,
+            )
+        },
+        myUserId = myUserId
+    )
 }
 
 /**

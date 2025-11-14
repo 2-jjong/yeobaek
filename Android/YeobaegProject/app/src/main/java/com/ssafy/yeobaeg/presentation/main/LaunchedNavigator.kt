@@ -31,7 +31,11 @@ private fun InternalLaunchedNavigator(
                 Log.d("LaunchedNavigator", "Received side effect: $sideEffect")
                 when (sideEffect) {
                     is RouteSideEffect.NavigateBack -> {
-                        navBackStack.removeLastOrNull()
+                        if (sideEffect.popUpTo) {
+                            while (navBackStack.isNotEmpty() && navBackStack.last().javaClass != sideEffect.route?.javaClass) {
+                                navBackStack.removeLastOrNull()
+                            }
+                        } else navBackStack.removeLastOrNull()
                     }
 
                     is RouteSideEffect.Navigate -> {

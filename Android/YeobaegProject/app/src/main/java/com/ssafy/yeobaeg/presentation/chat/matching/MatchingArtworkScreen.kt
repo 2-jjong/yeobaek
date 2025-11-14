@@ -33,8 +33,7 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchingArtworkScreen(
-    onNext: () -> Unit,
-    viewModel: MatchingViewModel
+    viewModel: MatchingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedId by remember { mutableStateOf<Long?>(null) }
@@ -60,7 +59,6 @@ fun MatchingArtworkScreen(
                     onClick = {
                         selectedId?.let {
                             viewModel.setArtwork(it)
-                            onNext()
                         }
                     },
                     enabled = selectedId != null && !uiState.isLoading,

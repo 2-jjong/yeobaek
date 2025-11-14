@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.chat.matching
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,6 +19,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDateRangePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -29,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegStepBar
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
@@ -37,16 +40,23 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+private const val TAG = "MatchingDateScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchingDateScreen(
-    onNext: () -> Unit,
-    viewModel: MatchingViewModel
+    myId:Long?,
+    myRole: UserRole?,
+    partnerId:Long,
+    viewModel: MatchingViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val datePickerState = rememberDateRangePickerState()
     val formatter = remember { SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()) }
 
+//    LaunchedEffect(Unit) {
+//        viewModel.setChatContext(myRole, partnerId)
+//        viewModel.setMyId(myId)
+//    }
     Scaffold(
         topBar = { YeobaegStepBar(1, 5) },
         bottomBar = {
@@ -63,9 +73,12 @@ fun MatchingDateScreen(
                             datePickerState.selectedStartDateMillis?.let { formatter.format(Date(it)) }
                         val end =
                             datePickerState.selectedEndDateMillis?.let { formatter.format(Date(it)) }
+                        Log.d(TAG, "MatchingDateScreen: $myId $myRole $partnerId $start $end")
+
                         if (start != null && end != null) {
+                            viewModel.setChatContext(myRole, partnerId)
+                            viewModel.setMyId(myId)
                             viewModel.setDate(start, end)
-                            onNext()
                         }
                     },
                     enabled = !uiState.isLoading && datePickerState.selectedStartDateMillis != null,

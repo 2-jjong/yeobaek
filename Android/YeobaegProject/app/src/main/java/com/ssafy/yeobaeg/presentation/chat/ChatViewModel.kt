@@ -1,6 +1,5 @@
 package com.ssafy.yeobaeg.presentation.chat
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.UserRole
@@ -172,5 +171,9 @@ class ChatViewModel @Inject constructor(
 
     fun navigateBack() = viewModelScope.launch {
         navigator.navigateBack()
+    }
+
+    fun navigateToMatching(partnerId:Long)=viewModelScope.launch {
+        navigator.navigate(FullScreen.MatchingDateScreen(myUserId.value,myUserRole.value,partnerId))
     }
 }

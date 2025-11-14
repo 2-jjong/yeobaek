@@ -25,19 +25,12 @@ import com.ssafy.yeobaeg.ui.theme.jansilFont
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchingNoteScreen(
-    onSubmit: () -> Unit,
-    onSkip: () -> Unit = {},
-    viewModel: MatchingViewModel
-
+    viewModel: MatchingViewModel = hiltViewModel()
 ) {
     var noteText by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onSubmit()
-        }
-    }
+
     Scaffold(
         topBar = { YeobaegStepBar(5, 5) },
         bottomBar = {
@@ -46,7 +39,6 @@ fun MatchingNoteScreen(
                     viewModel.setRequirements(noteText)
                     viewModel.requestMatching()
                 },
-                onSkip = onSkip,
                 enabled = !uiState.isLoading
             )
         }
@@ -132,7 +124,6 @@ fun MatchingNoteContent(
 @Composable
 fun MatchingNoteBottomBar(
     onSubmit: () -> Unit,
-    onSkip: () -> Unit,
     enabled: Boolean
 ) {
     Column(
