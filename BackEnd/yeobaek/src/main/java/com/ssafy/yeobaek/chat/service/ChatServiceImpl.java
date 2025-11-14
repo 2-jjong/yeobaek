@@ -170,7 +170,7 @@ public class ChatServiceImpl implements ChatService {
 
         // 5. 메시지 목록 조회 (페이지네이션 적용)
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").ascending());
-        Page<Message> messagePage = messageRepository.findByChatRoom(chatRoom, pageable);
+        Page<Message> messagePage = messageRepository.findByChatRoomWithExhibition(chatRoom, pageable);
 
         // 6. DTO 변환 (S3 URL 변환 포함)
         List<ChatMessage> chatMessages = messagePage.getContent().stream()
