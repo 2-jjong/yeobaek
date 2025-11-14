@@ -103,7 +103,7 @@ fun ChattingScreen(
         MatchingNavHost(
             myId = myUserId ?: 0L,
             partnerId = uiState.chatRoomMessages.chatRoom.partnerId,
-            myRole = myUserRole?: UserRole.ARTIST,
+            myRole = myUserRole ?: UserRole.ARTIST,
             onFinish = { showMatchingFlow = false }
         )
 
@@ -112,7 +112,7 @@ fun ChattingScreen(
             title = uiState.chatRoomMessages.chatRoom.partnerName,
             profileImg = uiState.chatRoomMessages.chatRoom.partnerImageUrl,
             messages = uiState.chatRoomMessages.messages,
-            partnerName=uiState.chatRoomMessages.chatRoom.partnerName,
+            partnerName = uiState.chatRoomMessages.chatRoom.partnerName,
             isLoading = uiState.isLoading,
             errorMessage = uiState.errorMessage,
             inputText = inputText,
@@ -229,20 +229,24 @@ fun ChattingScreenContent(
                         when (msg.messageType) {
 
                             // 일반 텍스트 메시지
-                            MessageType.TEXT  -> {
+                            MessageType.TEXT -> {
                                 val isMy = myUserId != null && msg.senderId == myUserId
                                 if (isMy) MyMessageBubble(msg)
                                 else PartnerMessageBubble(msg, profileImg)
                             }
 
                             // 이미지 메시지
-                            MessageType.IMAGE-> {
+                            MessageType.IMAGE -> {
 //                                ImageMessageBubble(msg) // 너가 새로 만들 함수
                             }
 
                             // 전시 제안 메시지
                             MessageType.PROPOSAL -> {
-                                ProposalMessageBubble(msg,partnerName = partnerName)
+                                ProposalMessageBubble(
+                                    msg,
+                                    partnerName = partnerName,
+                                    myId = myUserId
+                                )
                             }
 
                             // 전시 수락 / 거절 / 취소 / 시작 / 종료 (시스템 메시지)
@@ -295,7 +299,7 @@ fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
                     .wrapContentWidth()
             ) {
                 Text(
-                    text = message.content?:"",
+                    text = message.content ?: "",
                     fontFamily = jansilFont,
                     color = YeobaegBlack,
                     fontSize = 15.sp,
@@ -316,6 +320,7 @@ fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
 @Composable
 fun ProposalMessageBubble(
     message: ChatMessage,
+    myId: Long?,
     partnerName: String = "상대방",
     onAccept: (() -> Unit)? = null,
     onReject: (() -> Unit)? = null
@@ -341,64 +346,75 @@ fun ProposalMessageBubble(
                 color = YeobaegBlack
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(13.dp))
 
-            // 본문
-            Text(
-                text = "${partnerName}님이 전시 매칭을 요청했습니다.\n수락하시겠습니까?",
-                fontFamily = jansilFont,
-                fontSize = 14.sp,
-                color = YeobaegBlack
-            )
+            //내가 요청 보낸 경우
+            if (message.senderId == myId) {
+                Text(
+                    text = "${partnerName}님에게 전시 매칭을 요청했습니다.",
+                    fontFamily = jansilFont,
+                    fontSize = 14.sp,
+                    color = YeobaegBlack
+                )
+            } else { // 내가 요청 보내지 않은 경우
+                // 본문
+                Text(
+                    text = "${partnerName}님이 전시 매칭을 요청했습니다.\n수락하시겠습니까?",
+                    fontFamily = jansilFont,
+                    fontSize = 14.sp,
+                    color = YeobaegBlack
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // 버튼 2개
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
+                // 버튼 2개
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
 
-                // 거절 버튼
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                        .border(
-                            width = 1.dp,
-                            color = YeobaegLightGray,
-                            shape = RoundedCornerShape(8.dp)
+                    // 거절 버튼
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                            .border(
+                                width = 1.dp,
+                                color = YeobaegLightGray,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable { onReject?.invoke() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "거절",
+                            fontFamily = jansilFont,
+                            fontSize = 14.sp,
+                            color = YeobaegBlack
                         )
-                        .clip(RoundedCornerShape(8.dp))
-                        .clickable { onReject?.invoke() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "거절",
-                        fontFamily = jansilFont,
-                        fontSize = 14.sp,
-                        color = YeobaegBlack
-                    )
-                }
+                    }
 
-                // 수락 버튼
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(40.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(YeobaegBrown)
-                        .clickable { onAccept?.invoke() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "수락",
-                        fontFamily = jansilFont,
-                        fontSize = 14.sp,
-                        color = YeobaegWhite
-                    )
+                    // 수락 버튼
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(YeobaegBrown)
+                            .clickable { onAccept?.invoke() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "수락",
+                            fontFamily = jansilFont,
+                            fontSize = 14.sp,
+                            color = YeobaegWhite
+                        )
+                    }
                 }
             }
+
         }
     }
 }
@@ -427,7 +443,7 @@ fun MyMessageBubble(message: ChatMessage) {
                     .wrapContentWidth()
             ) {
                 Text(
-                    text = message.content?:"",
+                    text = message.content ?: "",
                     fontFamily = jansilFont,
                     color = YeobaegWhite,
                     fontSize = 15.sp,
@@ -589,6 +605,7 @@ fun ChatInputBar(
         )
     }
 }
+
 @Composable
 fun SystemMessageBubble(message: ChatMessage) {
     Text(
@@ -596,7 +613,7 @@ fun SystemMessageBubble(message: ChatMessage) {
             MessageType.AGREED -> "상대가 제안을 수락했습니다."
             MessageType.REJECTED -> "상대가 제안을 거절했습니다."
             MessageType.CANCELLED -> "전시가 취소되었습니다."
-            MessageType.STARTED ->  "전시가 시작되었습니다."
+            MessageType.STARTED -> "전시가 시작되었습니다."
             MessageType.ENDED -> "전시가 종료되었습니다."
             else -> ""
         },

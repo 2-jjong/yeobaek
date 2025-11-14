@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
@@ -82,7 +83,8 @@ fun ArtworkDetailScreen(
             artwork = it,
             onBackClick = viewModel::onBackClick,
             toggleBookmark = viewModel::toggleBookmark,
-            onArtistClick = viewModel::navigateToArtist
+            onArtistClick = viewModel::navigateToArtist,
+            onInquiryClick = viewModel::onInquiryClick
         )
     }
 }
@@ -93,7 +95,8 @@ fun ArtworkDetailScreen(
     artwork: ArtworkDetail,
     onBackClick: () -> Unit = {},
     toggleBookmark: () -> Unit = {},
-    onArtistClick: () -> Unit = {}
+    onArtistClick: () -> Unit = {},
+    onInquiryClick: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
 
@@ -110,7 +113,7 @@ fun ArtworkDetailScreen(
         bottomBar = {
             YeobaegButton(
                 text = "문의",
-                onClick = {},
+                onClick =onInquiryClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp, horizontal = 16.dp),
