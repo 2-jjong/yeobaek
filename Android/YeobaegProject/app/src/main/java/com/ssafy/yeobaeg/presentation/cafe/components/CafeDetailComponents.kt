@@ -23,6 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.presentation.cafe.CafeDetailTab
+import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
+import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 
 @Composable
 fun CafeImageGallery(
@@ -176,7 +178,7 @@ fun CafeDetailBottomBar() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shadowElevation = 8.dp,
-        color = MaterialTheme.colorScheme.surface
+        color = YeobaegWhite
     ) {
         Button(
             onClick = { /* TODO: 채팅 하기 */ },
@@ -184,7 +186,7 @@ fun CafeDetailBottomBar() {
                 .fillMaxWidth()
                 .padding(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF8D6E63)
+                containerColor = YeobaegDarkBrown
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
