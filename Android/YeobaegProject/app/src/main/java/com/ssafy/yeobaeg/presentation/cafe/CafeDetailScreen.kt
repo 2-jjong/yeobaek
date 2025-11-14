@@ -13,7 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
 import com.ssafy.yeobaeg.domain.model.SlotStatus
+import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.presentation.cafe.components.*
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,8 +32,14 @@ fun CafeDetailScreen(
     Scaffold(
         containerColor = Color.White,
         bottomBar = {
-            if (uiState.cafeDetail != null) {
-                CafeDetailBottomBar()
+            if (uiState.cafeDetail != null && uiState.userRole != UserRole.CAFE_OWNER) {
+                YeobaegButton(
+                    text = "문의",
+                    onClick = { /* TODO: 채팅 하기 */ },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp, horizontal = 16.dp)
+                )
             }
         }
     ) { paddingValues ->

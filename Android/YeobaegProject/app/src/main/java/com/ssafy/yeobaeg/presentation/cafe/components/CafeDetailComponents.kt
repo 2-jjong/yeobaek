@@ -172,29 +172,3 @@ fun CafeDetailTabs(
         )
     }
 }
-
-@Composable
-fun CafeDetailBottomBar() {
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shadowElevation = 8.dp,
-        color = YeobaegWhite
-    ) {
-        Button(
-            onClick = { /* TODO: 채팅 하기 */ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = YeobaegDarkBrown
-            ),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text(
-                text = "문의",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
