@@ -43,12 +43,15 @@ private const val WALL_HEIGHT_PX = 55f
 private const val OUTLINE_STROKE_PX = 4f
 private const val CORNER_RADIUS = 8f
 
+// FloorPlanPreview.kt - 조건부 스케일 계산
+
 @SuppressLint("DefaultLocale")
 @Composable
 fun FloorPlanPreview(
     initialWalls: List<DisplaySlot>,
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
+    showHelpText: Boolean = false,
     onWallTapped: (Long) -> Unit = {},
     activeWallId: Long? = null,
 ) {
@@ -67,13 +70,17 @@ fun FloorPlanPreview(
     }
 
     Column(modifier = modifier) {
-        Legend(modifier = Modifier.padding(16.dp))
-        Spacer(Modifier.height(8.dp))
+        if(showHelpText) {
+            Legend(modifier = Modifier.padding(16.dp))
+            Spacer(Modifier.height(8.dp))
+        }
 
         BoxWithConstraints(Modifier.fillMaxWidth()) {
             val density = LocalDensity.current
-            val padOuter = 32.dp
-            val padOuterPx = with(density) { padOuter.toPx() }
+            val horizontalPad = 32.dp
+            val verticalPad = 12.dp
+            val horizPx = with(density) { horizontalPad.toPx() }
+            val vertPx = with(density) { verticalPad.toPx() }
 
             val allPoints = walls.flatMap { listOf(it.start, it.end) }
             val minX = allPoints.minOf { it.x }
@@ -86,15 +93,38 @@ fun FloorPlanPreview(
             val parentWpx = with(density) { maxWidth.toPx() }
             val parentHpx = with(density) { maxHeight.toPx() }
 
-            val s = min(
-                (parentWpx - 2 * padOuterPx) / contentW,
-                (parentHpx - 2 * padOuterPx) / contentH
-            ).coerceAtLeast(1f)
+            // ===== 조건부 스케일 계산 =====
+            // 1단계: 너비에 꽉 차게 그릴 때의 스케일
+            val scaleByWidth = (parentWpx - 2 * horizPx) / contentW
 
-            val canvasWpx = (contentW * s + 2 * padOuterPx).coerceAtMost(parentWpx)
-            val canvasHpx = (contentH * s + 2 * padOuterPx).coerceAtMost(parentHpx)
+            // 2단계: 이 스케일로 그렸을 때 실제 도면 높이 계산
+            val projectedHeight = contentH * scaleByWidth + 2 * vertPx
+
+            // 3단계: 조건 판단
+            val s = if (parentHpx.isInfinite() || projectedHeight <= parentHpx) {
+                // 부모 높이가 무한이거나, 도면이 부모 높이보다 작으면 → 너비에 꽉 차게
+                scaleByWidth
+            } else {
+                // 도면이 부모 높이를 넘으면 → 높이에 맞춤
+                (parentHpx - 2 * vertPx) / contentH
+            }.coerceAtLeast(1e-6f)
+
+            val canvasWpx = parentWpx
+            val canvasHpx = parentHpx
             val canvasW = with(density) { canvasWpx.toDp() }
             val canvasH = with(density) { canvasHpx.toDp() }
+
+            // 실제 그려질 도면 크기
+            val scaledW = contentW * s
+            val scaledH = contentH * s
+
+            // 중앙 정렬 오프셋
+            val offsetX = (parentWpx - scaledW) / 2f
+            val offsetY = if (parentHpx.isInfinite()) {
+                vertPx
+            } else {
+                (parentHpx - scaledH) / 2f
+            }
 
             val labelPaint = remember {
                 Paint().apply {
@@ -113,6 +143,12 @@ fun FloorPlanPreview(
                     typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                     textAlign = Paint.Align.CENTER
                 }
+            }
+
+            fun map(x: Float, y: Float): Offset {
+                val mx = (x - minX) * s + offsetX
+                val my = (y - minY) * s + offsetY
+                return Offset(mx, my)
             }
 
             Box(
@@ -141,12 +177,6 @@ fun FloorPlanPreview(
                     }
 
                 Canvas(modifier = canvasModifier) {
-                    fun map(x: Float, y: Float): Offset {
-                        val mx = (x - minX) * s + padOuterPx
-                        val my = (y - minY) * s + padOuterPx
-                        return Offset(mx, my)
-                    }
-
                     val orderedVertices = walls.map { it.start } + listOf(walls.last().end)
                     val mappedVertices = orderedVertices.map { map(it.x, it.y) }
 
@@ -162,8 +192,7 @@ fun FloorPlanPreview(
                         }
                         drawPath(
                             path = outline,
-                            color = YeobaegLightBrown.copy(alpha = 0.1f) // 원하는 색/투명도로 변경
-                            // 기본은 fill 이므로 style 생략
+                            color = YeobaegLightBrown.copy(alpha = 0.1f)
                         )
 
                         drawPath(
@@ -178,8 +207,6 @@ fun FloorPlanPreview(
 
                     val mappedSegments = ArrayList<Triple<Offset, Offset, Long>>(walls.size)
 
-                    // drawWall 내부 (기존 로직 유지, 하이라이트 추가)
-                    // drawWall 내부 교체용 — 벽 + 하이라이트 + 텍스트(중앙정렬) 동시 처리
                     fun drawWall(wall: DisplaySlot, emphasize: Boolean) {
                         val a = map(wall.start.x, wall.start.y)
                         val b = map(wall.end.x, wall.end.y)
@@ -214,7 +241,6 @@ fun FloorPlanPreview(
 
                         val baseColor = wallColor(wall.status)
 
-                        // rectPath는 회전 전 좌표(절대 좌표)로 생성해도 괜찮습니다.
                         val rectPath = Path().apply {
                             addRoundRect(
                                 androidx.compose.ui.geometry.RoundRect(
@@ -228,14 +254,11 @@ fun FloorPlanPreview(
                             )
                         }
 
-                        // mappedSegments에 추가 (충돌/탭 처리에 쓰임)
                         mappedSegments.add(Triple(shrunkA, shrunkB, wall.wid))
 
-                        // --- 모든 시각적 요소를 동일한 회전 블록 안에서 그립니다 ---
                         rotate(angle, Offset(midX, midY)) {
-                            // 1) 강조 하이라이트: 벽보다 약간 큰 라운드렉트로 투명 채우기
                             if (emphasize) {
-                                val expand1 = 8f // 픽셀로 확장량(조절 가능)
+                                val expand1 = 8f
                                 val highlightRect1 = Path().apply {
                                     addRoundRect(
                                         androidx.compose.ui.geometry.RoundRect(
@@ -269,7 +292,6 @@ fun FloorPlanPreview(
                                     path = highlightRect2,
                                     color = Color(0xFF22D3EE).copy(alpha = 0.6f)
                                 )
-                                // optional: soft glow (스트로크를 회전 블록 내부에서 그림)
                                 val glowAlphas = listOf(0.10f, 0.06f)
                                 val glowWidths = listOf(18f, 34f)
                                 for (i in glowAlphas.indices) {
@@ -281,15 +303,12 @@ fun FloorPlanPreview(
                                 }
                             }
 
-                            // 2) 실제 벽 채우기 (base color)
                             drawPath(rectPath, baseColor)
-                        } // rotate 끝
+                        }
 
-                        // --- 텍스트는 rotate와 별개로 nativeCanvas에서 회전해서 그립니다 ---
                         val name = wall.wName.ifBlank { "벽 ${wall.wid}" }
                         drawContext.canvas.nativeCanvas.save()
                         drawContext.canvas.nativeCanvas.apply {
-                            // 텍스트는 같은 중심/각도를 사용해서 회전
                             rotate(textAngle, midX, midY)
                             val fm = labelPaint.fontMetrics
                             val textY = midY - (fm.ascent + fm.descent) / 2f
@@ -297,7 +316,6 @@ fun FloorPlanPreview(
                         }
                         drawContext.canvas.nativeCanvas.restore()
 
-                        // 사이즈 텍스트 (기존 로직)
                         val dx2 = wall.end.x - wall.start.x
                         val dy2 = wall.end.y - wall.start.y
                         val len = sqrt(dx2 * dx2 + dy2 * dy2).coerceAtLeast(1e-6f)
@@ -331,7 +349,6 @@ fun FloorPlanPreview(
                         drawContext.canvas.nativeCanvas.restore()
                     }
 
-
                     walls.filter { it.wid != activeWallId }.forEach { drawWall(it, emphasize = false) }
                     walls.firstOrNull { it.wid == activeWallId }?.let { drawWall(it, emphasize = true) }
 
@@ -340,6 +357,67 @@ fun FloorPlanPreview(
             }
         }
     }
+}
+
+// Helper functions remain the same
+private fun findNearestSegmentById(
+    segments: List<Triple<Offset, Offset, Long>>,
+    tap: Offset
+): Pair<Long?, Float> {
+    var bestWallId: Long? = null
+    var bestDist = Float.POSITIVE_INFINITY
+    segments.forEach { (a, b, wallId) ->
+        val d = pointToSegmentDistance(tap, a, b)
+        if (d < bestDist) {
+            bestDist = d
+            bestWallId = wallId
+        }
+    }
+    return bestWallId to bestDist
+}
+
+private fun pointToSegmentDistance(p: Offset, a: Offset, b: Offset): Float {
+    val abx = b.x - a.x
+    val aby = b.y - a.y
+    val apx = p.x - a.x
+    val apy = p.y - a.y
+    val ab2 = abx * abx + aby * aby
+    if (ab2 <= 1e-6f) return hypot(apx, apy)
+    val t = ((apx * abx) + (apy * aby)) / ab2
+    val tt = t.coerceIn(0f, 1f)
+    val cx = a.x + abx * tt
+    val cy = a.y + aby * tt
+    return hypot(p.x - cx, p.y - cy)
+}
+
+private fun wallColor(status: SlotStatus): Color {
+    return when (status) {
+        SlotStatus.UNAVAILABLE -> Color(0xFFCBD5E1)
+        SlotStatus.AVAILABLE -> Color(0xFF10B981)
+        SlotStatus.EXHIBITING -> Color(0xFFFFC107)
+        SlotStatus.RESERVED -> Color(0xFF684352)
+    }
+}
+
+private fun isCCW(vertices: List<Offset>): Boolean {
+    if (vertices.size < 3) return true
+    var area2 = 0f
+    for (i in 0 until vertices.size - 1) {
+        val p = vertices[i]
+        val q = vertices[i + 1]
+        area2 += p.x * q.y - q.x * p.y
+    }
+    return area2 > 0f
+}
+
+private fun toggleWallPossible(walls: MutableList<DisplaySlot>, index: Int) {
+    if (index !in walls.indices) return
+    val w = walls[index]
+    val newStatus = when (w.status) {
+        SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
+        SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED -> SlotStatus.UNAVAILABLE
+    }
+    walls[index] = w.copy(status = newStatus)
 }
 
 @Composable
@@ -381,65 +459,4 @@ private fun LegendItem(
             color = Color(0xFF1E293B)
         )
     }
-}
-
-private fun findNearestSegmentById(
-    segments: List<Triple<Offset, Offset, Long>>,
-    tap: Offset
-): Pair<Long?, Float> {
-    var bestWallId: Long? = null
-    var bestDist = Float.POSITIVE_INFINITY
-    segments.forEach { (a, b, wallId) ->
-        val d = pointToSegmentDistance(tap, a, b)
-        if (d < bestDist) {
-            bestDist = d
-            bestWallId = wallId
-        }
-    }
-    return bestWallId to bestDist
-}
-
-private fun pointToSegmentDistance(p: Offset, a: Offset, b: Offset): Float {
-    val abx = b.x - a.x
-    val aby = b.y - a.y
-    val apx = p.x - a.x
-    val apy = p.y - a.y
-    val ab2 = abx * abx + aby * aby
-    if (ab2 <= 1e-6f) return hypot(apx, apy)
-    val t = ((apx * abx) + (apy * aby)) / ab2
-    val tt = t.coerceIn(0f, 1f)
-    val cx = a.x + abx * tt
-    val cy = a.y + aby * tt
-    return hypot(p.x - cx, p.y - cy)
-}
-
-private fun wallColor(status: SlotStatus): Color {
-    val baseColor = when (status) {
-        SlotStatus.UNAVAILABLE -> Color(0xFFCBD5E1)
-        SlotStatus.AVAILABLE -> Color(0xFF10B981)
-        SlotStatus.EXHIBITING -> Color(0xFFEF4444)
-        SlotStatus.RESERVED -> Color(0xFF684352)
-    }
-    return  baseColor
-}
-
-private fun isCCW(vertices: List<Offset>): Boolean {
-    if (vertices.size < 3) return true
-    var area2 = 0f
-    for (i in 0 until vertices.size - 1) {
-        val p = vertices[i]
-        val q = vertices[i + 1]
-        area2 += p.x * q.y - q.x * p.y
-    }
-    return area2 > 0f
-}
-
-private fun toggleWallPossible(walls: MutableList<DisplaySlot>, index: Int) {
-    if (index !in walls.indices) return
-    val w = walls[index]
-    val newStatus = when (w.status) {
-        SlotStatus.UNAVAILABLE -> SlotStatus.AVAILABLE
-        SlotStatus.AVAILABLE, SlotStatus.EXHIBITING, SlotStatus.RESERVED -> SlotStatus.UNAVAILABLE
-    }
-    walls[index] = w.copy(status = newStatus)
 }

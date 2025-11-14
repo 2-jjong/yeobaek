@@ -124,6 +124,7 @@ dependencies {
     implementation(libs.rxjava2)
     implementation(libs.rxandroid)
 
+    implementation(libs.lottie.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

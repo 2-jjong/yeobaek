@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.ssafy.yeobaeg.domain.model.SlotStatus
 import com.ssafy.yeobaeg.presentation.cafe.components.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -152,7 +153,7 @@ fun CafeDetailContent(
                         }
                     } else {
                         items(
-                            items = cafeDetail.displaySlots,
+                            items = cafeDetail.displaySlots.filter { it.status != SlotStatus.UNAVAILABLE },
                             key = { it.wid }
                         ) { slot ->
                             Box(

@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -67,14 +68,12 @@ fun StatusChip(status: SlotStatus) {
  * 전시 리스트 아이템
  *
  * @param displaySlot DisplaySlot 객체 (전시 공간 정보)
- * @param onMatchClick 전시 가능일 때 "작품 매칭" 버튼 클릭
  * @param onClick 카드 클릭 시 콜백
  */
 @Composable
 fun ExhibitionListItem(
     modifier: Modifier = Modifier,
     displaySlot: DisplaySlot,
-    onMatchClick: () -> Unit = {},
     onClick: () -> Unit = {}
 ) {
     Card(
@@ -95,7 +94,8 @@ fun ExhibitionListItem(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(RoundedCornerShape(10.dp))
-                    .background(YeobaegLightGray)
+                    .background(YeobaegLightGray),
+                contentScale = ContentScale.Crop
             )
 
             Spacer(Modifier.width(12.dp))
@@ -168,8 +168,7 @@ private fun PreviewExhibitionListItem_Available() {
                 commission = 10f,
                 requirements = "",
                 exhibition = null
-            ),
-            onMatchClick = {}
+            )
         )
     }
 }

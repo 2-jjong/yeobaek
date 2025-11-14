@@ -42,9 +42,7 @@ fun CafeDetailDto.toDomain(): CafeDetail {
         isBookmarked = isBookmarked,
         categories = categories,
         images = images,
-        displaySlots = displaySlots
-            .filter { it.isDisplayable } // 전시 불가능한 벽 제외
-            .map { it.toDomain() },
+        displaySlots = displaySlots.map { it.toDomain() },
         cafeOwner = cafeOwner.toDomain()
     )
 }
