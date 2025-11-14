@@ -166,4 +166,15 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
      * @return 전시 목록
      */
     List<Exhibition> findAllByStateAndEndDate(ExhibitionState state, LocalDate endDate);
+
+    /**
+     * 특정 카페와 협업한 작가 수 조회 (완료된 전시 기준)
+     * @param cafeId 카페 ID
+     * @return 협업한 작가 수
+     */
+    @Query("SELECT COUNT(DISTINCT e.artwork.artist.id) " +
+            "FROM Exhibition e " +
+            "WHERE e.displaySlot.wall.cafe.id = :cafeId " +
+            "AND e.state = 'COMPLETED'")
+    Long countDistinctArtistsByCafeId(@Param("cafeId") Long cafeId);
 }
