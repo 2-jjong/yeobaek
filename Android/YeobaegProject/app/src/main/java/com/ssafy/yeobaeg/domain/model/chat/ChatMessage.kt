@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class ChatMessage(
     val messageId: Long,
     val senderId: Long? = null,
-    val messageType: String,
+    val messageType: MessageType,
     val content: String? = null,
     val imageUrl: String? = null,
     val exhibitionId: Long? = null,

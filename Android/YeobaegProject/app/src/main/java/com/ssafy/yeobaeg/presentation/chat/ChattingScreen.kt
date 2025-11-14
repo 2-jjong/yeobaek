@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -61,6 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
+import com.ssafy.yeobaeg.domain.model.chat.MessageType
 import com.ssafy.yeobaeg.presentation.chat.matching.MatchingNavHost
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
@@ -110,6 +112,7 @@ fun ChattingScreen(
             title = uiState.chatRoomMessages.chatRoom.partnerName,
             profileImg = uiState.chatRoomMessages.chatRoom.partnerImageUrl,
             messages = uiState.chatRoomMessages.messages,
+            partnerName=uiState.chatRoomMessages.chatRoom.partnerName,
             isLoading = uiState.isLoading,
             errorMessage = uiState.errorMessage,
             inputText = inputText,
@@ -137,6 +140,7 @@ fun ChattingScreen(
 fun ChattingScreenContent(
     title: String,
     profileImg: String?,
+    partnerName: String,
     messages: List<ChatMessage> = emptyList(),
     isLoading: Boolean = false,
     errorMessage: String? = null,
@@ -222,11 +226,34 @@ fun ChattingScreenContent(
                         items = messages.asReversed(),
                         key = { "${it.messageId}_${it.createdAt}" }
                     ) { msg ->
-                        val isMyMessage = myUserId != null && msg.senderId == myUserId
-                        if (isMyMessage) {
-                            MyMessageBubble(msg)
-                        } else {
-                            PartnerMessageBubble(msg, profileImg)
+                        when (msg.messageType) {
+
+                            // 일반 텍스트 메시지
+                            MessageType.TEXT  -> {
+                                val isMy = myUserId != null && msg.senderId == myUserId
+                                if (isMy) MyMessageBubble(msg)
+                                else PartnerMessageBubble(msg, profileImg)
+                            }
+
+                            // 이미지 메시지
+                            MessageType.IMAGE-> {
+//                                ImageMessageBubble(msg) // 너가 새로 만들 함수
+                            }
+
+                            // 전시 제안 메시지
+                            MessageType.PROPOSAL -> {
+                                ProposalMessageBubble(msg,partnerName = partnerName)
+                            }
+
+                            // 전시 수락 / 거절 / 취소 / 시작 / 종료 (시스템 메시지)
+                            MessageType.AGREED, MessageType.REJECTED, MessageType.CANCELLED, MessageType.STARTED, MessageType.ENDED -> {
+                                SystemMessageBubble(msg)
+                            }
+
+                            // 서버가 추가 타입 보내도 UI 깨지지 않도록
+                            else -> {
+                                Text("지원하지 않는 메시지 타입: ${msg.messageType}")
+                            }
                         }
                     }
                 }
@@ -285,6 +312,97 @@ fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
         }
     }
 }
+
+@Composable
+fun ProposalMessageBubble(
+    message: ChatMessage,
+    partnerName: String = "상대방",
+    onAccept: (() -> Unit)? = null,
+    onReject: (() -> Unit)? = null
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = YeobaegWhite,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, YeobaegLightGray.copy(alpha = 0.5f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
+            // 상단 제목
+            Text(
+                text = "매칭 요청",
+                fontFamily = jansilFont,
+                fontSize = 16.sp,
+                color = YeobaegBlack
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            // 본문
+            Text(
+                text = "${partnerName}님이 전시 매칭을 요청했습니다.\n수락하시겠습니까?",
+                fontFamily = jansilFont,
+                fontSize = 14.sp,
+                color = YeobaegBlack
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 버튼 2개
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+
+                // 거절 버튼
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                        .border(
+                            width = 1.dp,
+                            color = YeobaegLightGray,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onReject?.invoke() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "거절",
+                        fontFamily = jansilFont,
+                        fontSize = 14.sp,
+                        color = YeobaegBlack
+                    )
+                }
+
+                // 수락 버튼
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(40.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(YeobaegBrown)
+                        .clickable { onAccept?.invoke() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "수락",
+                        fontFamily = jansilFont,
+                        fontSize = 14.sp,
+                        color = YeobaegWhite
+                    )
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun MyMessageBubble(message: ChatMessage) {
@@ -471,6 +589,25 @@ fun ChatInputBar(
         )
     }
 }
+@Composable
+fun SystemMessageBubble(message: ChatMessage) {
+    Text(
+        text = when (message.messageType) {
+            MessageType.AGREED -> "상대가 제안을 수락했습니다."
+            MessageType.REJECTED -> "상대가 제안을 거절했습니다."
+            MessageType.CANCELLED -> "전시가 취소되었습니다."
+            MessageType.STARTED ->  "전시가 시작되었습니다."
+            MessageType.ENDED -> "전시가 종료되었습니다."
+            else -> ""
+        },
+        color = YeobaegTextGray,
+        fontSize = 12.sp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        textAlign = TextAlign.Center
+    )
+}
 
 @Composable
 fun DialogOption(text: String, color: Color, onClick: () -> Unit) {
@@ -491,15 +628,16 @@ fun DialogOption(text: String, color: Color, onClick: () -> Unit) {
 @Composable
 fun ChattingScreenPreview() {
     val dummyMessages = listOf(
-        ChatMessage(1, 1, "TEXT", "안녕하세요! 작품이 정말 마음에 들어요.", "", 0, null, false, "2시간 전"),
-        ChatMessage(2, 0, "TEXT", "감사합니다 😊", "", 0, null, false, "2시간 전"),
-        ChatMessage(3, 1, "TEXT", "전시 일정이 어떻게 되나요?", "", 0, null, false, "1시간 전"),
-        ChatMessage(4, 0, "TEXT", "다음 주 월요일부터 가능합니다", "", 0, null, false, "1시간 전")
+        ChatMessage(1, 1, MessageType.TEXT, "안녕하세요! 작품이 정말 마음에 들어요.", "", 0, null, false, "2시간 전"),
+        ChatMessage(2, 0, MessageType.TEXT, "감사합니다 😊", "", 0, null, false, "2시간 전"),
+        ChatMessage(3, 1, MessageType.TEXT, "전시 일정이 어떻게 되나요?", "", 0, null, false, "1시간 전"),
+        ChatMessage(4, 0, MessageType.PROPOSAL, "다음 주 월요일부터 가능합니다", "", 0, null, false, "1시간 전")
     )
     ChattingScreenContent(
         title = "김아티스트",
         messages = dummyMessages,
         profileImg = "",
-        myUserId = 0
+        myUserId = 0,
+        partnerName = "fff"
     )
 }

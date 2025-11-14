@@ -1,13 +1,14 @@
 package com.ssafy.yeobaeg.data.model.chat.response
 
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
+import com.ssafy.yeobaeg.domain.model.chat.MessageType
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChatMessageResponse(
     val messageId: Long,
     val senderId: Long? = null,
-    val messageType: String,
+    val messageType: MessageType,
     val content: String? = null,
     val imageUrl: String? = null,
     val exhibitionId: Long? = null,
