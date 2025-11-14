@@ -38,8 +38,6 @@ import java.util.stream.IntStream;
 @RequiredArgsConstructor
 public class CafeController {
 
-    private final int MOCK_CAFE_COUNT = 20;
-
     private final CafeService cafeService;
     private final CafeCategoryService cafeCategoryService;
     private final CafeBookmarkService cafeBookmarkService;
@@ -135,7 +133,7 @@ public class CafeController {
                 .body(ResponseDto.created());
     }
 
-    @Operation(summary = "카페 정보 수정", description = "등록된 카페 정보를 수정합니다. 모든 필드는 선택적으로 수정 가능합니다 (전송된 필드만 수정됨). 슬롯 정보는 별도 API로 관리합니다.")
+    @Operation(summary = "카페 정보 수정", description = "등록된 내 카페 정보를 수정합니다. 모든 필드는 선택적으로 수정 가능합니다 (전송된 필드만 수정됨). 슬롯 정보는 별도 API로 관리합니다.")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -190,9 +188,10 @@ public class CafeController {
                     description = "리소스 없음",
                     content = @Content(
                             mediaType = "application/json",
-                            examples = @ExampleObject(
-                                    value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}"
-                            )
+                            examples = {
+                                    @ExampleObject(value = "{\"code\": \"CF4041\", \"message\": \"존재하지 않는 카페입니다\"}"),
+                                    @ExampleObject(value = "{\"code\": \"CF4043\", \"message\": \"존재하지 않는 카테고리입니다\"}")
+                            }
                     )
             ),
             @ApiResponse(
@@ -206,13 +205,13 @@ public class CafeController {
                     )
             )
     })
-    @PatchMapping("/{cafeId}")
+    @PatchMapping("/me")
     @PreAuthorize("hasRole('CAFE_OWNER')")
     public ResponseEntity<ResponseDto<Void>> updateCafe(
-            @Parameter(description = "수정할 카페 ID", required = true)
-            @PathVariable Long cafeId,
             @Valid @RequestBody UpdateCafeRequest request
     ) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        cafeService.updateCafe(userId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ResponseDto.success());

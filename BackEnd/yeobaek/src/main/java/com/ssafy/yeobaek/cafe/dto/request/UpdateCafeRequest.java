@@ -2,8 +2,6 @@ package com.ssafy.yeobaek.cafe.dto.request;
 
 import com.ssafy.yeobaek.common.validation.ValidCategoryIds;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -45,9 +43,9 @@ public class UpdateCafeRequest {
     @Schema(description = "일일 평균 방문객 수", example = "100~200명")
     private String dailyVisitors;
 
-    @Schema(description = "인테리어 스타일 (다중 선택)", example = "[\"모던\", \"미니멀\"]")
+    @Schema(description = "인테리어 스타일 (다중 선택)", example = "[1, 2]")
     @ValidCategoryIds
-    private List<String> categories;
+    private List<Long> categoryIds;
 
     @Schema(description = "카페 이미지 목록 (최소 3장, 최대 10장)")
     @Size(min = 3, max = 10, message = "CAFE_INVALID_IMAGES_LENGTH")
