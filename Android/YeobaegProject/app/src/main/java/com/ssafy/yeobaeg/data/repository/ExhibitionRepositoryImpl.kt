@@ -71,4 +71,8 @@ class ExhibitionRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun rejectExhibition(exhibitionId: Long) {
+        runCatching { exhibitionApiService.rejectExhibition(exhibitionId) }
+    }
+
 }

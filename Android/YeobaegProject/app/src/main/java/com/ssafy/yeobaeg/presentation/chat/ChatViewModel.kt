@@ -7,9 +7,11 @@ import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomInfo
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomMessages
 import com.ssafy.yeobaeg.domain.model.chat.MessageType
+import com.ssafy.yeobaeg.domain.model.exhibition.ExhibitionInfo
 import com.ssafy.yeobaeg.domain.model.ws.SendMessage
 import com.ssafy.yeobaeg.domain.repository.ChatRepository
 import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
+import com.ssafy.yeobaeg.domain.repository.ExhibitionRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
@@ -30,6 +32,7 @@ data class ChatUiState(
     val chatRooms: List<ChatRoomInfo> = emptyList(),
     val isLoading: Boolean = false,
     val chatRoomMessages: ChatRoomMessages = ChatRoomMessages(),
+    val exhibitionInfo: ExhibitionInfo = ExhibitionInfo(),
     val errorMessage: String? = null,
 )
 
@@ -38,6 +41,7 @@ class ChatViewModel @Inject constructor(
     private val navigator: Navigator,
     private val chatRepository: ChatRepository,
     private val chatWebSocketRepository: ChatWebSocketRepository,
+    private val exhibitionRepository: ExhibitionRepository,
     private val authSessionManager: AuthSessionManager
 
 ) : ViewModel() {
@@ -70,6 +74,7 @@ class ChatViewModel @Inject constructor(
         receiveJob = viewModelScope.launch {
             chatWebSocketRepository.receiveMessages().collect { msgJson ->
                 val newMessage = parseChatMessage(msgJson)
+
                 if (newMessage.senderId != myUserId.value) {
                     _uiState.update { state ->
                         state.copy(
@@ -94,7 +99,7 @@ class ChatViewModel @Inject constructor(
         return try {
             Json.decodeFromString(ChatMessage.serializer(), json)
         } catch (e: Exception) {
-            ChatMessage(0, 0L, MessageType.TEXT, "파싱 오류", "",1 , null,false, "")
+            ChatMessage(0, 0L, MessageType.TEXT, "파싱 오류", "", 1, null, false, "")
         }
     }
 
@@ -165,6 +170,36 @@ class ChatViewModel @Inject constructor(
             }
     }
 
+    /** 전시 수락 */
+    fun agreeExhibition(exhibitionId: Long) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true) }
+        exhibitionRepository.agreeExhibitionPropose(exhibitionId)
+        _uiState.update { it.copy(isLoading = false) }
+    }
+
+    /** 전시 거절 */
+    fun rejectExhibition(exhibitionId: Long) = viewModelScope.launch {
+        _uiState.update { it.copy(isLoading = true) }
+        exhibitionRepository.rejectExhibition(exhibitionId)
+        _uiState.update { it.copy(isLoading = false) }
+    }
+
+
+    fun loadExhibitionInfo(exhibitionId: Long) = viewModelScope.launch {
+        exhibitionRepository.getExhibitionInfo(exhibitionId)
+            .onSuccess { info ->
+                _uiState.update { state ->
+                    state.copy(exhibitionInfo = info)
+                }
+            }
+            .onFailure { e ->
+                _uiState.update { state ->
+                    state.copy(errorMessage = e.message ?: "전시 정보 조회 실패")
+                }
+            }
+    }
+
+
     fun navigateToChatRoom(chatRoomId: Long) = viewModelScope.launch {
         navigator.navigate(FullScreen.ChattingScreen(chatRoomId))
     }
@@ -173,7 +208,13 @@ class ChatViewModel @Inject constructor(
         navigator.navigateBack()
     }
 
-    fun navigateToMatching(partnerId:Long)=viewModelScope.launch {
-        navigator.navigate(FullScreen.MatchingDateScreen(myUserId.value,myUserRole.value,partnerId))
+    fun navigateToMatching(partnerId: Long) = viewModelScope.launch {
+        navigator.navigate(
+            FullScreen.MatchingDateScreen(
+                myUserId.value,
+                myUserRole.value,
+                partnerId
+            )
+        )
     }
 }

@@ -60,7 +60,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.domain.model.chat.MessageType
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
@@ -86,8 +85,8 @@ fun ChattingScreen(
     val uiState by viewModel.uiState.collectAsState()
     val myUserId = viewModel.myUserId.collectAsState().value
     val myUserRole = viewModel.myUserRole.collectAsState().value
-    var showMatchingFlow by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
+    var showMatchingInfoDialog by remember { mutableStateOf(false) }
 
     DisposableEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
@@ -97,7 +96,6 @@ fun ChattingScreen(
             viewModel.unsubscribeFromChatRoom(chatRoomId)
         }
     }
-
 
     ChattingScreenContent(
         title = uiState.chatRoomMessages.chatRoom.partnerName,
@@ -120,8 +118,25 @@ fun ChattingScreen(
                 uiState.chatRoomMessages.chatRoom.partnerId,
             )
         },
+        onProposeAccept = { exhibitionId ->
+            viewModel.loadExhibitionInfo(exhibitionId)
+            showMatchingInfoDialog = true
+        },
+        onReject = { exhibitionId ->
+            viewModel.rejectExhibition(exhibitionId)
+        },
         myUserId = myUserId
     )
+    if (showMatchingInfoDialog) {
+        MatchingInfoDialog(
+            info = uiState.exhibitionInfo,
+            onDismiss = { showMatchingInfoDialog = false },
+            onConfirm = {
+                viewModel.agreeExhibition(uiState.exhibitionInfo.exhibitionId)
+                showMatchingInfoDialog = false
+            }
+        )
+    }
 }
 
 /**
@@ -141,6 +156,8 @@ fun ChattingScreenContent(
     onSendClick: (String) -> Unit = {},
     onBackClick: (() -> Unit)? = null,
     onMatchingClick: () -> Unit = {},
+    onProposeAccept: (Long) -> Unit,
+    onReject: ((Long) -> Unit)? = null,
     myUserId: Long?
 ) {
     val listState = rememberLazyListState()
@@ -148,8 +165,7 @@ fun ChattingScreenContent(
     // 키보드가 올라올 때와 새 메시지가 추가될 때 자동 스크롤
     LaunchedEffect(messages.size) {
         if (messages.isNotEmpty()) {
-            // reverseLayout이므로 0번 인덱스가 최신 메시지
-            delay(100) // 키보드 애니메이션 대기
+            delay(100)
             listState.animateScrollToItem(0)
         }
     }
@@ -157,7 +173,6 @@ fun ChattingScreenContent(
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
-//            .imePadding(), // 전체 Scaffold에 IME padding 적용
         topBar = {
             YeobaegTopAppBar(
                 title = title,
@@ -229,7 +244,7 @@ fun ChattingScreenContent(
 
                             // 이미지 메시지
                             MessageType.IMAGE -> {
-//                                ImageMessageBubble(msg) // 너가 새로 만들 함수
+//                                ImageMessageBubble(msg)
                             }
 
                             // 전시 제안 메시지
@@ -237,14 +252,31 @@ fun ChattingScreenContent(
                                 ProposalMessageBubble(
                                     msg,
                                     partnerName = partnerName,
-                                    myId = myUserId
+                                    myId = myUserId,
+                                    onAccept = {
+                                        msg.exhibitionId?.let(onProposeAccept)
+                                    },
+                                    onReject = {
+                                        msg.exhibitionId?.let { exhibitionId ->
+                                            onReject?.invoke(exhibitionId)
+                                        }
+                                    }
                                 )
                             }
 
                             // 전시 수락 / 거절 / 취소 / 시작 / 종료 (시스템 메시지)
-                            MessageType.AGREED, MessageType.REJECTED, MessageType.CANCELLED, MessageType.STARTED, MessageType.ENDED -> {
-                                SystemMessageBubble(msg)
+                            MessageType.AGREED,
+                            MessageType.REJECTED,
+                            MessageType.CANCELLED,
+                            MessageType.STARTED,
+                            MessageType.ENDED -> {
+                                MatchingStatusMessageBubble(
+                                    message = msg,
+                                    partnerName = partnerName,
+                                    myId = myUserId
+                                )
                             }
+
 
                             // 서버가 추가 타입 보내도 UI 깨지지 않도록
                             else -> {
@@ -314,8 +346,8 @@ fun ProposalMessageBubble(
     message: ChatMessage,
     myId: Long?,
     partnerName: String = "상대방",
-    onAccept: (() -> Unit)? = null,
-    onReject: (() -> Unit)? = null
+    onAccept: ((Long?) -> Unit)? = null,
+    onReject: ((Long?) -> Unit)? = null
 ) {
     Surface(
         modifier = Modifier
@@ -376,7 +408,7 @@ fun ProposalMessageBubble(
                                 shape = RoundedCornerShape(8.dp)
                             )
                             .clip(RoundedCornerShape(8.dp))
-                            .clickable { onReject?.invoke() },
+                            .clickable { onReject?.invoke(message.exhibitionId) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -387,18 +419,18 @@ fun ProposalMessageBubble(
                         )
                     }
 
-                    // 수락 버튼
+                    // 요청 내용 확인 버튼
                     Box(
                         modifier = Modifier
                             .weight(1f)
                             .height(40.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(YeobaegBrown)
-                            .clickable { onAccept?.invoke() },
+                            .clickable { onAccept?.invoke(message.exhibitionId) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "수락",
+                            text = "요청 내용 확인",
                             fontFamily = jansilFont,
                             fontSize = 14.sp,
                             color = YeobaegWhite
@@ -407,6 +439,72 @@ fun ProposalMessageBubble(
                 }
             }
 
+        }
+    }
+}
+
+@Composable
+fun MatchingStatusMessageBubble(
+    message: ChatMessage,
+    partnerName: String,
+    myId: Long?
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = YeobaegWhite,
+        shadowElevation = 1.dp,
+        border = BorderStroke(1.dp, YeobaegLightGray.copy(alpha = 0.5f))
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+
+            Text(
+                text = "매칭 상태 알림",
+                fontFamily = jansilFont,
+                fontSize = 16.sp,
+                color = YeobaegBlack
+            )
+
+            val isMy = message.senderId == myId
+
+            val textBody = when (message.messageType) {
+                MessageType.AGREED ->
+                    if (isMy) "${partnerName}님이 제안을 수락했습니다!"
+                    else "당신이 보낸 제안을 수락했습니다!"
+
+                MessageType.REJECTED ->
+                    if (isMy) "${partnerName}님이 제안을 거절했습니다."
+                    else "당신의 제안이 거절되었습니다."
+
+                MessageType.CANCELLED ->
+                    "전시가 취소되었습니다."
+
+                MessageType.STARTED ->
+                    "전시가 시작되었습니다."
+
+                MessageType.ENDED ->
+                    "전시가 종료되었습니다."
+
+                else -> ""
+            }
+
+            Text(
+                text = textBody,
+                fontFamily = jansilFont,
+                fontSize = 14.sp,
+                color = YeobaegBlack
+            )
+
+            Text(
+                text = DateFormatter.toTimeAgo(message.createdAt),
+                color = YeobaegTextGray,
+                fontSize = 11.sp
+            )
         }
     }
 }
@@ -579,16 +677,13 @@ fun ChatInputBar(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    DialogOption("사진", Color(0xFFE3F2FD)) { /* TODO: 사진 업로드 로직 */ showDialog =
+                    DialogOption("사진", Color(0xFFE3F2FD)) {
+                        /* TODO: 사진 업로드 로직 */ showDialog =
                         false
                     }
                     DialogOption("매칭 요청", Color(0xFFFFF8E1)) {
                         showDialog = false
                         onMatchingClick()
-                    }
-
-                    DialogOption("매칭 요청", Color(0xFFFFF8E1)) { /* TODO: 매칭 로직 */ showDialog =
-                        false
                     }
                 }
             },
@@ -598,26 +693,7 @@ fun ChatInputBar(
     }
 }
 
-@Composable
-fun SystemMessageBubble(message: ChatMessage) {
-    Text(
-        text = when (message.messageType) {
-            MessageType.AGREED -> "상대가 제안을 수락했습니다."
-            MessageType.REJECTED -> "상대가 제안을 거절했습니다."
-            MessageType.CANCELLED -> "전시가 취소되었습니다."
-            MessageType.STARTED -> "전시가 시작되었습니다."
-            MessageType.ENDED -> "전시가 종료되었습니다."
-            else -> ""
-        },
-        color = YeobaegTextGray,
-        fontSize = 12.sp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        textAlign = TextAlign.Center
-    )
-}
-
+// 사진, 매칭 버튼
 @Composable
 fun DialogOption(text: String, color: Color, onClick: () -> Unit) {
     Row(
@@ -647,6 +723,7 @@ fun ChattingScreenPreview() {
         messages = dummyMessages,
         profileImg = "",
         myUserId = 0,
-        partnerName = "fff"
+        partnerName = "fff",
+        onProposeAccept = {}
     )
 }
