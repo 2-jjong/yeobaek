@@ -7,6 +7,8 @@ import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
 import com.ssafy.yeobaeg.data.model.ws.resquest.SendMessageRequest
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -29,8 +31,11 @@ class ChatWebSocketService @Inject constructor(
     private var lifecycleDisposable: Disposable? = null
     private var globalSubscriptionDisposable: Disposable? = null
     private val subscriptions = mutableMapOf<Long, Disposable>()
-    private val _messageChannel = Channel<String>(Channel.BUFFERED)
-    val messageFlow = _messageChannel.receiveAsFlow()
+    private val _messageFlow = MutableSharedFlow<String>(
+        replay = 0,
+        extraBufferCapacity = 100
+    )
+    val messageFlow = _messageFlow.asSharedFlow()
 
     private var isConnected = false
 
@@ -87,7 +92,7 @@ class ChatWebSocketService @Inject constructor(
         try {
             globalSubscriptionDisposable=stompClient?.topic(destination)?.subscribe({ msg ->
                 Log.d(TAG, "📢 Global notification: ${msg.payload}")
-                _messageChannel.trySend(msg.payload)
+//                _messageChannel.trySend(msg.payload)
             }, { e ->
                 Log.w(
                     TAG,
@@ -117,7 +122,8 @@ class ChatWebSocketService @Inject constructor(
         }
         val destination = "/sub/chat/room/$chatRoomId"
         val disposable = stompClient?.topic(destination)?.subscribe({ msg ->
-            _messageChannel.trySend(msg.payload)
+            Log.d("CHANNEL", "메시지 수신: ${msg.payload}")
+            _messageFlow.tryEmit(msg.payload)
         }, { e ->
             Log.e("ChatWebSocketService", "❌ Chat room subscription error: ${e.message}", e)
         })

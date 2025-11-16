@@ -1,10 +1,12 @@
 package com.ssafy.yeobaeg.data.repository
 
+import android.util.Log
 import com.ssafy.yeobaeg.data.datasource.remote.ChatWebSocketService
 import com.ssafy.yeobaeg.data.model.ws.resquest.SendMessageRequest
 import com.ssafy.yeobaeg.domain.model.ws.SendMessage
 import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,4 +42,6 @@ class ChatWebSocketRepositoryImpl @Inject constructor(
 
     override fun receiveMessages(): Flow<String> =
         chatWebSocketService.messageFlow
+            .onEach { Log.d("WS_REPO", "repo emit = $it") }
+
 }

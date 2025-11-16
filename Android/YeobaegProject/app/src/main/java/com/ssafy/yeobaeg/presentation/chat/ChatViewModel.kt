@@ -1,5 +1,8 @@
 package com.ssafy.yeobaeg.presentation.chat
 
+import android.content.Context
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.UserRole
@@ -12,9 +15,11 @@ import com.ssafy.yeobaeg.domain.model.ws.SendMessage
 import com.ssafy.yeobaeg.domain.repository.ChatRepository
 import com.ssafy.yeobaeg.domain.repository.ChatWebSocketRepository
 import com.ssafy.yeobaeg.domain.repository.ExhibitionRepository
+import com.ssafy.yeobaeg.domain.repository.StorageRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.uriToTempFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,12 +41,14 @@ data class ChatUiState(
     val errorMessage: String? = null,
 )
 
+private const val TAG = "ChatViewModel"
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val navigator: Navigator,
     private val chatRepository: ChatRepository,
     private val chatWebSocketRepository: ChatWebSocketRepository,
     private val exhibitionRepository: ExhibitionRepository,
+    private val storageRepository: StorageRepository,
     private val authSessionManager: AuthSessionManager
 
 ) : ViewModel() {
@@ -57,6 +64,7 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             delay(500)
             chatWebSocketRepository.subscribeToRoom(chatRoomId)
+            Log.d(TAG, "subscribeToChatRoom: 메시지 수신 시작")
             startReceivingMessages()
         }
     }
@@ -70,16 +78,19 @@ class ChatViewModel @Inject constructor(
 
     /** 서버로부터 새 메시지 수신 */
     private fun startReceivingMessages() {
-        if (receiveJob?.isActive == true) return
+        if (receiveJob?.isActive == true) {
+            return
+        }
         receiveJob = viewModelScope.launch {
             chatWebSocketRepository.receiveMessages().collect { msgJson ->
-                val newMessage = parseChatMessage(msgJson)
 
+                val newMessage = parseChatMessage(msgJson)
                 if (newMessage.senderId != myUserId.value) {
+                    Log.d(TAG, "startReceivingMessages: 바로 업데이트")
                     _uiState.update { state ->
                         state.copy(
                             chatRoomMessages = state.chatRoomMessages.copy(
-                                messages = state.chatRoomMessages.messages + newMessage
+                                messages = listOf(newMessage)+state.chatRoomMessages.messages
                             )
                         )
                     }
@@ -123,7 +134,7 @@ class ChatViewModel @Inject constructor(
         )
 
         _uiState.update { state ->
-            val updatedList = state.chatRoomMessages.messages + myMsg
+            val updatedList = listOf(myMsg) + state.chatRoomMessages.messages
             state.copy(chatRoomMessages = state.chatRoomMessages.copy(messages = updatedList))
         }
     }
@@ -198,6 +209,65 @@ class ChatViewModel @Inject constructor(
                 }
             }
     }
+
+    fun sendImageMessage(chatRoomId: Long, uri: Uri, context: Context) {
+        viewModelScope.launch {
+            try {
+
+                // 1) Uri → File 변환
+                val file = uriToTempFile(context, uri)
+
+                // 2) Presigned URL 요청 (업로드 개수 = 1)
+                val presignedList = storageRepository.createPresignedUrl("IMAGES", 1)
+                    .getOrThrow()
+                val presigned = presignedList.first()
+
+                // 3) Presigned PUT으로 S3 업로드
+                storageRepository.uploadWithPresignedPut(file, presigned.uploadUrl)
+                    .getOrThrow()
+
+                val fileKey = presigned.fileKey
+
+                // 4) WebSocket으로 이미지 메시지 전송
+                val wsMessage = SendMessage(
+                    chatRoomId = chatRoomId,
+                    messageType = "IMAGE",
+                    content = "",
+                    imageUrl = fileKey
+                )
+                chatWebSocketRepository.sendMessage(wsMessage)
+
+                // 5) UI 즉시 반영
+                val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+                val now = formatter.format(Date())
+
+                val myMsg = ChatMessage(
+                    messageId = System.currentTimeMillis(),
+                    senderId = myUserId.value,
+                    messageType = MessageType.IMAGE,
+                    content = null,
+                    imageUrl = presigned.downloadUrl ?: fileKey,
+                    exhibition = null,
+                    isRead = true,
+                    createdAt = now
+                )
+
+                _uiState.update { state ->
+                    state.copy(
+                        chatRoomMessages = state.chatRoomMessages.copy(
+                            messages = listOf(myMsg) + state.chatRoomMessages.messages
+                        )
+                    )
+                }
+
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(errorMessage = "이미지 전송 오류: ${e.message}")
+                }
+            }
+        }
+    }
+
 
 
     fun navigateToChatRoom(chatRoomId: Long) = viewModelScope.launch {

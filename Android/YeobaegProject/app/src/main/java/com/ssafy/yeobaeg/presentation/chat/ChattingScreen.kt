@@ -1,5 +1,9 @@
 package com.ssafy.yeobaeg.presentation.chat
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,6 +57,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -83,20 +89,32 @@ fun ChattingScreen(
     chatRoomId: Long,
     viewModel: ChatViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val myUserId = viewModel.myUserId.collectAsState().value
     val myUserRole = viewModel.myUserRole.collectAsState().value
     var inputText by remember { mutableStateOf("") }
     var showMatchingInfoDialog by remember { mutableStateOf(false) }
 
-    DisposableEffect(chatRoomId) {
+    // 이미지 선택 런처
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.sendImageMessage(chatRoomId, it, context)
+        }
+    }
+    LaunchedEffect(chatRoomId) {
         viewModel.loadChatMessages(chatRoomId)
         viewModel.subscribeToChatRoom(chatRoomId)
+    }
 
+    DisposableEffect(Unit) {
         onDispose {
             viewModel.unsubscribeFromChatRoom(chatRoomId)
         }
     }
+
 
     ChattingScreenContent(
         title = uiState.chatRoomMessages.chatRoom.partnerName,
@@ -117,6 +135,11 @@ fun ChattingScreen(
         onMatchingClick = {
             viewModel.navigateToMatching(
                 uiState.chatRoomMessages.chatRoom.partnerId,
+            )
+        },
+        onImageClick={
+            pickImageLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
             )
         },
         onProposeAccept = { exhibitionId ->
@@ -157,6 +180,7 @@ fun ChattingScreenContent(
     onSendClick: (String) -> Unit = {},
     onBackClick: (() -> Unit)? = null,
     onMatchingClick: () -> Unit = {},
+    onImageClick:()->Unit={},
     onProposeAccept: (Long) -> Unit,
     onReject: ((Long) -> Unit)? = null,
     myUserId: Long?
@@ -191,7 +215,8 @@ fun ChattingScreenContent(
                 value = inputText,
                 onValueChange = onInputChange,
                 onSendClick = onSendClick,
-                onMatchingClick = onMatchingClick
+                onMatchingClick = onMatchingClick,
+                onImageClick = onImageClick
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -225,13 +250,12 @@ fun ChattingScreenContent(
                         .clearFocusOnTap()
                         .background(YeobaegWhite)
                         .padding(horizontal = 12.dp),
-                    reverseLayout = true, // 최신 메시지가 아래에 표시되도록
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp)
+                    contentPadding = PaddingValues(vertical = 16.dp),
+                    reverseLayout = true
                 ) {
-                    // reverseLayout이므로 역순으로 표시
                     items(
-                        items = messages.asReversed(),
+                        items = messages,
                         key = { "${it.messageId}_${it.createdAt}" }
                     ) { msg ->
                         when (msg.messageType) {
@@ -245,7 +269,12 @@ fun ChattingScreenContent(
 
                             // 이미지 메시지
                             MessageType.IMAGE -> {
-//                                ImageMessageBubble(msg)
+                                val isMy = myUserId != null && msg.senderId == myUserId
+                                ImageMessageBubble(
+                                    message = msg,
+                                    isMyMessage = isMy,
+                                    profileImg = profileImg
+                                )
                             }
 
                             // 전시 제안 메시지
@@ -337,6 +366,77 @@ fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
                 color = YeobaegTextGray,
                 fontSize = 11.sp,
                 modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ImageMessageBubble(
+    message: ChatMessage,
+    isMyMessage: Boolean,
+    profileImg: String?
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (isMyMessage) Arrangement.End else Arrangement.Start,
+        verticalAlignment = Alignment.Bottom
+    ) {
+        // 상대방 메시지일 때 프로필 이미지
+        if (!isMyMessage) {
+            AsyncImage(
+                model = profileImg ?: R.drawable.profile,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(40.dp)
+                    .border(0.5.dp, YeobaegLightGray, CircleShape)
+                    .clip(CircleShape)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+
+        Column(
+            horizontalAlignment = if (isMyMessage) Alignment.End else Alignment.Start
+        ) {
+            // 이미지
+            Surface(
+                shape = RoundedCornerShape(
+                    topStart = if (isMyMessage) 12.dp else 4.dp,
+                    topEnd = 12.dp,
+                    bottomStart = 12.dp,
+                    bottomEnd = if (isMyMessage) 4.dp else 12.dp
+                ),
+                shadowElevation = if (isMyMessage) 0.dp else 1.dp,
+                modifier = Modifier.widthIn(max = 240.dp)
+            ) {
+                AsyncImage(
+                    model = message.imageUrl,
+                    contentDescription = "전송된 이미지",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 120.dp, max = 300.dp)
+                        .clip(
+                            RoundedCornerShape(
+                                topStart = if (isMyMessage) 12.dp else 4.dp,
+                                topEnd = 12.dp,
+                                bottomStart = 12.dp,
+                                bottomEnd = if (isMyMessage) 4.dp else 12.dp
+                            )
+                        ),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            // 시간
+            Text(
+                text = DateFormatter.toTimeAgo(message.createdAt),
+                color = YeobaegTextGray,
+                fontSize = 11.sp,
+                modifier = Modifier.padding(
+                    top = 4.dp,
+                    start = if (isMyMessage) 0.dp else 4.dp,
+                    end = if (isMyMessage) 4.dp else 0.dp
+                )
             )
         }
     }
@@ -559,6 +659,7 @@ fun ChatInputBar(
     onValueChange: (String) -> Unit,
     onSendClick: (String) -> Unit,
     onMatchingClick: () -> Unit = {},
+    onImageClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val trimmedValue = value.trim()
@@ -679,8 +780,8 @@ fun ChatInputBar(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     DialogOption("사진", Color(0xFFE3F2FD)) {
-                        /* TODO: 사진 업로드 로직 */ showDialog =
-                        false
+                        showDialog=false
+                        onImageClick()
                     }
                     DialogOption("매칭 요청", Color(0xFFFFF8E1)) {
                         showDialog = false
