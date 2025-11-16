@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.domain.model.chat.MessageType
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
@@ -298,7 +299,7 @@ fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
         horizontalArrangement = Arrangement.Start
     ) {
         AsyncImage(
-            model = profileImg,
+            model = profileImg?: R.drawable.profile,
             contentDescription = null,
             modifier = Modifier
                 .size(40.dp)

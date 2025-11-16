@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.presentation.chat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -18,11 +20,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.UserRole
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomInfo
 import com.ssafy.yeobaeg.domain.model.chat.ChatRoomSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
+import com.ssafy.yeobaeg.presentation.main.MainViewModel
 import com.ssafy.yeobaeg.ui.theme.*
 
 @Composable
@@ -30,8 +34,19 @@ fun ChatListScreen(
     viewModel: ChatViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    // ★ MainViewModel 가져오기
+    val mainViewModel: MainViewModel = hiltViewModel()
+
+    // 최초 로딩
     LaunchedEffect(Unit) {
         viewModel.loadChatRooms()
+    }
+
+    // 전역 메시지 들어오면 채팅 리스트 새로고침
+    LaunchedEffect(Unit) {
+        mainViewModel.chatListRefreshFlow.collect {
+            viewModel.loadChatRooms()
+        }
     }
     ChatListScreenContent(
         uiState = uiState,
@@ -109,13 +124,13 @@ fun ChatListItem(chat: ChatRoomInfo, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
-            model = chat.partnerImageUrl,
+            model = chat.partnerImageUrl ?: R.drawable.profile,
             contentDescription = null,
             modifier = Modifier
                 .size(60.dp)
                 .clip(CircleShape)
+                .border(1.dp, YeobaegLightGray, CircleShape)
         )
-
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(
@@ -131,7 +146,7 @@ fun ChatListItem(chat: ChatRoomInfo, onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = chat.lastMessage?:"",
+                text = chat.lastMessage ?: "",
                 fontFamily = jansilFont,
                 fontWeight = FontWeight.Light,
                 color = YeobaegBlack,
@@ -154,25 +169,26 @@ fun ChatListItem(chat: ChatRoomInfo, onClick: () -> Unit) {
                 fontSize = 13.sp
             )
 
-            if (chat.unreadCount!=null&&chat.unreadCount > 0) {
-                Box(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .background(YeobaegBrown, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = chat.unreadCount.toString(),
-                        color = YeobaegWhite,
-                        fontFamily = jansilFont,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 11.sp,
-                        textAlign = TextAlign.Center,
-                    )
-                }
-            } else {
-                Spacer(modifier = Modifier.size(22.dp))
-            }
+            //읽음처리 기능 일단 보류
+//            if (chat.unreadCount!=null&&chat.unreadCount > 0) {
+//                Box(
+//                    modifier = Modifier
+//                        .size(24.dp)
+//                        .background(YeobaegBrown, shape = CircleShape),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    Text(
+//                        text = chat.unreadCount.toString(),
+//                        color = YeobaegWhite,
+//                        fontFamily = jansilFont,
+//                        fontWeight = FontWeight.Medium,
+//                        fontSize = 11.sp,
+//                        textAlign = TextAlign.Center,
+//                    )
+//                }
+//            } else {
+//                Spacer(modifier = Modifier.size(22.dp))
+//            }
         }
     }
 }

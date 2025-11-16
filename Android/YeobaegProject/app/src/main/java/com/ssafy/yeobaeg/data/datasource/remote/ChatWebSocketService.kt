@@ -81,12 +81,13 @@ class ChatWebSocketService @Inject constructor(
 
     //전역 구독
     private fun subscribeGlobal() {
-        val destination = "/sub/notifications"
+        val destination = "/user/queue/notifications"
         Log.d(TAG, "📡 Attempting to subscribe global topic: $destination")
 
         try {
             globalSubscriptionDisposable=stompClient?.topic(destination)?.subscribe({ msg ->
                 Log.d(TAG, "📢 Global notification: ${msg.payload}")
+                _messageChannel.trySend(msg.payload)
             }, { e ->
                 Log.w(
                     TAG,

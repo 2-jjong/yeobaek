@@ -14,6 +14,7 @@ import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
 import com.ssafy.yeobaeg.presentation.common.util.SnackbarMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +31,9 @@ internal class MainViewModel @Inject constructor(
 ) : ViewModel() {
 
     val userRole: StateFlow<UserRole?> = authSessionManager.currentUserRole
+
+    private val _chatListRefreshFlow = MutableSharedFlow<Unit>()
+    val chatListRefreshFlow = _chatListRefreshFlow
 
     private val _snackbarMessage = MutableStateFlow<SnackbarMessage?>(null)
     val snackbarMessage: StateFlow<SnackbarMessage?> = _snackbarMessage.asStateFlow()
@@ -71,6 +75,13 @@ internal class MainViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            chatWebSocketRepository.receiveMessages().collect { msg ->
+                // 전역 메시지든 방 메시지든 여기로 들어옴
+                _chatListRefreshFlow.emit(Unit)
+            }
+        }
+
     }
 
     fun clearSnackbarMessage() {
