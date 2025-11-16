@@ -575,8 +575,8 @@ fun MatchingStatusMessageBubble(
 
             val textBody = when (message.messageType) {
                 MessageType.AGREED ->
-                    if (isMy) "${partnerName}님이 제안을 수락했습니다!"
-                    else "당신이 보낸 제안을 수락했습니다!"
+                    "매칭이 수락되었습니다!"
+
 
                 MessageType.REJECTED ->
                     if (isMy) "${partnerName}님이 제안을 거절했습니다."
