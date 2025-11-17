@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
+import java.security.Principal;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,15 +44,28 @@ public class StompEventListener {
         if (matcher.matches()) {
             try {
                 Long roomId = Long.parseLong(matcher.group(1));
-                Authentication userAuth = (Authentication) accessor.getUser();
+
+                Principal principalFromEvent = event.getUser();
+                Authentication authentication = null;
                 
-                if (userAuth == null || !(userAuth.getPrincipal() instanceof JwtUserPrincipal)) {
-                    log.warn("Cannot track presence for non-authenticated user on subscribe.");
+                if (principalFromEvent instanceof Authentication) {
+                    authentication = (Authentication) principalFromEvent;
+                } else if (accessor.getSessionAttributes() != null) {
+                    authentication = (Authentication) accessor.getSessionAttributes().get("userAuthentication");
+                }
+                
+                if (authentication == null) {
+                    log.warn("Cannot track presence for non-authenticated user on subscribe. Authentication object not found in event or session.");
                     return;
                 }
-
-                JwtUserPrincipal principal = (JwtUserPrincipal) userAuth.getPrincipal();
-                Long userId = principal.userId();
+                                
+                if (!(authentication.getPrincipal() instanceof JwtUserPrincipal)) {
+                    log.warn("Cannot track presence for non-authenticated user on subscribe. Authentication's principal is not JwtUserPrincipal.");
+                    return;
+                }
+                
+                JwtUserPrincipal jwtPrincipal = (JwtUserPrincipal) authentication.getPrincipal();
+                Long userId = jwtPrincipal.userId();
 
                 // 접속자 목록에 추가
                 chatPresenceService.userJoined(roomId, userId);
