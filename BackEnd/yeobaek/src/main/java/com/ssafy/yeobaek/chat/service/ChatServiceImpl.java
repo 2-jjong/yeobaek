@@ -155,7 +155,10 @@ public class ChatServiceImpl implements ChatService {
         chatRoomMemberRepository.findByChatRoomAndUser_Id(chatRoom, userId)
                 .orElseThrow(() -> new CustomException(ResponseCode.MESSAGE_ROOM_FORBIDDEN));
 
-        // 3. 상대방 정보 조회
+        // 3. 해당 채팅방의 안 읽은 메시지를 모두 읽음 처리
+        messageRepository.updateReadStatusInBulk(chatRoomId, userId);
+
+        // 4. 상대방 정보 조회
         User partner = chatRoom.getMembers().stream()
                 .map(ChatRoomMember::getUser)
                 .filter(user -> !user.getId().equals(userId))
