@@ -276,7 +276,7 @@ fun HorizontalMeasureCamera(
                 Spacer(Modifier.width(24.dp))
                 // 포인트 추가
                 YeobaegButton(
-                    text = "중앙에 포인트 추가",
+                    text = "포인트 추가",
                     onClick = {
                         val f = frame ?: return@YeobaegButton
                         if (f.camera.trackingState != TrackingState.TRACKING) return@YeobaegButton
