@@ -48,6 +48,13 @@ fun ChatListScreen(
             viewModel.loadChatRooms()
         }
     }
+    DisposableEffect(Unit) {
+        mainViewModel.setOnChatListScreen(true)
+
+        onDispose {
+            mainViewModel.setOnChatListScreen(false)
+        }
+    }
     ChatListScreenContent(
         uiState = uiState,
         onChatClick = { viewModel.navigateToChatRoom(it) }
@@ -73,7 +80,7 @@ fun ChatListScreenContent(
         contentWindowInsets = WindowInsets(0)
     ) { innerPadding ->
         when {
-            uiState.isLoading -> {
+            uiState.chatRooms.isEmpty() && uiState.isLoading -> {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
@@ -93,7 +100,7 @@ fun ChatListScreenContent(
                         .padding(innerPadding),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    itemsIndexed(uiState.chatRooms) { index, chat ->
+                    itemsIndexed(uiState.chatRooms, key = { _, item -> item.chatRoomId }) { index, chat ->
                         ChatListItem(
                             chat = chat,
                             onClick = { onChatClick(chat.chatRoomId) }

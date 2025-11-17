@@ -42,6 +42,7 @@ data class ChatUiState(
 )
 
 private const val TAG = "ChatViewModel"
+
 @HiltViewModel
 class ChatViewModel @Inject constructor(
     private val navigator: Navigator,
@@ -63,7 +64,13 @@ class ChatViewModel @Inject constructor(
     fun subscribeToChatRoom(chatRoomId: Long) {
         viewModelScope.launch {
             delay(500)
+            Log.d(TAG, "======================================")
+            Log.d(TAG, "📥 subscribeToChatRoom called")
+            Log.d(TAG, "ChatRoomId: $chatRoomId")
+            Log.d(TAG, "======================================")
+
             chatWebSocketRepository.subscribeToRoom(chatRoomId)
+
             Log.d(TAG, "subscribeToChatRoom: 메시지 수신 시작")
             startReceivingMessages()
         }
@@ -72,6 +79,11 @@ class ChatViewModel @Inject constructor(
 
     /**채팅방 구독 해제 (퇴장 시) */
     fun unsubscribeFromChatRoom(chatRoomId: Long) {
+        Log.d(TAG, "======================================")
+        Log.d(TAG, "📤 unsubscribeFromChatRoom called")
+        Log.d(TAG, "ChatRoomId: $chatRoomId")
+        Log.d(TAG, "======================================")
+
         chatWebSocketRepository.unsubscribeFromRoom(chatRoomId)
         stopReceivingMessages()
     }
@@ -79,33 +91,69 @@ class ChatViewModel @Inject constructor(
     /** 서버로부터 새 메시지 수신 */
     private fun startReceivingMessages() {
         if (receiveJob?.isActive == true) {
+            Log.d(TAG, "⚠️ receiveJob already active, returning")
             return
         }
-        receiveJob = viewModelScope.launch {
-            chatWebSocketRepository.receiveMessages().collect { msgJson ->
 
-                val newMessage = parseChatMessage(msgJson)
+        Log.d(TAG, "🎬 startReceivingMessages - Creating new collection job")
+
+        receiveJob = viewModelScope.launch {
+            Log.d(TAG, "🔄 Starting to collect chatMessageFlow...")
+
+            chatWebSocketRepository.receiveChatMessages().collect { newMessage ->
+                Log.d(TAG, "==========================================")
+                Log.d(TAG, "📨 NEW MESSAGE COLLECTED FROM FLOW")
+                Log.d(TAG, "MessageId: ${newMessage.messageId}")
+                Log.d(TAG, "SenderId: ${newMessage.senderId}")
+                Log.d(TAG, "MessageType: ${newMessage.messageType}")
+                Log.d(TAG, "Content: ${newMessage.content}")
+                Log.d(TAG, "ImageUrl: ${newMessage.imageUrl}")
+                Log.d(TAG, "CreatedAt: ${newMessage.createdAt}")
+                Log.d(TAG, "My UserId: ${myUserId.value}")
+                Log.d(TAG, "Is my message?: ${newMessage.senderId == myUserId.value}")
+                Log.d(TAG, "==========================================")
+
                 if (newMessage.senderId != myUserId.value) {
-                    Log.d(TAG, "startReceivingMessages: 바로 업데이트")
+                    Log.d(TAG, "✅ Adding message to UI (not sent by me)")
+
                     _uiState.update { state ->
+                        val currentSize = state.chatRoomMessages.messages.size
+                        val updatedMessages = listOf(newMessage) + state.chatRoomMessages.messages
+
+                        Log.d(TAG, "📊 UI State Update:")
+                        Log.d(TAG, "  Previous message count: $currentSize")
+                        Log.d(TAG, "  New message count: ${updatedMessages.size}")
+
                         state.copy(
                             chatRoomMessages = state.chatRoomMessages.copy(
-                                messages = listOf(newMessage)+state.chatRoomMessages.messages
+                                messages = updatedMessages
                             )
                         )
                     }
+
+                    Log.d(TAG, "✅ UI State updated successfully")
+                } else {
+                    Log.d(TAG, "⏭️ Skipping message (sent by me)")
                 }
             }
+
+            Log.d(TAG, "⚠️ Collection loop ended (this shouldn't happen unless cancelled)")
         }
+
+        Log.d(TAG, "🎬 startReceivingMessages - Job created and started")
     }
 
     private fun stopReceivingMessages() {
+        Log.d(TAG, "🛑 stopReceivingMessages called")
+        Log.d(TAG, "ReceiveJob active?: ${receiveJob?.isActive}")
+
         receiveJob?.cancel()
         receiveJob = null
+
+        Log.d(TAG, "✅ ReceiveJob cancelled and cleared")
     }
 
     /** 메시지 JSON 파싱 */
-
     private fun parseChatMessage(json: String): ChatMessage {
         return try {
             Json.decodeFromString(ChatMessage.serializer(), json)
@@ -117,6 +165,14 @@ class ChatViewModel @Inject constructor(
     /** 메시지 전송 */
     fun sendMessage(text: String, myUserId: Long?) {
         val chatRoomId = _uiState.value.chatRoomMessages.chatRoom.chatRoomId
+
+        Log.d(TAG, "======================================")
+        Log.d(TAG, "📤 sendMessage called")
+        Log.d(TAG, "ChatRoomId: $chatRoomId")
+        Log.d(TAG, "Text: $text")
+        Log.d(TAG, "MyUserId: $myUserId")
+        Log.d(TAG, "======================================")
+
         val message = SendMessage(chatRoomId, "TEXT", text)
         chatWebSocketRepository.sendMessage(message)
 
@@ -133,8 +189,11 @@ class ChatViewModel @Inject constructor(
             createdAt = nowString
         )
 
+        Log.d(TAG, "💬 Adding my message to UI immediately")
+
         _uiState.update { state ->
             val updatedList = listOf(myMsg) + state.chatRoomMessages.messages
+            Log.d(TAG, "New message count after send: ${updatedList.size}")
             state.copy(chatRoomMessages = state.chatRoomMessages.copy(messages = updatedList))
         }
     }
@@ -269,7 +328,6 @@ class ChatViewModel @Inject constructor(
     }
 
 
-
     fun navigateToChatRoom(chatRoomId: Long) = viewModelScope.launch {
         navigator.navigate(FullScreen.ChattingScreen(chatRoomId))
     }
@@ -286,5 +344,11 @@ class ChatViewModel @Inject constructor(
                 partnerId
             )
         )
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Log.d(TAG, "🧹 ViewModel cleared - stopping all jobs")
+        stopReceivingMessages()
     }
 }
