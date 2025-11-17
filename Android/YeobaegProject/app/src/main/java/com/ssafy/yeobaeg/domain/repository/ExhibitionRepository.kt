@@ -22,7 +22,7 @@ interface ExhibitionRepository {
 
     suspend fun proposeExhibition(info: ProposeExhibition)
     suspend fun getExhibitionInfo(exhibitionId: Long): Result<ExhibitionInfo>
-    suspend fun agreeExhibitionPropose(exhibitionId: Long)
+    suspend fun agreeExhibitionPropose(exhibitionId: Long): Result<Unit>
     suspend fun getPossibleArtworks(
         artistId: Long,
         startDate: String,
@@ -35,5 +35,5 @@ interface ExhibitionRepository {
         endDate: String
     ): Result<PossibleSlots>
 
-    suspend fun rejectExhibition(exhibitionId: Long)
+    suspend fun rejectExhibition(exhibitionId: Long):Result<Unit>
 }

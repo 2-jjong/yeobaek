@@ -63,15 +63,7 @@ class ChatViewModel @Inject constructor(
     /** 채팅방 구독 시작 (입장 시) */
     fun subscribeToChatRoom(chatRoomId: Long) {
         viewModelScope.launch {
-            delay(500)
-            Log.d(TAG, "======================================")
-            Log.d(TAG, "📥 subscribeToChatRoom called")
-            Log.d(TAG, "ChatRoomId: $chatRoomId")
-            Log.d(TAG, "======================================")
-
             chatWebSocketRepository.subscribeToRoom(chatRoomId)
-
-            Log.d(TAG, "subscribeToChatRoom: 메시지 수신 시작")
             startReceivingMessages()
         }
     }
@@ -79,11 +71,6 @@ class ChatViewModel @Inject constructor(
 
     /**채팅방 구독 해제 (퇴장 시) */
     fun unsubscribeFromChatRoom(chatRoomId: Long) {
-        Log.d(TAG, "======================================")
-        Log.d(TAG, "📤 unsubscribeFromChatRoom called")
-        Log.d(TAG, "ChatRoomId: $chatRoomId")
-        Log.d(TAG, "======================================")
-
         chatWebSocketRepository.unsubscribeFromRoom(chatRoomId)
         stopReceivingMessages()
     }
@@ -95,34 +82,18 @@ class ChatViewModel @Inject constructor(
             return
         }
 
-        Log.d(TAG, "🎬 startReceivingMessages - Creating new collection job")
 
         receiveJob = viewModelScope.launch {
-            Log.d(TAG, "🔄 Starting to collect chatMessageFlow...")
-
             chatWebSocketRepository.receiveChatMessages().collect { newMessage ->
-                Log.d(TAG, "==========================================")
-                Log.d(TAG, "📨 NEW MESSAGE COLLECTED FROM FLOW")
-                Log.d(TAG, "MessageId: ${newMessage.messageId}")
-                Log.d(TAG, "SenderId: ${newMessage.senderId}")
-                Log.d(TAG, "MessageType: ${newMessage.messageType}")
-                Log.d(TAG, "Content: ${newMessage.content}")
-                Log.d(TAG, "ImageUrl: ${newMessage.imageUrl}")
-                Log.d(TAG, "CreatedAt: ${newMessage.createdAt}")
-                Log.d(TAG, "My UserId: ${myUserId.value}")
-                Log.d(TAG, "Is my message?: ${newMessage.senderId == myUserId.value}")
-                Log.d(TAG, "==========================================")
-
                 if (newMessage.senderId != myUserId.value) {
-                    Log.d(TAG, "✅ Adding message to UI (not sent by me)")
 
                     _uiState.update { state ->
                         val currentSize = state.chatRoomMessages.messages.size
-                        val updatedMessages = listOf(newMessage) + state.chatRoomMessages.messages
+                        val filtered = state.chatRoomMessages.messages.filterNot {
+                            it.messageType == newMessage.messageType && it.messageId < 0
+                        }
 
-                        Log.d(TAG, "📊 UI State Update:")
-                        Log.d(TAG, "  Previous message count: $currentSize")
-                        Log.d(TAG, "  New message count: ${updatedMessages.size}")
+                        val updatedMessages = listOf(newMessage) + filtered
 
                         state.copy(
                             chatRoomMessages = state.chatRoomMessages.copy(
@@ -144,8 +115,6 @@ class ChatViewModel @Inject constructor(
     }
 
     private fun stopReceivingMessages() {
-        Log.d(TAG, "🛑 stopReceivingMessages called")
-        Log.d(TAG, "ReceiveJob active?: ${receiveJob?.isActive}")
 
         receiveJob?.cancel()
         receiveJob = null
@@ -165,13 +134,6 @@ class ChatViewModel @Inject constructor(
     /** 메시지 전송 */
     fun sendMessage(text: String, myUserId: Long?) {
         val chatRoomId = _uiState.value.chatRoomMessages.chatRoom.chatRoomId
-
-        Log.d(TAG, "======================================")
-        Log.d(TAG, "📤 sendMessage called")
-        Log.d(TAG, "ChatRoomId: $chatRoomId")
-        Log.d(TAG, "Text: $text")
-        Log.d(TAG, "MyUserId: $myUserId")
-        Log.d(TAG, "======================================")
 
         val message = SendMessage(chatRoomId, "TEXT", text)
         chatWebSocketRepository.sendMessage(message)
@@ -243,17 +205,84 @@ class ChatViewModel @Inject constructor(
     /** 전시 수락 */
     fun agreeExhibition(exhibitionId: Long) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
-        exhibitionRepository.agreeExhibitionPropose(exhibitionId)
-        _uiState.update { it.copy(isLoading = false) }
+
+        val result = exhibitionRepository.agreeExhibitionPropose(exhibitionId)
+
+        result.onSuccess {
+            val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
+            val mySystemMsg = ChatMessage(
+                messageId = -System.currentTimeMillis(),
+                senderId = myUserId.value,
+                messageType = MessageType.AGREED,
+                content = "매칭이 수락되었습니다!",
+                imageUrl = "",
+                exhibition = null,
+                isRead = true,
+                createdAt = now
+            )
+
+            _uiState.update { state ->
+                state.copy(
+                    isLoading = false,
+                    chatRoomMessages = state.chatRoomMessages.copy(
+                        messages = listOf(mySystemMsg) + state.chatRoomMessages.messages
+                    )
+                )
+            }
+        }
+
+        result.onFailure { e ->
+            _uiState.update { it.copy(isLoading = false) }
+            _uiState.update { it.copy(errorMessage = "이미 처리된 전시입니다. 수락할 수 없습니다.") }
+
+        }
     }
+
+
+
 
     /** 전시 거절 */
     fun rejectExhibition(exhibitionId: Long) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
-        exhibitionRepository.rejectExhibition(exhibitionId)
-        _uiState.update { it.copy(isLoading = false) }
+
+        val result = exhibitionRepository.rejectExhibition(exhibitionId)
+
+        result.onSuccess {
+            // 정상 거절 성공 → 시스템 메시지 추가
+            val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(Date())
+            val mySystemMsg = ChatMessage(
+                messageId = -System.currentTimeMillis(),
+                senderId = myUserId.value,
+                messageType = MessageType.REJECTED,
+                content = "",
+                imageUrl = "",
+                exhibition = null,
+                isRead = true,
+                createdAt = now
+            )
+
+            _uiState.update { state ->
+                state.copy(
+                    isLoading = false,
+                    chatRoomMessages = state.chatRoomMessages.copy(
+                        messages = listOf(mySystemMsg) + state.chatRoomMessages.messages
+                    )
+                )
+            }
+        }
+
+        result.onFailure { e ->
+            _uiState.update { it.copy(isLoading = false) }
+            _uiState.update { it.copy(errorMessage = "이미 처리된 전시입니다. 거절할 수 없습니다.") }
+
+        }
     }
 
+
+
+    fun clearErrorMessage() {
+        _uiState.update { it.copy(errorMessage = null) }
+    }
 
     fun loadExhibitionInfo(exhibitionId: Long) = viewModelScope.launch {
         exhibitionRepository.getExhibitionInfo(exhibitionId)
@@ -301,7 +330,7 @@ class ChatViewModel @Inject constructor(
                 val now = formatter.format(Date())
 
                 val myMsg = ChatMessage(
-                    messageId = System.currentTimeMillis(),
+                    messageId = -System.currentTimeMillis(),
                     senderId = myUserId.value,
                     messageType = MessageType.IMAGE,
                     content = null,

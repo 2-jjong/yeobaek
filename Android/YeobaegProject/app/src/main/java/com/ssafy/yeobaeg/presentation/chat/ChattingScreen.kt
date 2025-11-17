@@ -1,6 +1,7 @@
 package com.ssafy.yeobaeg.presentation.chat
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -41,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -69,7 +71,10 @@ import coil.compose.AsyncImage
 import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.domain.model.chat.MessageType
+import com.ssafy.yeobaeg.presentation.common.component.SnackbarType
+import com.ssafy.yeobaeg.presentation.common.component.YeobaegSnackbarHost
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.common.component.showYeobaegSnackbar
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
 import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
 import com.ssafy.yeobaeg.ui.theme.YeobaegBackground
@@ -80,6 +85,7 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 
 private const val TAG = "ChattingScreen"
 
@@ -95,6 +101,8 @@ fun ChattingScreen(
     val myUserRole = viewModel.myUserRole.collectAsState().value
     var inputText by remember { mutableStateOf("") }
     var showMatchingInfoDialog by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val errorMessage = uiState.errorMessage
 
     // 이미지 선택 런처
     val pickImageLauncher = rememberLauncherForActivityResult(
@@ -114,7 +122,15 @@ fun ChattingScreen(
             viewModel.unsubscribeFromChatRoom(chatRoomId)
         }
     }
-
+    LaunchedEffect(errorMessage) {
+        if (!errorMessage.isNullOrBlank()) {
+            snackbarHostState.showYeobaegSnackbar(
+                message = errorMessage,
+                type = SnackbarType.ERROR
+            )
+            viewModel.clearErrorMessage()
+        }
+    }
 
     ChattingScreenContent(
         title = uiState.chatRoomMessages.chatRoom.partnerName,
@@ -149,7 +165,8 @@ fun ChattingScreen(
         onReject = { exhibitionId ->
             viewModel.rejectExhibition(exhibitionId)
         },
-        myUserId = myUserId
+        myUserId = myUserId,
+        snackbarHostState = snackbarHostState
     )
     if (showMatchingInfoDialog) {
         MatchingInfoDialog(
@@ -183,6 +200,7 @@ fun ChattingScreenContent(
     onImageClick:()->Unit={},
     onProposeAccept: (Long) -> Unit,
     onReject: ((Long) -> Unit)? = null,
+    snackbarHostState: SnackbarHostState,
     myUserId: Long?
 ) {
     val listState = rememberLazyListState()
@@ -203,6 +221,12 @@ fun ChattingScreenContent(
                 title = title,
                 onBackClick = onBackClick ?: {},
                 showBackButton = true
+            )
+        },
+        snackbarHost = {
+            YeobaegSnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.fillMaxWidth()
             )
         },
         bottomBar = {
@@ -236,13 +260,6 @@ fun ChattingScreenContent(
                     CircularProgressIndicator()
                 }
 
-                errorMessage != null -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = errorMessage, color = Color.Red)
-                }
-
                 else -> LazyColumn(
                     state = listState,
                     modifier = Modifier
@@ -256,7 +273,7 @@ fun ChattingScreenContent(
                 ) {
                     items(
                         items = messages,
-                        key = { "${it.messageId}_${it.createdAt}" }
+                        key = { msg -> msg.messageId }
                     ) { msg ->
                         when (msg.messageType) {
 
@@ -579,7 +596,7 @@ fun MatchingStatusMessageBubble(
 
 
                 MessageType.REJECTED ->
-                    if (isMy) "${partnerName}님이 제안을 거절했습니다."
+                    if (isMy) "${partnerName}님의 제안을 거절했습니다."
                     else "당신의 제안이 거절되었습니다."
 
                 MessageType.CANCELLED ->
@@ -826,6 +843,7 @@ fun ChattingScreenPreview() {
         profileImg = "",
         myUserId = 0,
         partnerName = "fff",
-        onProposeAccept = {}
+        onProposeAccept = {},
+        snackbarHostState = SnackbarHostState()
     )
 }
