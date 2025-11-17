@@ -55,6 +55,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,6 +86,7 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegTextGray
 import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlin.random.Random
 
 private const val TAG = "ChattingScreen"
@@ -138,6 +140,8 @@ fun ChattingScreen(
         messages = uiState.chatRoomMessages.messages,
         partnerName = uiState.chatRoomMessages.chatRoom.partnerName,
         isLoading = uiState.isLoading,
+        isLoadingMore = uiState.isLoadingMore,
+        hasNext = uiState.chatRoomMessages.pagination.hasNext,
         errorMessage = uiState.errorMessage,
         inputText = inputText,
         onInputChange = { inputText = it },
@@ -165,6 +169,9 @@ fun ChattingScreen(
         onReject = { exhibitionId ->
             viewModel.rejectExhibition(exhibitionId)
         },
+        onLoadMore = {
+            viewModel.loadMoreMessages(chatRoomId)
+        },
         myUserId = myUserId,
         snackbarHostState = snackbarHostState
     )
@@ -191,6 +198,8 @@ fun ChattingScreenContent(
     partnerName: String,
     messages: List<ChatMessage> = emptyList(),
     isLoading: Boolean = false,
+    isLoadingMore: Boolean = false,
+    hasNext: Boolean = false,
     errorMessage: String? = null,
     inputText: String = "",
     onInputChange: (String) -> Unit = {},
@@ -200,6 +209,7 @@ fun ChattingScreenContent(
     onImageClick:()->Unit={},
     onProposeAccept: (Long) -> Unit,
     onReject: ((Long) -> Unit)? = null,
+    onLoadMore: () -> Unit = {},
     snackbarHostState: SnackbarHostState,
     myUserId: Long?
 ) {
@@ -211,6 +221,32 @@ fun ChattingScreenContent(
             delay(100)
             listState.animateScrollToItem(0)
         }
+    }
+
+    // 무한 스크롤: 마지막 아이템에 도달했을 때 추가 로드
+    LaunchedEffect(Unit) {
+        snapshotFlow {
+            val layoutInfo = listState.layoutInfo
+            val lastIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index
+            val totalItems = layoutInfo.totalItemsCount
+            Triple(lastIndex, totalItems, layoutInfo.visibleItemsInfo.lastOrNull()?.key)
+        }
+            .distinctUntilChanged()
+            .collect { (lastVisibleItemIndex, totalItems, _) ->
+                // reverseLayout이므로 마지막 인덱스(가장 오래된 메시지)가 보일 때 로드
+                val shouldLoad = lastVisibleItemIndex != null &&
+                    totalItems > 0 &&
+                    lastVisibleItemIndex >= totalItems - 1 &&
+                    hasNext &&
+                    !isLoadingMore
+
+                android.util.Log.d(TAG, "Scroll Check - lastIndex: $lastVisibleItemIndex, total: $totalItems, hasNext: $hasNext, isLoading: $isLoadingMore, shouldLoad: $shouldLoad")
+
+                if (shouldLoad) {
+                    android.util.Log.d(TAG, "Loading more messages...")
+                    onLoadMore()
+                }
+            }
     }
 
     Scaffold(
@@ -271,6 +307,23 @@ fun ChattingScreenContent(
                     contentPadding = PaddingValues(vertical = 16.dp),
                     reverseLayout = true
                 ) {
+                    // 로딩 인디케이터 (reverseLayout이므로 실제로는 상단에 표시됨)
+                    if (isLoadingMore) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                        }
+                    }
+
                     items(
                         items = messages,
                         key = { msg -> msg.messageId }
@@ -843,6 +896,8 @@ fun ChattingScreenPreview() {
         profileImg = "",
         myUserId = 0,
         partnerName = "fff",
+        isLoadingMore = false,
+        hasNext = false,
         onProposeAccept = {},
         snackbarHostState = SnackbarHostState()
     )

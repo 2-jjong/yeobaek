@@ -36,6 +36,7 @@ import javax.inject.Inject
 data class ChatUiState(
     val chatRooms: List<ChatRoomInfo> = emptyList(),
     val isLoading: Boolean = false,
+    val isLoadingMore: Boolean = false,
     val chatRoomMessages: ChatRoomMessages = ChatRoomMessages(),
     val exhibitionInfo: ExhibitionInfo = ExhibitionInfo(),
     val errorMessage: String? = null,
@@ -179,8 +180,9 @@ class ChatViewModel @Inject constructor(
     /** 채팅방 메시지 불러오기 */
     fun loadChatMessages(chatRoomId: Long) = viewModelScope.launch {
         _uiState.update { it.copy(isLoading = true) }
-        chatRepository.getChatRoomMessages(chatRoomId)
+        chatRepository.getChatRoomMessages(chatRoomId, page = 0)
             .onSuccess { result ->
+                Log.d(TAG, "loadChatMessages success - messages: ${result.messages.size}, pagination: ${result.pagination}")
                 _uiState.update { current ->
                     current.copy(
                         chatRoomMessages = result.copy(
@@ -193,10 +195,53 @@ class ChatViewModel @Inject constructor(
                 }
             }
             .onFailure { e ->
+                Log.e(TAG, "loadChatMessages failed: ${e.message}", e)
                 _uiState.update { current ->
                     current.copy(
                         isLoading = false,
                         errorMessage = e.message ?: "메시지 불러오기 오류"
+                    )
+                }
+            }
+    }
+
+    /** 추가 메시지 불러오기 (페이징) */
+    fun loadMoreMessages(chatRoomId: Long) = viewModelScope.launch {
+        val currentState = _uiState.value
+
+        Log.d(TAG, "loadMoreMessages called - isLoadingMore: ${currentState.isLoadingMore}, hasNext: ${currentState.chatRoomMessages.pagination.hasNext}")
+
+        // 이미 로딩 중이거나 더 이상 불러올 데이터가 없으면 리턴
+        if (currentState.isLoadingMore || !currentState.chatRoomMessages.pagination.hasNext) {
+            Log.d(TAG, "loadMoreMessages skipped - already loading or no more data")
+            return@launch
+        }
+
+        val nextPage = currentState.chatRoomMessages.pagination.currentPage + 1
+        Log.d(TAG, "Loading page $nextPage for chatRoom $chatRoomId")
+
+        _uiState.update { it.copy(isLoadingMore = true) }
+
+        chatRepository.getChatRoomMessages(chatRoomId, page = nextPage)
+            .onSuccess { result ->
+                Log.d(TAG, "loadMoreMessages success - loaded ${result.messages.size} messages, hasNext: ${result.pagination.hasNext}")
+                _uiState.update { current ->
+                    current.copy(
+                        chatRoomMessages = current.chatRoomMessages.copy(
+                            messages = current.chatRoomMessages.messages + result.messages,
+                            pagination = result.pagination
+                        ),
+                        isLoadingMore = false,
+                        errorMessage = null
+                    )
+                }
+            }
+            .onFailure { e ->
+                Log.e(TAG, "loadMoreMessages failed: ${e.message}", e)
+                _uiState.update { current ->
+                    current.copy(
+                        isLoadingMore = false,
+                        errorMessage = e.message ?: "추가 메시지 불러오기 오류"
                     )
                 }
             }
