@@ -61,6 +61,17 @@ fun ChatListScreen(
     )
 }
 
+private fun getDisplayMessage(type: String?, message: String?): String {
+    return when (type) {
+        "TEXT" -> message ?: ""
+        "IMAGE" -> "사진을 보냈습니다"
+        "AGREE" -> "매칭을 수락했습니다"
+        "PROPOSAL" -> "매칭 제안을 보냈습니다"
+        "REJECTED" -> "매칭이 거절 되었습니다."
+        else -> ""
+    }
+}
+
 /**
  * 실제 화면과 프리뷰 둘 다에서 재사용 가능한 Content 분리
  */
@@ -69,6 +80,8 @@ fun ChatListScreenContent(
     uiState: ChatUiState,
     onChatClick: (Long) -> Unit = {}
 ) {
+
+
     Scaffold(
         topBar = {
             YeobaegTopAppBar(
@@ -100,7 +113,9 @@ fun ChatListScreenContent(
                         .padding(innerPadding),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
-                    itemsIndexed(uiState.chatRooms, key = { _, item -> item.chatRoomId }) { index, chat ->
+                    itemsIndexed(
+                        uiState.chatRooms,
+                        key = { _, item -> item.chatRoomId }) { index, chat ->
                         ChatListItem(
                             chat = chat,
                             onClick = { onChatClick(chat.chatRoomId) }
@@ -153,7 +168,7 @@ fun ChatListItem(chat: ChatRoomInfo, onClick: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = chat.lastMessage ?: "",
+                text = getDisplayMessage(chat.lastMessageType, chat.lastMessage),
                 fontFamily = jansilFont,
                 fontWeight = FontWeight.Light,
                 color = YeobaegBlack,
@@ -176,26 +191,26 @@ fun ChatListItem(chat: ChatRoomInfo, onClick: () -> Unit) {
                 fontSize = 13.sp
             )
 
-            //읽음처리 기능 일단 보류
-//            if (chat.unreadCount!=null&&chat.unreadCount > 0) {
-//                Box(
-//                    modifier = Modifier
-//                        .size(24.dp)
-//                        .background(YeobaegBrown, shape = CircleShape),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    Text(
-//                        text = chat.unreadCount.toString(),
-//                        color = YeobaegWhite,
-//                        fontFamily = jansilFont,
-//                        fontWeight = FontWeight.Medium,
-//                        fontSize = 11.sp,
-//                        textAlign = TextAlign.Center,
-//                    )
-//                }
-//            } else {
-//                Spacer(modifier = Modifier.size(22.dp))
-//            }
+//            읽음처리 기능 일단 보류
+            if (chat.unreadCount!=null&&chat.unreadCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .background(YeobaegBrown, shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = chat.unreadCount.toString(),
+                        color = YeobaegWhite,
+                        fontFamily = jansilFont,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.size(22.dp))
+            }
         }
     }
 }
