@@ -3,7 +3,7 @@ package com.ssafy.yeobaeg.data.datasource.remote
 import android.annotation.SuppressLint
 import android.util.Log
 import com.ssafy.yeobaeg.BuildConfig
-import com.ssafy.yeobaeg.data.datasource.local.TokenDataSource
+import com.ssafy.yeobaeg.data.datasource.local.AuthDataSource
 import com.ssafy.yeobaeg.data.model.ws.resquest.SendMessageRequest
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +24,7 @@ private const val TAG = "ChatWebSocketService"
 
 @Singleton
 class ChatWebSocketService @Inject constructor(
-    private val tokenDataSource: TokenDataSource,
+    private val authDataSource: AuthDataSource,
     private val wsUrl: String = BuildConfig.WS_URL
 ) {
     private var stompClient: StompClient? = null
@@ -54,7 +54,7 @@ class ChatWebSocketService @Inject constructor(
         if (isConnected) {
             return
         }
-        val accessToken = tokenDataSource.getAccessToken()
+        val accessToken = authDataSource.getAccessToken()
         val headers = listOf(StompHeader("Authorization", "Bearer $accessToken"))
 
         lifecycleDisposable=stompClient?.lifecycle()?.subscribe { event ->
