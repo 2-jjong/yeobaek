@@ -145,6 +145,7 @@ public class ChatServiceImpl implements ChatService {
      * @return 채팅방 정보
      */
     @Override
+    @Transactional
     public ChatRoomDetailData getChatRoomMessages(Long userId, Long chatRoomId, Integer page, Integer size) {
 
         // 1. 채팅방 조회
