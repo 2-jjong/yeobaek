@@ -1,7 +1,6 @@
 package com.ssafy.yeobaeg.presentation.chat
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,7 +33,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -87,7 +86,6 @@ import com.ssafy.yeobaeg.ui.theme.YeobaegWhite
 import com.ssafy.yeobaeg.ui.theme.jansilFont
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlin.random.Random
 
 private const val TAG = "ChattingScreen"
 
@@ -100,7 +98,6 @@ fun ChattingScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val myUserId = viewModel.myUserId.collectAsState().value
-    val myUserRole = viewModel.myUserRole.collectAsState().value
     var inputText by remember { mutableStateOf("") }
     var showMatchingInfoDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -142,7 +139,6 @@ fun ChattingScreen(
         isLoading = uiState.isLoading,
         isLoadingMore = uiState.isLoadingMore,
         hasNext = uiState.chatRoomMessages.pagination.hasNext,
-        errorMessage = uiState.errorMessage,
         inputText = inputText,
         onInputChange = { inputText = it },
         onSendClick = { message ->
@@ -200,7 +196,6 @@ fun ChattingScreenContent(
     isLoading: Boolean = false,
     isLoadingMore: Boolean = false,
     hasNext: Boolean = false,
-    errorMessage: String? = null,
     inputText: String = "",
     onInputChange: (String) -> Unit = {},
     onSendClick: (String) -> Unit = {},
@@ -727,12 +722,13 @@ fun MyMessageBubble(message: ChatMessage) {
 
 @Composable
 fun ChatInputBar(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
     onSendClick: (String) -> Unit,
     onMatchingClick: () -> Unit = {},
     onImageClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+
 ) {
     val trimmedValue = value.trim()
     val isSendEnabled = trimmedValue.isNotEmpty()
@@ -832,7 +828,7 @@ fun ChatInputBar(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Send,
+                        imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "보내기",
                         tint = if (isSendEnabled) Color.White else YeobaegTextGray,
                         modifier = Modifier.size(20.dp)
