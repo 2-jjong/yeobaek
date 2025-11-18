@@ -73,6 +73,7 @@ import com.ssafy.yeobaeg.R
 import com.ssafy.yeobaeg.domain.model.chat.ChatMessage
 import com.ssafy.yeobaeg.domain.model.chat.MessageType
 import com.ssafy.yeobaeg.domain.model.exhibition.ExhibitionInfo
+import com.ssafy.yeobaeg.presentation.chat.component.BasicSystemMessage
 import com.ssafy.yeobaeg.presentation.common.component.SnackbarType
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegSnackbarHost
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
@@ -384,10 +385,10 @@ fun ChattingScreenContent(
                             MessageType.AGREED,
                             MessageType.REJECTED,
                             MessageType.CANCELLED -> {
-                                MatchingStatusMessageBubble(
+                                BasicSystemMessage(
                                     message = msg,
-                                    partnerName = partnerName,
-                                    myId = myUserId
+                                    isMy = (myUserId == msg.senderId),
+                                    partnerName = partnerName
                                 )
                             }
 
@@ -545,6 +546,7 @@ fun ImageMessageBubble(
     }
 }
 
+//제안 요청 시스템 메시지
 @Composable
 fun ProposalMessageBubble(
     message: ChatMessage,
@@ -553,96 +555,108 @@ fun ProposalMessageBubble(
     onAccept: ((Long?) -> Unit)? = null,
     onReject: ((Long?) -> Unit)? = null
 ) {
-    Surface(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = YeobaegWhite,
-        shadowElevation = 1.dp,
-        border = BorderStroke(1.dp, YeobaegLightGray.copy(alpha = 0.5f))
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
+        contentAlignment = Alignment.Center
+    ){
+        Surface(
+            modifier = Modifier
+                .padding(vertical = 8.dp)
+                .width(350.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = YeobaegWhite,
+            shadowElevation = 1.dp,
+            border = BorderStroke(1.dp, YeobaegLightGray.copy(alpha = 0.5f))
         ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
 
-            // 상단 제목
-            Text(
-                text = "매칭 요청",
-                fontFamily = jansilFont,
-                fontSize = 16.sp,
-                color = YeobaegBlack
-            )
-
-            Spacer(modifier = Modifier.height(13.dp))
-
-            //내가 요청 보낸 경우
-            if (message.senderId == myId) {
+                // 상단 제목
                 Text(
-                    text = "${partnerName}님에게 전시 매칭을 요청했습니다.",
+                    text = "매칭 요청 ❤️",
                     fontFamily = jansilFont,
-                    fontSize = 14.sp,
-                    color = YeobaegBlack
-                )
-            } else { // 내가 요청 보내지 않은 경우
-                // 본문
-                Text(
-                    text = "${partnerName}님이 전시 매칭을 요청했습니다.\n수락하시겠습니까?",
-                    fontFamily = jansilFont,
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     color = YeobaegBlack
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(13.dp))
 
-                // 버튼 2개
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
+                //내가 요청 보낸 경우
+                if (message.senderId == myId) {
+                    Text(
+                        text = "${partnerName}님에게 전시 매칭을 요청했습니다.",
+                        fontFamily = jansilFont,
+                        fontSize = 14.sp,
+                        color = YeobaegBlack
+                    )
+                } else { // 내가 요청 보내지 않은 경우
+                    // 본문
+                    Text(
+                        text = "${partnerName}님이 전시 매칭을 요청했습니다.\n수락하시겠습니까?",
+                        fontFamily = jansilFont,
+                        fontSize = 14.sp,
+                        color = YeobaegBlack
+                    )
 
-                    // 거절 버튼
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
-                            .border(
-                                width = 1.dp,
-                                color = YeobaegLightGray,
-                                shape = RoundedCornerShape(8.dp)
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 버튼 2개
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+
+                        // 거절 버튼
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = YeobaegLightGray,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { onReject?.invoke(message.exhibitionId) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "거절",
+                                fontFamily = jansilFont,
+                                fontSize = 14.sp,
+                                color = YeobaegBlack
                             )
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onReject?.invoke(message.exhibitionId) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "거절",
-                            fontFamily = jansilFont,
-                            fontSize = 14.sp,
-                            color = YeobaegBlack
-                        )
-                    }
+                        }
 
-                    // 요청 내용 확인 버튼
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(40.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(YeobaegBrown)
-                            .clickable { onAccept?.invoke(message.exhibitionId) },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "요청 내용 확인",
-                            fontFamily = jansilFont,
-                            fontSize = 14.sp,
-                            color = YeobaegWhite
-                        )
+                        // 요청 내용 확인 버튼
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(YeobaegBrown)
+                                .clickable { onAccept?.invoke(message.exhibitionId) },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "요청 내용 확인",
+                                fontFamily = jansilFont,
+                                fontSize = 14.sp,
+                                color = YeobaegWhite
+                            )
+                        }
                     }
                 }
-            }
+                Text(
+                    text = DateFormatter.toTimeAgo(message.createdAt),
+                    fontSize = 11.sp,
+                    color = YeobaegTextGray
+                )
 
+            }
         }
     }
 }
