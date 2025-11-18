@@ -124,6 +124,14 @@ class BookmarkViewModel @Inject constructor(
         }
     }
 
+    fun navigateToCafeDetail(cafeId: Long) = viewModelScope.launch {
+        navigator.navigate(FullScreen.CafeDetail(cafeId))
+    }
+
+    fun navigateToArtworkDetail(artworkId: Long) = viewModelScope.launch {
+        navigator.navigate(FullScreen.ArtworkDetail(artworkId))
+    }
+
     fun navigateBack() = viewModelScope.launch {
         navigator.navigateBack()
     }

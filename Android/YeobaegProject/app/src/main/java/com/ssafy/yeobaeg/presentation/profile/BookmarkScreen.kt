@@ -25,6 +25,7 @@ import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.domain.model.profile.BookmarkCafeSummary
 import com.ssafy.yeobaeg.presentation.common.component.PaginatedList
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.common.util.noRippleClickable
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
 import com.ssafy.yeobaeg.ui.theme.YeobaegLightGray
@@ -106,7 +107,8 @@ fun BookmarkScreen(
                             items = artworks,
                             isLoading = uiState.isLoading,
                             hasNext = uiState.artwork?.pagination?.hasNext ?: false,
-                            onLoadMore = { bookmarkViewModel.loadNextArtworkPage() }
+                            onLoadMore = { bookmarkViewModel.loadNextArtworkPage() },
+                            onItemClick = bookmarkViewModel::navigateToArtworkDetail
                         )
                     }
                 }
@@ -128,7 +130,8 @@ fun BookmarkScreen(
                             items = cafes,
                             isLoading = uiState.isLoading,
                             hasNext = uiState.bookmarkCafe?.pagination?.hasNext ?: false,
-                            onLoadMore = { bookmarkViewModel.loadNextCafePage() }
+                            onLoadMore = { bookmarkViewModel.loadNextCafePage() },
+                            onItemClick = bookmarkViewModel::navigateToCafeDetail
                         )
                     }
                 }
@@ -171,7 +174,8 @@ fun ArtworkList(
     items: List<ArtworkSummary>,
     isLoading: Boolean,
     hasNext: Boolean,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    onItemClick: (Long) -> Unit
 ) {
     PaginatedList(
         items = items,
@@ -182,7 +186,8 @@ fun ArtworkList(
         SavedCard(
             title = item.title,
             des = item.artistName,
-            imageUrl = item.thumbnailUrl
+            imageUrl = item.thumbnailUrl,
+            onItemClick = {onItemClick(item.artworkId)}
         )
     }
 }
@@ -192,7 +197,8 @@ fun CafeList(
     items: List<BookmarkCafeSummary>,
     isLoading: Boolean,
     hasNext: Boolean,
-    onLoadMore: () -> Unit
+    onLoadMore: () -> Unit,
+    onItemClick: (Long) -> Unit
 ) {
     PaginatedList(
         items = items,
@@ -203,7 +209,8 @@ fun CafeList(
         SavedCard(
             title = item.cafeName,
             des = item.address,
-            imageUrl = item.primaryImageUrl
+            imageUrl = item.primaryImageUrl,
+            onItemClick = {onItemClick(item.cafeId)}
         )
     }
 }
@@ -212,7 +219,8 @@ fun CafeList(
 fun SavedCard(
     title: String,
     des: String,
-    imageUrl: String
+    imageUrl: String,
+    onItemClick: () -> Unit = { }
 ) {
     Row(
         modifier = Modifier
@@ -220,7 +228,8 @@ fun SavedCard(
             .clip(RoundedCornerShape(16.dp))
             .background(YeobaegWhite)
             .border(1.dp, YeobaegLightGray, RoundedCornerShape(16.dp))
-            .padding(12.dp),
+            .padding(12.dp)
+            .noRippleClickable { onItemClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(

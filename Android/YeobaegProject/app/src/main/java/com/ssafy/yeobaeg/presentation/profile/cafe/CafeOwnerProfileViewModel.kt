@@ -20,7 +20,7 @@ import javax.inject.Inject
 data class CafeProfileUiState(
     val isLoading: Boolean = false,
     val userInfo: UserInfo = UserInfo(),
-    val cafeInfo: CafeInfo = CafeInfo(),
+    val cafeInfo: CafeInfo? = CafeInfo(),
     val errorMessage: String? = null
 )
 
@@ -40,7 +40,6 @@ class CafeOwnerProfileViewModel @Inject constructor(
 
             profileRepository.getProfile()
                 .onSuccess { profile ->
-                    if (profile.cafeInfo != null) {
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -48,14 +47,6 @@ class CafeOwnerProfileViewModel @Inject constructor(
                                 cafeInfo = profile.cafeInfo
                             )
                         }
-                    } else {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                errorMessage = "카페 정보가 없습니다"
-                            )
-                        }
-                    }
                 }
                 .onFailure { error ->
                     _uiState.update {

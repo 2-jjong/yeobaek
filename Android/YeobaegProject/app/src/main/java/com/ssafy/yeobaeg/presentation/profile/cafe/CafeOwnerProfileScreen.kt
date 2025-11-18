@@ -115,7 +115,7 @@ fun CafeOwnerProfileScreen(
 @Composable
 fun CafeOwnerProfileContent(
     userInfo: UserInfo,
-    cafeInfo: CafeInfo,
+    cafeInfo: CafeInfo?,
     onEditClick: () -> Unit,
     onReviewClick: () -> Unit,
     onBookmarkClick: () -> Unit,
@@ -137,6 +137,18 @@ fun CafeOwnerProfileContent(
         )
 
         Spacer(modifier = Modifier.height(40.dp))
+
+        if(cafeInfo == null) {
+            Box(modifier = Modifier.fillMaxWidth().height(200.dp),
+                contentAlignment = Alignment.Center) {
+                Text(
+                    text = "매장 정보가 없습니다.",
+                    fontSize = 16.sp,
+                    color = YeobaegTextGray
+                )
+            }
+            return@Column
+        }
 
         // 매장 정보 부분
         StoreInfoSection(cafeInfo = cafeInfo)
