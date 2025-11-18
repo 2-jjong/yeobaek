@@ -297,7 +297,10 @@ public class UserServiceImpl implements UserService {
     private CafeData getCafeData(Long cafeOwnerId) {
         // Cafe 엔티티 조회
         Cafe cafe = cafeRepository.findByCafeOwnerId(cafeOwnerId)
-                .orElseThrow(() -> new CustomException(ResponseCode.USER_NOT_FOUND));
+                .orElse(null);
+
+        if(cafe == null)
+            return null;
 
         // 리뷰 통계 계산
         List<Review> reviews = reviewRepository.findAllByRevieweeId(cafeOwnerId);
