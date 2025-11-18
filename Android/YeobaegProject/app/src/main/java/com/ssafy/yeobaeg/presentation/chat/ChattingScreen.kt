@@ -216,15 +216,17 @@ fun ChattingScreenContent(
     val listState = rememberLazyListState()
 
     // 키보드가 올라올 때와 새 메시지가 추가될 때 자동 스크롤
-    LaunchedEffect(messages.size) {
-        if (messages.isNotEmpty()) {
+    // messages.size 대신 최신 메시지 ID를 추적하여 페이징 시 스크롤 방지
+    val latestMessageId = messages.firstOrNull()?.messageId
+    LaunchedEffect(latestMessageId) {
+        if (latestMessageId != null) {
             delay(100)
             listState.animateScrollToItem(0)
         }
     }
 
     // 무한 스크롤: 마지막 아이템에 도달했을 때 추가 로드
-    LaunchedEffect(Unit) {
+    LaunchedEffect(hasNext, isLoadingMore) {
         snapshotFlow {
             val layoutInfo = listState.layoutInfo
             val lastIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index
@@ -236,7 +238,7 @@ fun ChattingScreenContent(
                 // reverseLayout이므로 마지막 인덱스(가장 오래된 메시지)가 보일 때 로드
                 val shouldLoad = lastVisibleItemIndex != null &&
                     totalItems > 0 &&
-                    lastVisibleItemIndex >= totalItems - 1 &&
+                    lastVisibleItemIndex >= totalItems - 5 &&
                     hasNext &&
                     !isLoadingMore
 
