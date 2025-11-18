@@ -38,7 +38,7 @@ data class CurrentExhibition(
     val cafeName: String,
     val exhibitionEndDate: String,
     val exhibitionStartDate: String,
-    val slotName: String
+    val slotName: String? = null
 )
 
 fun ArtworkDetailData.toDomain(): ArtworkDetail = ArtworkDetail(
@@ -75,7 +75,7 @@ fun ArtworkDetailData.toDomain(): ArtworkDetail = ArtworkDetail(
             cafeName = it.cafeName,
             cafeAddress = it.cafeAddress,
             cafeImageUrl = it.cafeImageUrl,
-            slotName = it.slotName,
+            slotName = it.slotName ?: "슬롯 정보 없음",
             startDate = it.exhibitionStartDate,
             endDate = it.exhibitionEndDate
         )
