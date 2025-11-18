@@ -14,13 +14,13 @@ data class PopularArtworkDto(
     val artworkId: Long,
     val title: String,
     val thumbnailUrl: String,
-    val artistName: String,
-    val artistProfileImageUrl: String,
+    val artistName: String? = null,
+    val artistProfileImageUrl: String? = null,
     val price: Int,
     val category: String,
-    val widthCm: Int,
-    val heightCm: Int,
-    val status: String,
+    val widthCm: Int? = null,
+    val heightCm: Int? = null,
+    val status: String? = null,
     val bookmarkCount: Int,
     val cafeName: String? = null
 )
@@ -29,8 +29,8 @@ fun PopularArtworkDto.toDomain() = PopularArtwork(
     artworkId = artworkId,
     title = title,
     thumbnailUrl = thumbnailUrl,
-    artistName = artistName,
-    artistProfileImageUrl = artistProfileImageUrl,
+    artistName = artistName ?: "알 수 없음",
+    artistProfileImageUrl = artistProfileImageUrl ?: "",
     price = price,
     category = when (category) {
         "LANDSCAPE"  -> "풍경화"
@@ -40,11 +40,12 @@ fun PopularArtworkDto.toDomain() = PopularArtwork(
         "GENRE"      -> "장르화"
         else     -> "기타"
     },
-    widthCm = widthCm,
-    heightCm = heightCm,
+    widthCm = widthCm ?: 0,
+    heightCm = heightCm ?: 0,
     status = when (status) {
         "AVAILABLE" -> SlotStatus.AVAILABLE
         "EXHIBITING" -> SlotStatus.EXHIBITING
+        null -> SlotStatus.AVAILABLE
         else -> SlotStatus.AVAILABLE
     },
     bookmarkCount = bookmarkCount,
