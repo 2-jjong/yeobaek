@@ -87,7 +87,7 @@ fun createCubeBetweenGround(
         engine = materialLoader.engine,
         size = Float3(boxWidth, boxLength, boxDepth),
         materialInstance = materialLoader.createColorInstance(
-            color = Color(0.3f, 0.8f, 0.7f, 1f) // 민트색
+            color = Color(0.3f, 0.8f, 0.7f, 0.8f) // 민트색 (투명도 40%)
         )
     ).apply {
         isShadowCaster = false
