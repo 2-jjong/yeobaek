@@ -40,12 +40,12 @@ class CafeRepositoryImpl @Inject constructor(
         emptyList()
     }
 
-    override suspend fun getMyCafe(): Result<CafeOwnerInfo> = runCatching {
+    override suspend fun getMyCafe(): Result<CafeOwnerInfo?> = runCatching {
         val responseDto = handleApi(json) { cafeApiService.getMyCafe() }
         responseDto.myCafe.toDomain()
     }.recoverCatching { error ->
-        if (error.message?.contains("CF4041") == true) {
-            CafeOwnerInfo() // 특정 에러 코드일 경우, 성공으로 간주하고 기본 객체 반환
+        if (error.message?.contains("존재하지 않는 카페입니다") == true) {
+            null // 특정 에러 코드일 경우, 성공으로 간주하고 기본 객체 반환
         } else {
             throw error // 그 외 에러는 다시 던져서 Result.failure로 처리
         }

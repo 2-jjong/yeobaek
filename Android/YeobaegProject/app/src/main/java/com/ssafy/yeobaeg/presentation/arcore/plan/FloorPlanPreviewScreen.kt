@@ -59,7 +59,11 @@ fun FloorPlanPreview(
     val walls: List<DisplaySlot> = wallsState
 
     if (walls.isEmpty()) {
-        Box(modifier = modifier) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+        ) {
             Text("도면 데이터가 없습니다.", modifier = Modifier.align(Alignment.Center))
         }
         return
