@@ -4,6 +4,11 @@ import android.app.Activity
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -141,6 +146,8 @@ fun NavGraph(
                 rememberSavedStateNavEntryDecorator(),
                 rememberViewModelStoreNavEntryDecorator()
             ),
+            transitionSpec = { noAnim() },
+            popTransitionSpec = { noAnim() },
             entryProvider = { key ->
                 when (key) {
                     is FullScreen.Splash -> NavEntry(key) {
@@ -311,3 +318,6 @@ private fun mapTab(
     is BottomNavScreen.Profile -> MainTab.PROFILE
     else -> MainTab.HOME
 }
+
+private fun noAnim(): ContentTransform =
+    fadeIn(animationSpec = tween(0)) togetherWith fadeOut(animationSpec = tween(0))

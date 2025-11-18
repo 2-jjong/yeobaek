@@ -50,7 +50,7 @@ interface CafeRepository {
 
     suspend fun registerCafeWall(registerWall: List<DisplaySlot>): Result<List<Unit>>
 
-    suspend fun getMyCafe(): Result<CafeOwnerInfo>
+    suspend fun getMyCafe(): Result<CafeOwnerInfo?>
 
     suspend fun updateSlotInfo(
         cafeId: Long,
