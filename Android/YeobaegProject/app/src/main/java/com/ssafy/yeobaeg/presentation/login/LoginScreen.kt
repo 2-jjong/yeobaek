@@ -40,7 +40,7 @@ fun LoginScreen(
         onEmailChange = viewModel::updateEmail,
         onPasswordChange = viewModel::updatePassword,
         onLoginClick = viewModel::login,
-        onLoginTestUser1 = { viewModel.loginWithTestUser("user1@example.com", "Password123!") },
+        onLoginTestUser1 = { viewModel.loginWithTestUser("z@z.z", "qpqp1010Q!") },
         onLoginTestUser2 = { viewModel.loginWithTestUser("user2@example.com", "Password123!") },
         onLoginTestUser3 = { viewModel.loginWithTestUser("user3@example.com", "Password123!") },
         onNavigateSignUp = viewModel::navigateSignUp,
@@ -130,7 +130,7 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 YeobaegButton(
-                    text = "일반",
+                    text = "카페 AR",
                     onClick = onLoginTestUser1,
                     enabled = !ui.isLoading,
                     modifier = Modifier.weight(1f)
