@@ -40,7 +40,7 @@ fun LoginScreen(
         onEmailChange = viewModel::updateEmail,
         onPasswordChange = viewModel::updatePassword,
         onLoginClick = viewModel::login,
-        onLoginTestUser1 = { viewModel.loginWithTestUser("user4@example.com", "qpqp1010Q!") },
+        onLoginTestUser1 = { viewModel.loginWithTestUser("user4@example.com", "Password123!") },
         onLoginTestUser2 = { viewModel.loginWithTestUser("user2@example.com", "Password123!") },
         onLoginTestUser3 = { viewModel.loginWithTestUser("user3@example.com", "Password123!") },
         onNavigateSignUp = viewModel::navigateSignUp,
