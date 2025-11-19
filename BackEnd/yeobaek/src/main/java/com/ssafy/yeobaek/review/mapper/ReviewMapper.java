@@ -108,8 +108,6 @@ public class ReviewMapper {
                 .reviewer(toReviewer(review.getReviewer()))
                 .rating(review.getRating())
                 .comment(review.getComment())
-                .exhibitionStartDate(null) // TODO: Exhibition에 startDate 필드 추가 시 수정 필요
-                .exhibitionEndDate(null)   // TODO: Exhibition에 endDate 필드 추가 시 수정 필요
                 .createdAt(review.getCreatedAt().toLocalDate())
                 .build();
     }
@@ -162,8 +160,6 @@ public class ReviewMapper {
                 .reviewee(toReviewee(review.getReviewee()))
                 .rating(review.getRating())
                 .comment(review.getComment())
-                .exhibitionStartDate(null) // TODO: Exhibition에 startDate 필드 추가 시 수정 필요
-                .exhibitionEndDate(null)   // TODO: Exhibition에 endDate 필드 추가 시 수정 필요
                 .createdAt(review.getCreatedAt().toLocalDate())
                 .build();
     }

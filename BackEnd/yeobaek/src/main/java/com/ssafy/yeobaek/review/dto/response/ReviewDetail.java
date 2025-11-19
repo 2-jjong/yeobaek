@@ -27,12 +27,6 @@ public class ReviewDetail {
     @Schema(description = "코멘트", example = "정말 좋은 전시였습니다!")
     private String comment;
 
-    @Schema(description = "전시 시작일", example = "2024-01-01")
-    private LocalDate exhibitionStartDate;
-
-    @Schema(description = "전시 종료일", example = "2024-01-31")
-    private LocalDate exhibitionEndDate;
-
     @Schema(description = "평가 작성일", example = "2024-01-15")
     private LocalDate createdAt;
 }

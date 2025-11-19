@@ -292,7 +292,7 @@ public class ReviewController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\", \"data\": {\"reviews\": [{\"reviewId\": 1, \"reviewer\": {\"name\": \"홍길동\", \"profileImageUrl\": \"https://example.com/profile.jpg\", \"role\": \"ARTIST\"}, \"rating\": 5, \"comment\": \"정말 좋은 전시였습니다!\", \"exhibitionStartDate\": \"2024-01-01\", \"exhibitionEndDate\": \"2024-01-31\", \"createdAt\": \"2024-01-15\"}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 1, \"totalPages\": 1, \"hasNext\": false}}}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\", \"data\": {\"reviews\": [{\"reviewId\": 1, \"reviewer\": {\"name\": \"홍길동\", \"profileImageUrl\": \"https://example.com/profile.jpg\", \"role\": \"ARTIST\"}, \"rating\": 5, \"comment\": \"정말 좋은 전시였습니다!\", \"createdAt\": \"2024-01-15\"}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 1, \"totalPages\": 1, \"hasNext\": false}}}"
                             )
                     )
             ),
@@ -365,7 +365,7 @@ public class ReviewController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\", \"data\": {\"reviews\": [{\"reviewId\": 1, \"reviewer\": {\"name\": \"홍길동\", \"profileImageUrl\": \"https://example.com/profile.jpg\", \"role\": \"ARTIST\"}, \"rating\": 5, \"comment\": \"정말 좋은 전시였습니다!\", \"exhibitionStartDate\": \"2024-01-01\", \"exhibitionEndDate\": \"2024-01-31\", \"createdAt\": \"2024-01-15\"}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 1, \"totalPages\": 1, \"hasNext\": false}}}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\", \"data\": {\"reviews\": [{\"reviewId\": 1, \"reviewer\": {\"name\": \"홍길동\", \"profileImageUrl\": \"https://example.com/profile.jpg\", \"role\": \"ARTIST\"}, \"rating\": 5, \"comment\": \"정말 좋은 전시였습니다!\", \"createdAt\": \"2024-01-15\"}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 1, \"totalPages\": 1, \"hasNext\": false}}}"
                             )
                     )
             ),
@@ -438,7 +438,7 @@ public class ReviewController {
                             mediaType = "application/json",
                             schema = @Schema(implementation = ResponseDto.class),
                             examples = @ExampleObject(
-                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\", \"data\": {\"reviews\": [{\"reviewId\": 1, \"reviewee\": {\"name\": \"김철수\", \"profileImageUrl\": \"https://example.com/profile.jpg\", \"role\": \"CAFE_OWNER\"}, \"rating\": 5, \"comment\": \"정말 좋은 전시였습니다!\", \"exhibitionStartDate\": \"2024-01-01\", \"exhibitionEndDate\": \"2024-01-31\", \"createdAt\": \"2024-01-15\"}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 1, \"totalPages\": 1, \"hasNext\": false}}}"
+                                    value = "{\"code\": \"S0000\", \"message\": \"정상 처리\", \"data\": {\"reviews\": [{\"reviewId\": 1, \"reviewee\": {\"name\": \"김철수\", \"profileImageUrl\": \"https://example.com/profile.jpg\", \"role\": \"CAFE_OWNER\"}, \"rating\": 5, \"comment\": \"정말 좋은 전시였습니다!\", \"createdAt\": \"2024-01-15\"}], \"pagination\": {\"currentPage\": 0, \"pageSize\": 20, \"totalElements\": 1, \"totalPages\": 1, \"hasNext\": false}}}"
                             )
                     )
             ),
