@@ -100,7 +100,7 @@ public class S3ServiceImpl implements S3Service {
      * @return 조회용 Presigned URL 문자열
      */
     @Override
-    @Cacheable(value = "presignedUrl", key = "#fileKey", unless = "#result == null")
+    @Cacheable(value = "presignedUrl", key = "#fileKey", unless = "#result == null", condition = "#fileKey != null")
     public String generatePresignedUrlForDownload(String fileKey) {
         if (fileKey == null) {
             return null;
@@ -148,7 +148,7 @@ public class S3ServiceImpl implements S3Service {
      * @return 썸네일 조회용 Presigned URL 문자열 (예: thumbnail/artwork/image123.png의 URL)
      */
     @Override
-    @Cacheable(value = "presignedUrl", key = "'thumbnail::' + #fileKey", unless = "#result == null")
+    @Cacheable(value = "presignedUrl", key = "'thumbnail::' + #fileKey", unless = "#result == null", condition = "#fileKey != null")
     public String generatePresignedUrlForThumbnail(String fileKey) {
         if (fileKey == null) {
             return null;
@@ -215,7 +215,7 @@ public class S3ServiceImpl implements S3Service {
      * @param fileKey 삭제할 S3 파일 키
      */
     @Override
-    @CacheEvict(value = "presignedUrl", key = "#fileKey")
+    @CacheEvict(value = "presignedUrl", key = "#fileKey", condition = "#fileKey != null")
     public void deleteFile(String fileKey) {
         log.info("S3 파일 삭제 시작 - 파일 키: {}", fileKey);
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
