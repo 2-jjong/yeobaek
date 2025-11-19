@@ -20,6 +20,7 @@ import com.ssafy.yeobaeg.domain.repository.StorageRepository
 import com.ssafy.yeobaeg.domain.session.AuthSessionManager
 import com.ssafy.yeobaeg.navigation.FullScreen
 import com.ssafy.yeobaeg.navigation.navigator.Navigator
+import com.ssafy.yeobaeg.presentation.common.util.SnackBarController
 import com.ssafy.yeobaeg.presentation.common.util.uriToTempFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -53,7 +54,8 @@ class ChatViewModel @Inject constructor(
     private val chatWebSocketRepository: ChatWebSocketRepository,
     private val exhibitionRepository: ExhibitionRepository,
     private val storageRepository: StorageRepository,
-    private val authSessionManager: AuthSessionManager
+    private val authSessionManager: AuthSessionManager,
+    private val snackBarController: SnackBarController
 
 ) : ViewModel() {
 
@@ -359,6 +361,7 @@ class ChatViewModel @Inject constructor(
                             review = WriteReview()
                         )
                     }
+                    snackBarController.showSuccess("리뷰 등록 완료")
                 }
                 .onFailure { e ->
                     _uiState.update {

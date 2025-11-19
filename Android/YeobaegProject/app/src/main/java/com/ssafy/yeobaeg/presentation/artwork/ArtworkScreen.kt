@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +53,7 @@ import com.ssafy.yeobaeg.domain.model.art.ArtistSummary
 import com.ssafy.yeobaeg.domain.model.profile.ArtworkSummary
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
+import com.ssafy.yeobaeg.presentation.common.util.noRippleClickable
 import com.ssafy.yeobaeg.presentation.main.LocalUserRole
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
@@ -105,6 +107,7 @@ fun ArtExploreScreen(
                     onSearch = { viewModel.search() },
                     onFocus = { viewModel.selectTabSearch() }
                 )
+                Spacer(Modifier.height(8.dp))
             }
         },
         containerColor = Color.White
@@ -140,11 +143,12 @@ fun ArtExploreScreen(
 
             SearchMode.RESULT -> SearchResultContent(
                 modifier = Modifier
-                    .padding(inner)
+                    .padding(top = inner.calculateTopPadding())
                     .fillMaxSize(),
                 artists = state.resultArtists,
                 artworks = state.resultArtworks,
                 onClickArtwork = viewModel::navigateToDetail,
+                onClickArtist = viewModel::navigateToArtistDetail,
                 onLoadNextPage = viewModel::loadNextPage,
                 hasNext = state.paginationInfo?.hasNext ?: true,
                 isLoading = state.isSearchLoading
@@ -219,7 +223,6 @@ private fun BrowseContent(
     }
 
     Column(modifier = modifier) {
-        Spacer(Modifier.height(4.dp))
         CategoryChips(
             modifier = Modifier.padding(horizontal = 20.dp),
             categories = categories.map { it.label },
@@ -328,6 +331,7 @@ fun SearchResultContent(
     hasNext: Boolean = true,
     isLoading: Boolean = false,
     onClickArtwork: (Long) -> Unit = {},
+    onClickArtist: (Long) -> Unit = {},
     onLoadNextPage: () -> Unit = {}
 ) {
     val listState = rememberLazyGridState()
@@ -370,10 +374,10 @@ fun SearchResultContent(
             .fillMaxSize(),
         topContent = {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (artists.isNotEmpty()) ArtistResultSection(artists = artists)
+                if (artists.isNotEmpty()) ArtistResultSection(artists = artists, onItemClick = onClickArtist)
                 if (artworks.isNotEmpty()) Text(
                     text = "작품",
-                    modifier = Modifier.padding(8.dp),
+                    modifier = Modifier.padding(horizontal = 20.dp),
                     color = YeobaegTextGray
                 )
             }
@@ -384,15 +388,16 @@ fun SearchResultContent(
 @Composable
 fun ArtistResultSection(
     artists: List<ArtistSummary>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onItemClick: (Long) -> Unit = { }
 ) {
-    Column(modifier = modifier.padding(8.dp)) {
+    Column(modifier = modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
         Text("작가", color = YeobaegTextGray)
 
         artists.forEach { artist ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().noRippleClickable{onItemClick(artist.artistId)}
             ) {
                 AsyncImage(
                     model = artist.profileImageUrl,
@@ -400,7 +405,8 @@ fun ArtistResultSection(
                     modifier = Modifier
                         .height(48.dp)
                         .aspectRatio(1f)
-                        .clip(MaterialTheme.shapes.large)
+                        .clip(MaterialTheme.shapes.large),
+                    contentScale = ContentScale.Crop
                 )
                 Spacer(Modifier.width(12.dp))
                 Column {

@@ -172,6 +172,10 @@ class ArtExploreViewModel @Inject constructor(
         navigator.navigate(FullScreen.ArtworkDetail(artWorkId))
     }
 
+    fun navigateToArtistDetail(artistId: Long) = viewModelScope.launch {
+        navigator.navigate(FullScreen.ArtistProfile(artistId))
+    }
+
     private inline fun update(block: ArtExploreState.() -> ArtExploreState) {
         _uiState.update(block)
     }

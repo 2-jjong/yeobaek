@@ -61,7 +61,7 @@ fun ReviewDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "작가 리뷰하기",
+                        text = "리뷰하기",
                         fontFamily = jansilFont,
                         fontSize = 20.sp,
                         color = YeobaegBlack
@@ -77,7 +77,7 @@ fun ReviewDialog(
                 }
 
                 Text(
-                    text = "작가와의 협업 경험을 평가해주세요",
+                    text = "협업 경험을 평가해주세요",
                     fontFamily = jansilFont,
                     fontSize = 14.sp,
                     color = YeobaegTextGray

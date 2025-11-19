@@ -56,7 +56,6 @@ fun ArtworkGrid(
 
         items(
             items = items,
-            key = { it.artworkId }
         ) { artwork ->
             AsyncImage(
                 model = artwork.thumbnailUrl,

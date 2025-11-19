@@ -9,8 +9,6 @@ data class ReviewDetailDto(
     val reviewer: ReviewerDto,
     val rating: Int,
     val comment: String,
-    val exhibitionStartDate: String?,
-    val exhibitionEndDate: String?,
     val createdAt: String
 )
 
@@ -19,7 +17,7 @@ fun ReviewDetailDto.toDomain(): ReviewDetail = ReviewDetail(
     reviewer = reviewer.toDomain(),
     rating = rating,
     comment = comment,
-    exhibitionStartDate = exhibitionStartDate,
-    exhibitionEndDate = exhibitionEndDate,
+    exhibitionStartDate = null,
+    exhibitionEndDate = null,
     createdAt = createdAt
 )
