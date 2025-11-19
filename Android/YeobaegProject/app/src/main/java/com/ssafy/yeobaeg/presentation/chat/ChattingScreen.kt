@@ -437,7 +437,8 @@ fun PartnerMessageBubble(message: ChatMessage, profileImg: String?) {
                 .size(40.dp)
                 .border(0.5.dp, YeobaegLightGray, CircleShape)
                 .clip(CircleShape),
-            fallback = painterResource(R.drawable.profile)
+            fallback = painterResource(R.drawable.profile),
+            contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.width(8.dp))
         Column(
@@ -495,7 +496,8 @@ fun ImageMessageBubble(
                     .size(40.dp)
                     .border(0.5.dp, YeobaegLightGray, CircleShape)
                     .clip(CircleShape),
-                fallback = painterResource(R.drawable.profile)
+                fallback = painterResource(R.drawable.profile),
+                contentScale = ContentScale.Crop
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
