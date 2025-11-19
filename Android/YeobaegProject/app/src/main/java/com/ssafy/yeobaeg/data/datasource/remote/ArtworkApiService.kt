@@ -66,12 +66,9 @@ interface ArtworkApiService {
         @Query("size") size: Int?
     ): BaseResponse<ArtworksResponse>
 
-    // TODO: api 바뀌면 쿼리명 수정
     @GET("artworks/recommendations")
     suspend fun getRecommendedArtworks(
-        @Query("cafeId") slotId: Long,
-        @Query("page") page: Int?,
-        @Query("size") size: Int?
+        @Query("slotId") slotId: Long,
     ): BaseResponse<ArtworksResponse>
 }
 

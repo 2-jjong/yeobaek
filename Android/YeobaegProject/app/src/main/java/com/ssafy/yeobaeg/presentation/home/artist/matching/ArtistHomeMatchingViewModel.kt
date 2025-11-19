@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.home.artist.matching
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.Pagination
@@ -134,37 +135,12 @@ class ArtistHomeMatchingViewModel @Inject constructor(
                         cafePagination = data.pagination
                     )
                 }
-            }.onFailure {
+            }.onFailure { error ->
+                Log.d("ArtistHomeMatchingVM", "loadCafesWithMinimumDelay: failed to load cafes ${error.message}")
                 _uiState.update {
                     it.copy(currentStep = MatchingStep.ARTWORK_SELECTION)
                 }
                 // TODO: 에러 처리
-            }
-        }
-    }
-
-    fun loadMoreCafes() {
-        val artworkId = _uiState.value.selectedArtworkId ?: return
-        val pagination = _uiState.value.cafePagination ?: return
-        if (_uiState.value.isLoadingMoreCafes || !pagination.hasNext) return
-
-        _uiState.update { it.copy(isLoadingMoreCafes = true) }
-
-        viewModelScope.launch {
-            cafeRepository.getRecommendedCafes(
-                artworkId = artworkId,
-                page = pagination.currentPage + 1,
-                size = pagination.pageSize
-            ).onSuccess { data ->
-                _uiState.update {
-                    it.copy(
-                        isLoadingMoreCafes = false,
-                        cafes = it.cafes + data.cafes,
-                        cafePagination = data.pagination
-                    )
-                }
-            }.onFailure {
-                _uiState.update { it.copy(isLoadingMoreCafes = false) }
             }
         }
     }

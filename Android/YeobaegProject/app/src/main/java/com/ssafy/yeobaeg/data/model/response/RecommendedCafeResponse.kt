@@ -10,7 +10,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class RecommendedCafesResponse(
     val cafes: List<RecommendedCafeResponse>,
-    val pagination: PaginationResponse
 )
 
 @Serializable
@@ -55,6 +54,5 @@ fun RecommendedCafeResponse.toDomain(): RecommendedCafe {
 fun RecommendedCafesResponse.toDomain(): RecommendedCafes {
     return RecommendedCafes(
         cafes = cafes.map { it.toDomain() },
-        pagination = pagination.toDomain()
     )
 }

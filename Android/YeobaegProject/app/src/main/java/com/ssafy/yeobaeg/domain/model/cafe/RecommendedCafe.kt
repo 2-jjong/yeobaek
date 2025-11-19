@@ -17,5 +17,5 @@ data class CafeSlot(
 
 data class RecommendedCafes(
     val cafes: List<RecommendedCafe>,
-    val pagination: com.ssafy.yeobaeg.domain.model.Pagination
+    val pagination: com.ssafy.yeobaeg.domain.model.Pagination? = null
 )

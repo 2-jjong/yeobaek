@@ -112,7 +112,7 @@ class CafeRepositoryImpl @Inject constructor(
         page: Int?,
         size: Int?
     ): Result<RecommendedCafes> = runCatching {
-        val responseDto = handleApi(json) { cafeApiService.getRecommendedCafes(artworkId, page, size) }
+        val responseDto = handleApi(json) { cafeApiService.getRecommendedCafes(artworkId) }
         responseDto.toDomain()
     }
 

@@ -4,5 +4,5 @@ import com.ssafy.yeobaeg.domain.model.Pagination
 
 data class Artwork(
     val artworks: List<ArtworkSummary>,
-    val pagination: Pagination
+    val pagination: Pagination = Pagination()
 )

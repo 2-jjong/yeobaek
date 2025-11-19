@@ -1,5 +1,6 @@
 package com.ssafy.yeobaeg.presentation.home.cafeowner.matching
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ssafy.yeobaeg.domain.model.DisplaySlot
@@ -115,7 +116,8 @@ class CafeOwnerMatchingViewModel @Inject constructor(
                         mode = MatchingMode.SELECT_ARTWORK
                     )
                 }
-            }.onFailure {
+            }.onFailure { error ->
+                Log.d("MatchingViewModel", "loadRecommendedArtworks: failed to load artworks ${error.message}")
                 _uiState.update { it.copy(isLoadingArtworks = false) }
             }
         }

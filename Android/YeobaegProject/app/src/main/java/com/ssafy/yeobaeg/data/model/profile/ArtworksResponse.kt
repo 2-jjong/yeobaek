@@ -9,13 +9,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ArtworksResponse(
     val artworks: List<ArtworkSummaryResponse>,
-    val pagination: PaginationResponse
 )
 
 fun ArtworksResponse.toDomain(): Artwork {
     return Artwork(
         artworks = artworks.map { it.toDomain() },
-        pagination = pagination.toDomain()
     )
 }
 

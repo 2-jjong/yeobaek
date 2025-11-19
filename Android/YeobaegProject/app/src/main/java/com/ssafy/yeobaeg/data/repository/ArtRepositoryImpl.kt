@@ -113,7 +113,7 @@ class ArtRepositoryImpl @Inject constructor(
         size: Int?
     ): Result<Artwork> = runCatching {
         val responseDto =
-            handleApi(json) { artworkApiService.getRecommendedArtworks(slotId, page, size) }
+            handleApi(json) { artworkApiService.getRecommendedArtworks(slotId) }
         responseDto.toDomain()
     }
 }

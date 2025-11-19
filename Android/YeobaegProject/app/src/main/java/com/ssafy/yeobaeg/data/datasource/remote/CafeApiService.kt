@@ -96,8 +96,6 @@ interface CafeApiService {
     @GET("cafes/recommendations")
     suspend fun getRecommendedCafes(
         @Query("artworkId") artworkId: Long,
-        @Query("page") page: Int? = null,
-        @Query("size") size: Int? = null
     ): BaseResponse<RecommendedCafesResponse>
 
     /**
