@@ -7,6 +7,8 @@ import com.ssafy.yeobaek.common.enums.StorageFolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
@@ -31,7 +33,8 @@ public class S3ServiceImpl implements S3Service {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
 
-    private static final Long PRESIGNED_URL_EXPIRATION_MINUTES = 10L;
+    private static final Long UPLOAD_URL_EXPIRATION_MINUTES = 10L;      // 업로드용: 10분
+    private static final Long DOWNLOAD_URL_EXPIRATION_MINUTES = 60L;    // 조회용: 60분 (1시간)
 
     /**
      * 다중 Presigned URL 쌍 생성 (업로드용 + 조회용)
@@ -82,7 +85,7 @@ public class S3ServiceImpl implements S3Service {
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(PRESIGNED_URL_EXPIRATION_MINUTES))
+                .signatureDuration(Duration.ofMinutes(UPLOAD_URL_EXPIRATION_MINUTES))
                 .putObjectRequest(putObjectRequest)
                 .build();
 
@@ -92,15 +95,17 @@ public class S3ServiceImpl implements S3Service {
     /**
      * 조회용 Presigned URL 생성
      * fileKey가 null이면 null로 반환
+     * 캐시 적용: 같은 fileKey에 대해 50분간 캐시된 URL 반환
      * @param fileKey S3 파일 키
      * @return 조회용 Presigned URL 문자열
      */
     @Override
+    @Cacheable(value = "presignedUrl", key = "#fileKey", unless = "#result == null")
     public String generatePresignedUrlForDownload(String fileKey) {
         if (fileKey == null) {
             return null;
         }
-        log.debug("조회용 Presigned URL 생성 - 파일 키: {}", fileKey);
+        log.debug("조회용 Presigned URL 생성 (캐시 미스) - 파일 키: {}", fileKey);
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
@@ -108,7 +113,7 @@ public class S3ServiceImpl implements S3Service {
                 .build();
 
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(PRESIGNED_URL_EXPIRATION_MINUTES))
+                .signatureDuration(Duration.ofMinutes(DOWNLOAD_URL_EXPIRATION_MINUTES))
                 .getObjectRequest(getObjectRequest)
                 .build();
 
@@ -138,15 +143,17 @@ public class S3ServiceImpl implements S3Service {
      * fileKey가 null이면 null로 반환
      * fileKey 앞에 "thumbnail/" prefix를 추가하여 썸네일 이미지의 URL 생성
      * 썸네일이 존재하지 않으면 원본 이미지 URL 반환
+     * 캐시 적용: 같은 fileKey에 대해 50분간 캐시된 URL 반환
      * @param fileKey 원본 S3 파일 키 (예: artwork/image123.png)
      * @return 썸네일 조회용 Presigned URL 문자열 (예: thumbnail/artwork/image123.png의 URL)
      */
     @Override
+    @Cacheable(value = "presignedUrl", key = "'thumbnail::' + #fileKey", unless = "#result == null")
     public String generatePresignedUrlForThumbnail(String fileKey) {
         if (fileKey == null) {
             return null;
         }
-        log.debug("썸네일용 Presigned URL 생성 시작 - 원본 키: {}", fileKey);
+        log.debug("썸네일용 Presigned URL 생성 시작 (캐시 미스) - 원본 키: {}", fileKey);
 
         String thumbnailKey = "thumbnail/" + fileKey;
 
@@ -166,7 +173,7 @@ public class S3ServiceImpl implements S3Service {
                     .build();
 
             GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                    .signatureDuration(Duration.ofMinutes(PRESIGNED_URL_EXPIRATION_MINUTES))
+                    .signatureDuration(Duration.ofMinutes(DOWNLOAD_URL_EXPIRATION_MINUTES))
                     .getObjectRequest(getObjectRequest)
                     .build();
 
@@ -204,9 +211,11 @@ public class S3ServiceImpl implements S3Service {
 
     /**
      * 파일 삭제
+     * 파일 삭제 시 해당 파일의 캐시된 URL도 함께 제거
      * @param fileKey 삭제할 S3 파일 키
      */
     @Override
+    @CacheEvict(value = "presignedUrl", key = "#fileKey")
     public void deleteFile(String fileKey) {
         log.info("S3 파일 삭제 시작 - 파일 키: {}", fileKey);
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
