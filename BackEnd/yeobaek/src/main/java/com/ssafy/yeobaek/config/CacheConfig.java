@@ -1,8 +1,10 @@
 package com.ssafy.yeobaek.config;
 
+import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
@@ -16,6 +18,7 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 캐시 설정 클래스
@@ -29,8 +32,12 @@ public class CacheConfig {
 
     private final RedisConnectionFactory redisConnectionFactory;
 
-    // 캐시 만료 시간 (50분 - URL 유효기간 60분보다 짧게 설정하여 안전 마진 확보)
+    // Presigned URL 캐시 만료 시간 (50분 - URL 유효기간 60분보다 짧게 설정하여 안전 마진 확보)
     private static final Long CACHE_TTL_MINUTES = 50L;
+
+    // RefreshToken 만료 시간 (application.yaml에서 주입, 기본값 7일)
+    @Value("${jwt.refresh-token-expiration}")
+    private Long refreshTokenExpiration;
 
     /**
      * Redis 캐시 매니저 (Primary)
@@ -70,5 +77,20 @@ public class CacheConfig {
         );
 
         return cacheManager;
+    }
+
+    /**
+     * RefreshToken용 Caffeine 로컬 캐시
+     * Redis 장애 시 RefreshToken 저장을 위한 폴백 캐시
+     */
+    @Bean
+    public Cache<String, String> refreshTokenCache() {
+        long ttlMinutes = refreshTokenExpiration / 60000; // milliseconds to minutes
+        log.info("RefreshToken Caffeine 캐시 생성 - TTL: {}분 ({}일)", ttlMinutes, ttlMinutes / 1440);
+
+        return Caffeine.newBuilder()
+                .expireAfterWrite(refreshTokenExpiration, TimeUnit.MILLISECONDS)
+                .maximumSize(1000) // 최대 1000명의 RefreshToken 저장
+                .build();
     }
 }
