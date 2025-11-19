@@ -60,6 +60,7 @@ import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedButton
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegOutlinedTextField
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegStepBar
 import com.ssafy.yeobaeg.presentation.common.ui.SectionHeader
+import com.ssafy.yeobaeg.presentation.common.util.advancedImePadding
 import com.ssafy.yeobaeg.presentation.common.util.rememberMultiImagePicker
 import com.ssafy.yeobaeg.presentation.common.util.uriToTempFile
 import com.ssafy.yeobaeg.ui.theme.YeobaegDarkBrown
@@ -96,6 +97,7 @@ fun RegisterCafeScreen(
                     .fillMaxSize()
                     .padding(top = 20.dp, start = 20.dp, end = 20.dp)
                     .padding(inner)
+                    .advancedImePadding()
                     .then(if (state.step > 0) Modifier.verticalScroll(scroll) else Modifier),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {

@@ -133,7 +133,8 @@ fun WallEditScreen(
                                     viewModel.goNext()
                                 }
                             },
-                            allMeasured = state.allMeasured
+                            allMeasured = state.allMeasured,
+                            onApplyHeightToAll = viewModel::applyCurrentHeightToAll
                         )
                     }
                 }

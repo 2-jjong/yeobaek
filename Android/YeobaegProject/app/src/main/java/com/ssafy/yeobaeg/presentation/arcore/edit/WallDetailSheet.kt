@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,22 +32,37 @@ fun WallDetailSheet(
     allMeasured: Boolean,
     onNameChange: (String) -> Unit,
     onMeasureClick: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    onApplyHeightToAll: () -> Unit // 추가
 ) {
     var name by remember(wall.wid) { mutableStateOf(wall.wName) }
 
     Column(modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)) {
-        Text(
-            text = "벽 상세 정보",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(Modifier.height(12.dp))
 
-        // 길이
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "벽 상세 정보",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            if (wall.height > 0) {
+                TextButton(
+                    onClick = onApplyHeightToAll,
+                ) {
+                    Text(
+                        text = "측정된 높이를 모든 벽에 적용",
+                        color = Color(0xFF64B5F6), // 연한 파란색
+                        fontSize = 13.sp
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(4.dp))
         LabeledValueRow(label = "길이", value = wall.widthText)
-
-        // 높이
         LabeledValueRow(
             label = "높이",
             value = if (wall.height > 0) wall.heightText else "미측정"
@@ -77,7 +95,7 @@ fun WallDetailSheet(
         Spacer(Modifier.height(12.dp))
 
         // 다음 벽
-        if(!allMeasured){
+        if (!allMeasured) {
             YeobaegOutlinedButton(
                 text = "다음 벽",
                 onClick = onNextClick,
@@ -85,8 +103,7 @@ fun WallDetailSheet(
                     .fillMaxWidth()
                     .height(48.dp)
             )
-        }
-        else {
+        } else {
             YeobaegButton(
                 text = "완료",
                 onClick = onNextClick,
@@ -111,4 +128,3 @@ private fun LabeledValueRow(label: String, value: String) {
         Text(text = value, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
     }
 }
-

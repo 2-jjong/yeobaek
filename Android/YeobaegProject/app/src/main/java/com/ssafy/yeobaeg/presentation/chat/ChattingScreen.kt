@@ -15,12 +15,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -81,8 +79,8 @@ import com.ssafy.yeobaeg.presentation.common.component.YeobaegSnackbarHost
 import com.ssafy.yeobaeg.presentation.common.component.YeobaegTopAppBar
 import com.ssafy.yeobaeg.presentation.common.component.showYeobaegSnackbar
 import com.ssafy.yeobaeg.presentation.common.util.DateFormatter
+import com.ssafy.yeobaeg.presentation.common.util.advancedImePadding
 import com.ssafy.yeobaeg.presentation.common.util.clearFocusOnTap
-import com.ssafy.yeobaeg.presentation.main.alignToSafeDrawing
 import com.ssafy.yeobaeg.ui.theme.YeobaegBackground
 import com.ssafy.yeobaeg.ui.theme.YeobaegBlack
 import com.ssafy.yeobaeg.ui.theme.YeobaegBrown
@@ -290,8 +288,8 @@ fun ChattingScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(YeobaegWhite)
-                    .padding(horizontal = 10.dp, vertical = 8.dp)
-                    .alignToSafeDrawing(),
+                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                    .advancedImePadding(),
                 value = inputText,
                 onValueChange = onInputChange,
                 onSendClick = onSendClick,
@@ -305,6 +303,7 @@ fun ChattingScreenContent(
                 .fillMaxSize()
                 .background(YeobaegBackground)
                 .padding(innerPadding)
+                .advancedImePadding()
         ) {
             when {
                 isLoading -> Box(
@@ -322,7 +321,7 @@ fun ChattingScreenContent(
                         .background(YeobaegWhite)
                         .padding(horizontal = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 16.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp),
                     reverseLayout = true
                 ) {
                     // 로딩 인디케이터 (reverseLayout이므로 실제로는 상단에 표시됨)

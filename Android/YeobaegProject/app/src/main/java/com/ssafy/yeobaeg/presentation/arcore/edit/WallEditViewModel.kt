@@ -175,6 +175,23 @@ class WallEditViewModel @Inject constructor(
         }
     }
 
+    fun applyCurrentHeightToAll() {
+        _uiState.update { s ->
+            val currentWall = s.currentWallOrNull() ?: return@update s
+            if (currentWall.height <= 0f) return@update s
+
+            val nextWalls = s.walls.map { wall ->
+                // targetIds에 포함된 벽들만 높이 적용
+                if (wall.wid in s.targetIds) {
+                    wall.copy(height = currentWall.height)
+                } else {
+                    wall
+                }
+            }
+            s.copy(walls = nextWalls)
+        }
+    }
+
     fun prevOrBackToSelect() {
         if (_uiState.value.step == WallEditStep.SelectWall) {
             navigateToHome()
