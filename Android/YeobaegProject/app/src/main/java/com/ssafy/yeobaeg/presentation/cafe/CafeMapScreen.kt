@@ -232,34 +232,6 @@ fun CafeSearchBar(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                if (showFilterButton) {
-                    Surface(
-                        onClick = onFilterClick,
-                        modifier = Modifier.size(42.dp),
-                        shape = CircleShape,
-                        color = if (isFilterActive) YeobaegDarkBrown else Color(0xFFF5F5F5),
-                        shadowElevation = if (isFilterActive) 4.dp else 0.dp
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = "필터",
-                                tint = if (isFilterActive) Color.White else YeobaegDarkBrown,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-                    }
-                }
-            }
 
             Spacer(modifier = Modifier.height(14.dp))
 
