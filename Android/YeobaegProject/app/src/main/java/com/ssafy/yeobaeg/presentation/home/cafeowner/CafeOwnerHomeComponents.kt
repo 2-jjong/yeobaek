@@ -44,7 +44,7 @@ fun CafeDisplayStatus(displaySpace: String, display: String, collaboratingArtist
         ) {
             Text(
                 text = displaySpace,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 color = colors.metricSpace
             )
             Text(
@@ -59,7 +59,7 @@ fun CafeDisplayStatus(displaySpace: String, display: String, collaboratingArtist
         ) {
             Text(
                 text = display,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 color = colors.metricDisplay
             )
             Text(
@@ -74,7 +74,7 @@ fun CafeDisplayStatus(displaySpace: String, display: String, collaboratingArtist
         ) {
             Text(
                 text = collaboratingArtist,
-                fontSize = 14.sp,
+                fontSize = 16.sp,
                 color = colors.metricArtist
             )
             Text(
