@@ -67,7 +67,7 @@ private fun getDisplayMessage(type: String?, message: String?): String {
     return when (type) {
         "TEXT" -> message ?: ""
         "IMAGE" -> "사진을 보냈습니다"
-        "AGREE" -> "매칭을 수락했습니다"
+        "AGREED" -> "매칭을 수락했습니다"
         "PROPOSAL" -> "매칭 제안을 보냈습니다"
         "REJECTED" -> "매칭이 거절 되었습니다."
         "STARTED" -> "전시가 시작되었습니다."
