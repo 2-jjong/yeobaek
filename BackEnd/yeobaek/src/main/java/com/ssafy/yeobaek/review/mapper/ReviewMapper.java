@@ -6,6 +6,7 @@ import com.ssafy.yeobaek.review.dto.request.CreateReviewRequest;
 import com.ssafy.yeobaek.review.dto.response.*;
 import com.ssafy.yeobaek.review.entity.Review;
 import com.ssafy.yeobaek.user.entity.User;
+import com.ssafy.yeobaek.storage.service.S3Service;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,12 @@ import java.util.stream.Collectors;
  */
 @Component
 public class ReviewMapper {
+
+    private final S3Service s3Service;
+
+    public ReviewMapper(S3Service s3Service) {
+        this.s3Service = s3Service;
+    }
 
     /**
      * CreateReviewRequest DTO를 Review 엔티티로 변환
@@ -115,7 +122,7 @@ public class ReviewMapper {
     private Reviewer toReviewer(User user) {
         return Reviewer.builder()
                 .name(user.getNickname())
-                .profileImageUrl(user.getProfileImageUrl())
+                .profileImageUrl(s3Service.generatePresignedUrlForThumbnail(user.getProfileImageUrl()))
                 .role(user.getUserType().name())
                 .build();
     }
@@ -169,7 +176,7 @@ public class ReviewMapper {
     private Reviewee toReviewee(User user) {
         return Reviewee.builder()
                 .name(user.getNickname())
-                .profileImageUrl(user.getProfileImageUrl())
+                .profileImageUrl(s3Service.generatePresignedUrlForThumbnail(user.getProfileImageUrl()))
                 .role(user.getUserType().name())
                 .build();
     }
