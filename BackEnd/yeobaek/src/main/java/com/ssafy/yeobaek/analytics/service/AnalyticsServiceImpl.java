@@ -33,37 +33,41 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Override
     @Transactional
     public void recordEvent(Long userId, RecordEventRequest request) {
-        log.info("사용자 행동 이벤트 기록 시작 - 사용자 ID: {}, 이벤트 타입: {}, 대상 타입: {}, 대상 ID: {}",
-                userId, request.getEventType(), request.getTargetType(), request.getTargetId());
-        // 사용자 조회
-        User user = userService.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("사용자 행동 이벤트 기록 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                    return new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND);
-                });
+        try {
+            log.info("사용자 행동 이벤트 기록 시작 - 사용자 ID: {}, 이벤트 타입: {}, 대상 타입: {}, 대상 ID: {}",
+                    userId, request.getEventType(), request.getTargetType(), request.getTargetId());
+            // 사용자 조회
+            User user = userService.findById(userId)
+                    .orElseThrow(() -> {
+                        log.warn("사용자 행동 이벤트 기록 실패 - 존재하지 않는 사용자 ID: {}", userId);
+                        return new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND);
+                    });
 
-        // String을 Enum으로 변환
-        EventType eventType = EventType.valueOf(request.getEventType());
-        TargetType targetType = TargetType.valueOf(request.getTargetType());
+            // String을 Enum으로 변환
+            EventType eventType = EventType.valueOf(request.getEventType());
+            TargetType targetType = TargetType.valueOf(request.getTargetType());
 
-        // 사용자 유형에 따른 이벤트 수집 제한 검증
-        validateUserTypeAndTargetType(user.getUserType(), targetType);
+            // 사용자 유형에 따른 이벤트 수집 제한 검증
+            validateUserTypeAndTargetType(user.getUserType(), targetType);
 
-        // 이벤트 타입별 필수 필드 검증
-        validateEventFields(eventType, request);
+            // 이벤트 타입별 필수 필드 검증
+            validateEventFields(eventType, request);
 
-        // 이벤트 엔티티 생성 및 저장
-        UserBehaviorEvent event = UserBehaviorEvent.builder()
-                .user(user)
-                .eventType(eventType)
-                .targetType(targetType)
-                .targetId(request.getTargetId())
-                .durationSeconds(request.getDurationSeconds())
-                .maxScrollPercent(request.getMaxScrollPercent())
-                .build();
+            // 이벤트 엔티티 생성 및 저장
+            UserBehaviorEvent event = UserBehaviorEvent.builder()
+                    .user(user)
+                    .eventType(eventType)
+                    .targetType(targetType)
+                    .targetId(request.getTargetId())
+                    .durationSeconds(request.getDurationSeconds())
+                    .maxScrollPercent(request.getMaxScrollPercent())
+                    .build();
 
-        userBehaviorEventRepository.save(event);
-        log.info("사용자 행동 이벤트 기록 완료 - 이벤트 ID: {}", event.getId());
+            userBehaviorEventRepository.save(event);
+            log.info("사용자 행동 이벤트 기록 완료 - 이벤트 ID: {}", event.getId());
+        } catch (Exception e) {
+            log.error("사용자 행동 이벤트 기록 중 오류 발생 - 사용자 ID: {}, 요청: {}: {}", userId, request, e.getMessage());
+        }
     }
 
     /**
@@ -88,27 +92,31 @@ public class AnalyticsServiceImpl implements AnalyticsService {
     @Override
     @Transactional
     public void recordBookmarkEvent(Long userId, Long targetId, TargetType targetType) {
-        log.info("북마크 이벤트 기록 시작 - 사용자 ID: {}, 대상 ID: {}, 대상 타입: {}", userId, targetId, targetType);
-        // 사용자 조회
-        User user = userService.findById(userId)
-                .orElseThrow(() -> {
-                    log.warn("북마크 이벤트 기록 실패 - 존재하지 않는 사용자 ID: {}", userId);
-                    return new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND);
-                });
+        try {
+            log.info("북마크 이벤트 기록 시작 - 사용자 ID: {}, 대상 ID: {}, 대상 타입: {}", userId, targetId, targetType);
+            // 사용자 조회
+            User user = userService.findById(userId)
+                    .orElseThrow(() -> {
+                        log.warn("북마크 이벤트 기록 실패 - 존재하지 않는 사용자 ID: {}", userId);
+                        return new CustomException(ResponseCode.PROFILE_USER_NOT_FOUND);
+                    });
 
-        // 사용자 유형에 따른 이벤트 수집 제한 검증
-        validateUserTypeAndTargetType(user.getUserType(), targetType);
+            // 사용자 유형에 따른 이벤트 수집 제한 검증
+            validateUserTypeAndTargetType(user.getUserType(), targetType);
 
-        // 이벤트 엔티티 생성 및 저장
-        UserBehaviorEvent event = UserBehaviorEvent.builder()
-                .user(user)
-                .eventType(EventType.BOOKMARK)
-                .targetType(targetType)
-                .targetId(targetId)
-                .build();
+            // 이벤트 엔티티 생성 및 저장
+            UserBehaviorEvent event = UserBehaviorEvent.builder()
+                    .user(user)
+                    .eventType(EventType.BOOKMARK)
+                    .targetType(targetType)
+                    .targetId(targetId)
+                    .build();
 
-        userBehaviorEventRepository.save(event);
-        log.info("북마크 이벤트 기록 완료 - 이벤트 ID: {}", event.getId());
+            userBehaviorEventRepository.save(event);
+            log.info("북마크 이벤트 기록 완료 - 이벤트 ID: {}", event.getId());
+        } catch (Exception e) {
+            log.error("북마크 이벤트 기록 중 오류 발생 - 사용자 ID: {}, 대상 ID: {}, 대상 타입: {}: {}", userId, targetId, targetType, e.getMessage());
+        }
     }
 
     /**
