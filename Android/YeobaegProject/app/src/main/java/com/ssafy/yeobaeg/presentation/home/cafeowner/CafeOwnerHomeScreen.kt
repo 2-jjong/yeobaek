@@ -252,7 +252,7 @@ private fun CafeProfileCard(cafeOwnerInfo: CafeOwnerInfo) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(24.dp),
+                .padding(vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Cafe Image
@@ -260,8 +260,8 @@ private fun CafeProfileCard(cafeOwnerInfo: CafeOwnerInfo) {
                 model = cafeOwnerInfo.cafeImageUrl.ifBlank { R.drawable.ic_cafe },
                 contentDescription = null,
                 modifier = Modifier
-                    .size(100.dp)
-                    .clip(CircleShape)
+                    .size(110.dp,150.dp)
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFF0F0F0)),
                 contentScale = ContentScale.Crop
             )
@@ -269,7 +269,7 @@ private fun CafeProfileCard(cafeOwnerInfo: CafeOwnerInfo) {
             Spacer(Modifier.width(24.dp))
 
             // Info
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f).padding(end = 4.dp)) {
                 Text(
                     text = cafeOwnerInfo.cafeName,
                     fontSize = 20.sp,

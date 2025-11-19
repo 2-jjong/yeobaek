@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -153,7 +154,7 @@ private fun ArtistHomeContent(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(vertical = 16.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
                     ArtistProfileHeader(artist = artHome.artist)
@@ -263,8 +264,8 @@ private fun ArtistProfileHeader(artist: ArtistHome) {
             model = artist.profileImageUrl.ifBlank { R.drawable.ic_art },
             contentDescription = null,
             modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
+                .size(110.dp,150.dp)
+                .clip(RoundedCornerShape(12.dp))
                 .background(Color(0xFFF0F0F0)),
             contentScale = ContentScale.Crop
         )
@@ -274,6 +275,7 @@ private fun ArtistProfileHeader(artist: ArtistHome) {
         // Info - Right Side
         Column(
             modifier = Modifier.weight(1f)
+                .padding(end = 4.dp)
         ) {
             // Name
             Text(
