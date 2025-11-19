@@ -269,7 +269,7 @@ public class CafeServiceImpl implements CafeService {
                 ));
 
         // 4. 카페 이미지 URL 변환
-        String primaryImage = s3Service.generatePresignedUrlForThumbnail(cafe.getImages().get(0));
+        String primaryImage = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
 
         // 5. 협업 작가 수 조회
         Long collaboratingArtists = exhibitionRepository.countDistinctArtistsByCafeId(cafe.getId());
@@ -343,7 +343,7 @@ public class CafeServiceImpl implements CafeService {
                     List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), Collections.emptyList());
 
                     // 대표 이미지 URL 추출
-                    String primaryImageUrl = s3Service.generatePresignedUrlForThumbnail(cafe.getImages().get(0));
+                    String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
 
                     return cafeMapper.toCafeSummary(cafe, distance, categories, primaryImageUrl);
                 })
@@ -408,7 +408,7 @@ public class CafeServiceImpl implements CafeService {
         // 5. 카페 이미지 URL 변환
         List<String> images = s3Service.generatePresignedUrlsForDownload(cafe.getImages());
         User ownerUser = cafe.getCafeOwner();
-        String profileImage = s3Service.generatePresignedUrlForThumbnail(ownerUser.getProfileImageUrl());
+        String profileImage = s3Service.generatePresignedUrlForDownload(ownerUser.getProfileImageUrl());
 
         // 6. 북마크 여부 확인
         boolean isBookmarked = cafeBookmarkService.isBookmarked(userId, cafeId);
@@ -495,7 +495,7 @@ public class CafeServiceImpl implements CafeService {
 
     private ExhibitionInfo createExhibitionInfo(Exhibition exhibition) {
         Artwork artwork = exhibition.getArtwork();
-        String artworkImageUrl = artwork.getImages().isEmpty() ? null : s3Service.generatePresignedUrlForThumbnail(artwork.getImages().get(0));
+        String artworkImageUrl = artwork.getImages().isEmpty() ? null : s3Service.generatePresignedUrlForDownload(artwork.getImages().get(0));
 
         return new ExhibitionInfo(
                 artwork.getId(),
@@ -538,7 +538,7 @@ public class CafeServiceImpl implements CafeService {
                     List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), Collections.emptyList());
 
                     // 카페 대표 이미지 URL 변환
-                    String primaryImageUrl = s3Service.generatePresignedUrlForThumbnail(cafe.getImages().get(0));
+                    String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
 
                     // 북마크 목록에서는 거리를 계산하지 않으므로 null 전달
                     return cafeMapper.toCafeSummary(cafe, null, categories, primaryImageUrl);
@@ -724,7 +724,7 @@ public class CafeServiceImpl implements CafeService {
                     // 대표 이미지 URL 변환 (첫 번째 이미지 사용)
                     String primaryImageUrl = null;
                     if (cafe.getImages() != null && !cafe.getImages().isEmpty()) {
-                        primaryImageUrl = s3Service.generatePresignedUrlForThumbnail(cafe.getImages().get(0));
+                        primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
                     }
 
                     // 카테고리 조회
@@ -810,7 +810,7 @@ public class CafeServiceImpl implements CafeService {
                 .map(cafe -> {
                     String primaryImageUrl = null;
                     if (cafe.getImages() != null && !cafe.getImages().isEmpty()) {
-                        primaryImageUrl = s3Service.generatePresignedUrlForThumbnail(cafe.getImages().get(0));
+                        primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
                     }
 
                     List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), new ArrayList<>());
@@ -868,7 +868,7 @@ public class CafeServiceImpl implements CafeService {
         List<CafeSummary> summaries = popularCafes.stream()
                 .map(cafe -> {
                     List<String> categories = cafeCategoriesMap.getOrDefault(cafe.getId(), Collections.emptyList());
-                    String primaryImageUrl = s3Service.generatePresignedUrlForThumbnail(cafe.getImages().get(0));
+                    String primaryImageUrl = s3Service.generatePresignedUrlForDownload(cafe.getImages().get(0));
                     // 인기 카페 목록에서는 거리를 계산하지 않으므로 null 전달
                     return cafeMapper.toCafeSummary(cafe, null, categories, primaryImageUrl);
                 })

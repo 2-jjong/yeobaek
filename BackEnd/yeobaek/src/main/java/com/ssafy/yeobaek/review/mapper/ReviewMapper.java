@@ -120,7 +120,7 @@ public class ReviewMapper {
     private Reviewer toReviewer(User user) {
         return Reviewer.builder()
                 .name(user.getNickname())
-                .profileImageUrl(s3Service.generatePresignedUrlForThumbnail(user.getProfileImageUrl()))
+                .profileImageUrl(s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl()))
                 .role(user.getUserType().name())
                 .build();
     }
@@ -172,7 +172,7 @@ public class ReviewMapper {
     private Reviewee toReviewee(User user) {
         return Reviewee.builder()
                 .name(user.getNickname())
-                .profileImageUrl(s3Service.generatePresignedUrlForThumbnail(user.getProfileImageUrl()))
+                .profileImageUrl(s3Service.generatePresignedUrlForDownload(user.getProfileImageUrl()))
                 .role(user.getUserType().name())
                 .build();
     }
