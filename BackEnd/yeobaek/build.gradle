@@ -33,6 +33,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 
+    // WebClient
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
@@ -43,6 +46,15 @@ dependencies {
 
     // JSON 파싱
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
+
+    // Caffeine Cache
+    implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
+
+    // Firebase Admin SDK
+    implementation 'com.google.firebase:firebase-admin:9.3.0'
+
+    // Google Cloud BigQuery
+    implementation 'com.google.cloud:google-cloud-bigquery:2.38.2'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
